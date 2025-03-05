@@ -27,30 +27,67 @@ class _WelcomePageState extends State<WelcomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(height: 80),
-          // Language picker
-          _buildLanguageSelector(),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const SizedBox(height: 80),
 
-          Spacer(flex: 2), // Pushes logo to center
+            // Language picker
+            _buildLanguageSelector(),
 
-          // Logo centered in the screen
-          Center(child: Image.asset('assets/logo.png', width: 120)),
+            const Spacer(flex: 2), // Pushes logo to center
 
+            // Logo centered in the screen
+            Center(child: Image.asset('assets/logo.png', width: 120)),
 
+            const Spacer(flex: 2),
 
-          Spacer(flex: 2),
-          Column(
-            children: [
-              _buildStartButton(),
-              SizedBox(height: 10),
-              Text("MeQat", style: TextStyle(color: Colors.grey, fontSize: 16)),
-              SizedBox(height: 20),
-            ],
-          ),
-        ],
+            // Continue button with proper padding
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                onPressed: () {
+                  _saveLanguageAndProceed();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PreferencesPage(),
+                    ),
+                  );
+                },
+                child: const SizedBox(
+                  width: double.infinity,
+                  child: Center(
+                    child: Text(
+                      "Continue",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const Spacer(flex: 1),
+
+            Column(
+              children: [
+                const SizedBox(height: 10),
+                const Text("MeQat", style: TextStyle(color: Colors.grey, fontSize: 16)),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -98,22 +135,6 @@ class _WelcomePageState extends State<WelcomePage> {
             );
           }).toList(),
         ),
-      ),
-    );
-  }
-
-  Widget _buildStartButton() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor, // Black button as requested
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          padding: EdgeInsets.symmetric(vertical: 14),
-          minimumSize: Size(double.infinity, 50), // Full-width button
-        ),
-        onPressed: _saveLanguageAndProceed,
-        child: Text("Start", style: TextStyle(color: fontColor, fontSize: 18)),
       ),
     );
   }

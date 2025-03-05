@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:meqattest/home.dart';
+import 'package:meqattest/old/signup.dart';
+import 'package:meqattest/preferences.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); // Ensures everything is set before starting
@@ -190,7 +192,14 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const Text("Don't have an account?", style: TextStyle(color: Colors.black87)),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PreferencesPage(),
+                          ),
+                        );
+                      },
                       child: const Text(
                         "Create new account",
                         style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),

@@ -785,16 +785,27 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       bottomNavigationBar: SizedBox(
-        height: 56, // Adjust the height to make it thinner
+        height: 60, // Adjust height to match the example proportions
         child: BottomAppBar(
-          shape: const CircularNotchedRectangle(), // Optional: Adds a slight curve
-          notchMargin: 6.0, // Optional: Space for floating action button
+          color: Colors.white,
+          elevation: 10, // Adds shadow effect
+          shadowColor: Colors.grey.shade400, // Soft grey shadow
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 6.0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               IconButton(
                 icon: const Icon(Icons.menu),
-
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.search),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -805,12 +816,21 @@ class _HomePageState extends State<HomePage> {
               IconButton(
                 icon: Icon(
                   Icons.home,
-                  color: Colors.orange, // Selected icon in orange
+                  color: Colors.black, // Home selected
                 ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.workspace_premium),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
                   );
                 },
               ),
@@ -829,18 +849,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
-  Widget _buildCategoryButton(String text) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.orange,
-        padding: EdgeInsets.symmetric(vertical: 16),
-      ),
-      onPressed: () {},
-      child: Text(text, style: TextStyle(color: Colors.white)),
-    );
-  }
-
 
   void startAlarm() async {
     try {

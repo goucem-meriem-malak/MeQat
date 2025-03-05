@@ -2,47 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:meqattest/Dua.dart';
 import 'package:meqattest/Settings.dart';
 import 'package:meqattest/menu.dart';
-
+import 'Other.dart';
 import 'home.dart';
+final Other other = Other();
 
 class DuasPage extends StatelessWidget {
-  final List<Map<String, dynamic>> menuItems = [
-    {'title': 'Travel', 'icon': Icons.flight_takeoff},
-    {'title': 'Ihram', 'icon': Icons.checkroom},
-    {'title': 'Tawaf', 'icon': Icons.sync},
-    {'title': 'Sa\'ee', 'icon': Icons.directions_walk},
-    {'title': 'Hajj', 'icon': Icons.mosque},
-    {'title': 'Umrah', 'icon': Icons.emoji_people},
-    {'title': 'Worship', 'icon': Icons.handshake},
-    {'title': 'Need', 'icon': Icons.favorite},
-    {'title': 'Repentance', 'icon': Icons.volunteer_activism},
-    {'title': 'Adoration', 'icon': Icons.star},
-    {'title': 'Hope', 'icon': Icons.wb_sunny},
-    {'title': 'Intercession', 'icon': Icons.group},
-    {'title': 'Protection', 'icon': Icons.security},
-    {'title': 'Istikhara', 'icon': Icons.lightbulb},
-    {'title': 'All', 'icon': Icons.menu_book},
-  ];
 
+  final List<Map<String, dynamic>> TypesOfDua = other.TypesOfDua;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dua', style: TextStyle(color: Colors.black)),
+        title: const Text('Duas', style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 4,
+        shadowColor: Colors.grey[300],
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
-            // Swipe left to go to HomePage
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => HomePage()),
             );
           } else if (details.primaryVelocity! > 0) {
-            // Swipe right to go back to MenuPage
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => MenuPage()),
@@ -50,53 +39,73 @@ class DuasPage extends StatelessWidget {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 20),
           child: GridView.builder(
-            itemCount: menuItems.length,
+            itemCount: TypesOfDua.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.4, // Adjusted for smaller cards
             ),
             itemBuilder: (context, index) {
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[300],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                onPressed: () {
-                  if (index == 0 || index == 4) {
+              return GestureDetector(
+                onTap: () {
+                  if (index == 0) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => DuaPage()),
                     );
                   }
+                  if (index == 4) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DuasPage()),
+                    );
+                  }
+                  if (index == 5) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DuasPage()),
+                    );
+                  }
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(menuItems[index]['icon'], size: 30, color: Colors.black),
-                    const SizedBox(height: 8),
-                    Text(
-                      menuItems[index]['title'],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.black, fontSize: 16),
-                    ),
-                  ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(TypesOfDua[index]['icon'], size: 20, color: Colors.black),
+                      const SizedBox(height: 6),
+                      Text(
+                        TypesOfDua[index]['title'],
+                        style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500), // Adjusted text size
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
           ),
         ),
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: SizedBox(
-        height: 56,
+        height: 60,
         child: BottomAppBar(
+          color: Colors.white,
+          elevation: 10,
+          shadowColor: Colors.grey.shade400,
           shape: const CircularNotchedRectangle(),
           notchMargin: 6.0,
           child: Row(
@@ -104,7 +113,6 @@ class DuasPage extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.menu),
-                color: Colors.orange,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -113,11 +121,32 @@ class DuasPage extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.home),
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.home,
+                  color: Colors.black, // Home selected
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.workspace_premium),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
                   );
                 },
               ),

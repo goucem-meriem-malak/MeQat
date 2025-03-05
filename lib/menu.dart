@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:meqattest/Duas.dart';
+import 'package:meqattest/Other.dart';
 import 'package:meqattest/Settings.dart';
 import 'package:meqattest/faceRecognition.dart';
 import 'package:meqattest/lost.dart';
-
 import 'home.dart';
+final other = Other();
 
 class MenuPage extends StatelessWidget {
-  final List<Map<String, dynamic>> menuItems = [
-    {'title': 'Dua', 'icon': Icons.book},
-    {'title': 'Ihram', 'icon': Icons.checkroom},
-    {'title': 'Hajj', 'icon': Icons.mosque},
-    {'title': 'Umrah', 'icon': Icons.emoji_people},
-    {'title': 'Face Scan', 'icon': Icons.face},
-    {'title': 'Lost', 'icon': Icons.location_off},
-    {'title': 'Dua', 'icon': Icons.menu_book},
-    {'title': 'Dua', 'icon': Icons.library_books},
-  ];
+  final List<Map<String, dynamic>> menuItems = other.menuItems;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +17,8 @@ class MenuPage extends StatelessWidget {
         title: const Text('Menu', style: TextStyle(color: Colors.black)),
         centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 0,
+        elevation: 4,
+        shadowColor: Colors.grey[300],
         automaticallyImplyLeading: false,
       ),
       body: GestureDetector(
@@ -38,24 +31,18 @@ class MenuPage extends StatelessWidget {
           }
         },
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 20),
           child: GridView.builder(
             itemCount: menuItems.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: 1.3,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              childAspectRatio: 1.4, // Adjusted for smaller cards
             ),
             itemBuilder: (context, index) {
-              return ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey[300],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-                onPressed: () {
+              return GestureDetector(
+                onTap: () {
                   if (index == 0) {
                     Navigator.push(
                       context,
@@ -75,27 +62,42 @@ class MenuPage extends StatelessWidget {
                     );
                   }
                 },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(menuItems[index]['icon'], size: 30, color: Colors.black),
-                    const SizedBox(height: 8),
-                    Text(
-                      menuItems[index]['title'],
-                      style: const TextStyle(color: Colors.black, fontSize: 18),
-                    ),
-                  ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(menuItems[index]['icon'], size: 20, color: Colors.black),
+                      const SizedBox(height: 6),
+                      Text(
+                        menuItems[index]['title'],
+                        style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500), // Adjusted text size
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
           ),
         ),
       ),
-
-      // Bottom Navigation Bar
       bottomNavigationBar: SizedBox(
-        height: 56,
+        height: 60,
         child: BottomAppBar(
+          color: Colors.white,
+          elevation: 10, // Adds shadow effect
+          shadowColor: Colors.grey.shade400, // Soft grey shadow
           shape: const CircularNotchedRectangle(),
           notchMargin: 6.0,
           child: Row(
@@ -103,7 +105,6 @@ class MenuPage extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.menu),
-                color: Colors.orange,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -112,11 +113,32 @@ class MenuPage extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.home),
+                icon: const Icon(Icons.search),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.home,
+                  color: Colors.black, // Home selected
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => HomePage()),
+                  );
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.workspace_premium),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MenuPage()),
                   );
                 },
               ),

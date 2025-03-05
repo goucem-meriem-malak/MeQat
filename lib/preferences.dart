@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:meqattest/home.dart';
+import 'package:meqattest/Other.dart';
 import 'package:meqattest/login.dart';
 import 'package:meqattest/signup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+final other = Other();
 final Color buttonColor = Color(0xFFE5C99F);
 final Color textColor = Color(0xC52E2E2E);
 
@@ -21,11 +22,11 @@ class _PreferencesPageState extends State<PreferencesPage> {
   String? selectedTransportation;
   bool isWithDelegation = false;
 
-  final List<String> languages = ["English", "Arabic"];
-  final List<String> goal = ["Hajj", "Umrah"];
-  final List<String> madhhabs = ["Shafii", "Hanafi", "Hanbali", "Maliki"];
-  final List<String> countries = ["Saudi Arabia", "Egypt", "Pakistan", "Malaysia", "Turkey"];
-  final List<String> transportationMethods = ["By Air", "By Sea", "By Vehicle", "By foot"];
+  final List<String> languages = other.languages;
+  final List<String> goal = other.goal;
+  final List<String> madhhabs = other.madhhabs;
+  final List<String> countries = other.countries;
+  final List<String> transportationMethods = other.transportationMethods;
 
   @override
   void initState() {
@@ -67,122 +68,154 @@ class _PreferencesPageState extends State<PreferencesPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10),
         child: Column(
           children: [
-            SizedBox(height: 40), // For spacing
+            const Spacer(flex: 2),
+
+            // Logo
             Center(
-              child: Image.asset("assets/logo.png", width: 100), // Your logo
+              child: Image.asset("assets/logo.png", width: 80, height: 80, fit: BoxFit.contain),
             ),
-            SizedBox(height: 30),
+
+            const SizedBox(height: 32),
 
             // Hajj/Umrah Switch
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("Hajj", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
-                Switch(
-                  value: selectedGoal == "Umrah",
-                  activeColor: textColor,
-                  onChanged: (bool value) {
-                    setState(() {
-                      selectedGoal = value ? "Umrah" : "Hajj";
-                    });
-                  },
-                ),
-                Text("Umrah", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Hajj", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Switch(
+                    value: selectedGoal == "Umrah",
+                    activeColor: Colors.black,
+                    onChanged: (bool value) {
+                      setState(() {
+                        selectedGoal = value ? "Umrah" : "Hajj";
+                      });
+                    },
+                  ),
+                  const Text("Umrah", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-            SizedBox(height: 20),
+
+            const SizedBox(height: 24),
 
             // Dropdowns
-            _buildDropdown("Choose Madhhab", Icons.school),
-            SizedBox(height: 20),
-            _buildDropdown("Choose Country", Icons.location_on),
-            SizedBox(height: 20),
-            _buildDropdown("Choose Transportation", Icons.directions),
+            _buildDropdown("Choose Madhhab", Icons.school, madhhabs),
+            const SizedBox(height: 16),
+            _buildDropdown("Choose Country", Icons.location_on, countries),
+            const SizedBox(height: 16),
+            _buildDropdown("Choose Transportation", Icons.directions, transportationMethods),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // Delegation Checkbox
-            Row(
-              children: [
-                Checkbox(
-                  value: isWithDelegation,
-                  onChanged: (value) {
-                    setState(() {
-                      isWithDelegation = value!;
-                    });
-                  },
-                  activeColor: buttonColor,
-                ),
-                Text("Traveling with a Delegation", style: TextStyle(fontSize: 16, color: textColor)),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: isWithDelegation,
+                    onChanged: (value) {
+                      setState(() {
+                        isWithDelegation = value!;
+                      });
+                    },
+                    activeColor: Colors.black,
+                  ),
+                  const Text("Traveling with a Delegation", style: TextStyle(fontSize: 16)),
+                ],
+              ),
             ),
 
-            Spacer(),
+            const Spacer(),
 
-            // Guest Button (Clickable Text)
+            // Log In Button (Clickable Text)
             Align(
-              alignment: Alignment.centerRight, // Moves text to the right
+              alignment: Alignment.centerRight,
               child: GestureDetector(
-                onTap: () {}, // Add navigation logic for login
-                child: Text(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(),
+                    ),
+                  );
+                },
+                child: const Text(
                   "Log In",
-                  style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 16),
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ),
-            SizedBox(height: 10),
-
+            const SizedBox(height: 16),
 
             // Continue Button
-            _buildStartButton(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                minimumSize: const Size(double.infinity, 50),
+              ),
+              onPressed: () {
+                _savePreferences();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SignUpPage(),
+                  ),
+                );
+              },
+              child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+            ),
+          ),
 
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
 
-            Text("MeQat", style: TextStyle(fontSize: 14, color: Colors.grey)),
-            SizedBox(height: 20),
+            const Text("MeQat", style: TextStyle(fontSize: 14, color: Colors.grey)),
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDropdown(String hint, IconData icon) {
+  Widget _buildDropdown(String hint, IconData icon, List<String> listItems) {
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3)),
+        ],
       ),
       child: DropdownButtonFormField<String>(
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.white,
-          prefixIcon: Icon(icon, color: buttonColor),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+          prefixIcon: Icon(icon, color: Colors.black),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
         ),
         dropdownColor: Colors.white,
-        hint: Text(hint, style: TextStyle(color: Colors.grey)),
-        items: [],
-        onChanged: (value) {},
-      ),
-    );
-  }
-
-  Widget _buildStartButton() {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: buttonColor, // Black button as requested
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
-          padding: EdgeInsets.symmetric(vertical: 14),
-          minimumSize: Size(double.infinity, 50), // Full-width button
-        ),
-        onPressed: _savePreferences,
-        child: Text("Start", style: TextStyle(color: textColor, fontSize: 18)),
+        hint: Text(hint, style: const TextStyle(color: Colors.grey)),
+        items: listItems.map((item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: (value) {
+          print("Selected: $value"); // Handle selection here
+        },
       ),
     );
   }

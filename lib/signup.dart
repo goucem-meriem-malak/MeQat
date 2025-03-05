@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:meqattest/QRPage.dart';
+import 'package:intl/intl.dart';
+import 'package:meqattest/home.dart';
+
+final Color buttonColor = Color(0xFFE5C99F);
+final Color textColor = Color(0xC52E2E2E);
 
 class SignUpPage extends StatefulWidget {
   @override
@@ -7,111 +11,207 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final Color primaryColor = Color(0xFF2D2D2D);
-  final Color accentColor = Color(0xFF4A4A4A);
-  final Color background = Color(0xFFF8F5F0);
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _birthdateController = TextEditingController();
+  bool _isAgreed = false;
+  bool _isLeader = false;
 
-  bool isMember = true; // Default to Member
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _birthdateController.text = DateFormat('yyyy-MM-dd').format(picked);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: background,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          const Spacer(flex: 2),
+          Center(
+            child: Image.asset(
+              'assets/logo.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.contain,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center, // Centers the row contents
               children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey.shade300,
-                  child: Icon(Icons.person, size: 50, color: primaryColor),
+                const Text("Member"),
+                Switch(
+                  value: _isLeader,
+                  onChanged: (value) {
+                    setState(() {
+                      _isLeader = value;
+                    });
+                  },
                 ),
-                const SizedBox(height: 20),
-
-                // Toggle Switch
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Leader", style: TextStyle(color: primaryColor)),
-                    Switch(
-                      value: isMember,
-                      onChanged: (value) {
-                        setState(() {
-                          isMember = value;
-                        });
-                      },
-                      activeColor: primaryColor,
-                    ),
-                    Text("Member", style: TextStyle(color: primaryColor)),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                _buildTextField("First Name"),
-                const SizedBox(height: 10),
-                _buildTextField("Last Name"),
-                const SizedBox(height: 10),
-                _buildTextField("Email", icon: Icons.email),
-                const SizedBox(height: 10),
-                _buildTextField(
-                    "Password", icon: Icons.vpn_key, isPassword: true),
-                const SizedBox(height: 10),
-                _buildTextField(
-                    "Confirm Password", icon: Icons.vpn_key, isPassword: true),
-                const SizedBox(height: 10),
-                _buildTextField("Birth Date", icon: Icons.calendar_today),
-                const SizedBox(height: 20),
-
-                // Sign Up Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      shadowColor: Colors.black12,
-                    ),
-                    onPressed: () {
-                      // Navigate to QRPage with the user type
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => QRPage(isMember: isMember),
-                        ),
-                      );
-                    },
-                    child: Text("Sign Up",
-                        style: TextStyle(fontSize: 18, color: Colors.white)),
-                  ),
-                ),
+                const Text("Leader"),
               ],
             ),
           ),
-        ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildTextField(
+                        controller: _firstNameController,
+                        hintText: "First Name",
+                        obscureText: false,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _buildTextField(
+                        controller: _lastNameController,
+                        hintText: "Last Name",
+                        obscureText: false,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _emailController,
+                  hintText: "Email",
+                  obscureText: false,
+                ),
+                const SizedBox(height: 16),
+                _buildTextField(
+                  controller: _passwordController,
+                  hintText: "Password",
+                  obscureText: true,
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () => _selectDate(context),
+                  child: AbsorbPointer(
+                    child: _buildTextField(
+                      controller: _birthdateController,
+                      hintText: "Birthdate",
+                      obscureText: false,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _isAgreed,
+                      onChanged: (value) {
+                        setState(() {
+                          _isAgreed = value!;
+                        });
+                      },
+                    ),
+                    const Text("I agree to the terms and conditions")
+                  ],
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: () {
+                    if (_isAgreed) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HomePage(),
+                        ),
+                      );
+                    }
+                  },
+                  child: const SizedBox(
+                    width: double.infinity,
+                    child: Center(
+                      child: Text(
+                        "Sign Up",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+          const Spacer(flex: 1),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Already have an account?", style: TextStyle(color: Colors.black87)),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text(
+                  "Log in",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.only(bottom: 16),
+            child: Text(
+              "MeQat",
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildTextField(String hint,
-      {IconData? icon, bool isPassword = false}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hintText,
+    required bool obscureText,
+  }) {
     return TextField(
-      obscureText: isPassword,
+      controller: controller,
+      obscureText: obscureText,
       decoration: InputDecoration(
+        hintText: hintText,
         filled: true,
         fillColor: Colors.white,
-        hintText: hint,
-        prefixIcon: icon != null ? Icon(icon, color: accentColor) : null,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: accentColor, width: 1.5),
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.black12),
         ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       ),
     );
   }

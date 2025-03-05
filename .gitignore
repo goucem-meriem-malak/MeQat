@@ -73,4 +73,3 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
->>>>>>> a529e54 (Reinitialize repository)

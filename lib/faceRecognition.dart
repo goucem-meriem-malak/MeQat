@@ -122,24 +122,63 @@ class _FaceRecognitionAppState extends State<FaceRecognitionApp> {
           ),
         ),
         bottomNavigationBar: SizedBox(
-          height: 56,
+          height: 60, // Adjust height to match the example proportions
           child: BottomAppBar(
-            shape: CircularNotchedRectangle(),
+            color: Colors.white,
+            elevation: 10, // Adds shadow effect
+            shadowColor: Colors.grey.shade400, // Soft grey shadow
+            shape: const CircularNotchedRectangle(),
             notchMargin: 6.0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 IconButton(
-                  icon: Icon(Icons.menu, color: Colors.orange),
-                  onPressed: () => _navigateTo(context, MenuPage()),
+                  icon: const Icon(Icons.menu),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MenuPage()),
+                    );
+                  },
                 ),
                 IconButton(
-                  icon: Icon(Icons.home),
-                  onPressed: () => _navigateTo(context, HomePage()),
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MenuPage()),
+                    );
+                  },
                 ),
                 IconButton(
-                  icon: Icon(Icons.settings),
-                  onPressed: () => _navigateTo(context, SettingsPage()),
+                  icon: Icon(
+                    Icons.home,
+                    color: Colors.black, // Home selected
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.workspace_premium),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MenuPage()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.settings),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => SettingsPage()),
+                    );
+                  },
                 ),
               ],
             ),

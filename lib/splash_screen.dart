@@ -76,40 +76,52 @@ class _AnimationScreenState extends State<AnimationScreen> {
         color: _backgroundColor,
         child: Stack(
           children: [
-            _buildAnimatedImage(
-              step: 1,
-              image: 'assets/img1.png',
-              beginPosition: Offset(0, 1),
-              endPosition: Offset(0, 0),
-              isSliding: true,
+            Align(
+              alignment: Alignment.center,
+              child: _buildAnimatedImage(
+                step: 1,
+                image: 'assets/img1.png',
+                beginPosition: Offset(0, 1),
+                endPosition: Offset(0, 0),
+                isSliding: true,
+              ),
             ),
-            _buildAnimatedImage(
-              step: 2,
-              image: 'assets/img2.png',
-              beginPosition: Offset(0, 0),
-              endPosition: Offset(0, 0),
-              isSliding: false,
+            Align(
+              alignment: Alignment.center,
+              child: _buildAnimatedImage(
+                step: 2,
+                image: 'assets/img2.png',
+                beginPosition: Offset(0, 0),
+                endPosition: Offset(0, 0),
+                isSliding: false,
+              ),
             ),
-            _buildAnimatedImage(
-              step: 3,
-              image: 'assets/img3.png',
-              beginPosition: Offset(0, 0),
-              endPosition: Offset(0, 0),
-              isSliding: false,
+            Align(
+              alignment: Alignment.center,
+              child: _buildAnimatedImage(
+                step: 3,
+                image: 'assets/img3.png',
+                beginPosition: Offset(0, 0),
+                endPosition: Offset(0, 0),
+                isSliding: false,
+              ),
             ),
-            _buildAnimatedImage(
-              step: 4,
-              image: 'assets/img4.png',
-              beginPosition: Offset(0, 0),
-              endPosition: Offset(0, 0),
-              isSliding: false,
+            Align(
+              alignment: Alignment.center,
+              child: _buildAnimatedImage(
+                step: 4,
+                image: 'assets/img4.png',
+                beginPosition: Offset(0, 0),
+                endPosition: Offset(0, 0),
+                isSliding: false,
+              ),
             ),
             Align(
               alignment: Alignment.center,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  SizedBox(height: 140),
+                  SizedBox(height: 100),
                   _buildMiqatraText(),
                 ],
               ),
@@ -167,8 +179,8 @@ class _AnimationScreenState extends State<AnimationScreen> {
         opacity: _currentStep >= step ? 1.0 : 0.0,
         child: Image.asset(
           image,
-          width: 200,
-          height: 200,
+          width: 100,
+          height: 100,
         ),
       ),
     );
