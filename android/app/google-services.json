@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "740893627328",
+    "project_id": "meqat-2b2e0",
+    "storage_bucket": "meqat-2b2e0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:740893627328:android:0b248d65241d01af762e25",
+        "android_client_info": {
+          "package_name": "com.meqat.meqat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhWilD7YtFiKsojuHsLkiw4jYMFhpU-xs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
