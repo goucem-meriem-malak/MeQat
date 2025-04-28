@@ -41,46 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC1HVqw9naT6h3ddY8eJmMlMzoX8S7CaHM',
-    appId: '1:740893627328:web:5b035e7d8f723ce0762e25',
-    messagingSenderId: '740893627328',
-    projectId: 'meqat-2b2e0',
-    authDomain: 'meqat-2b2e0.firebaseapp.com',
-    storageBucket: 'meqat-2b2e0.firebasestorage.app',
+    apiKey: 'AIzaSyC4bgrEcGmTaHBxBTd6EMSCGEWYyTE8sNI',
+    appId: '1:986927910615:web:ada331ecba9ada3eff6a92',
+    messagingSenderId: '986927910615',
+    projectId: 'meqat-0001',
+    authDomain: 'meqat-0001.firebaseapp.com',
+    storageBucket: 'meqat-0001.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBhWilD7YtFiKsojuHsLkiw4jYMFhpU-xs',
-    appId: '1:740893627328:android:0b248d65241d01af762e25',
-    messagingSenderId: '740893627328',
-    projectId: 'meqat-2b2e0',
-    storageBucket: 'meqat-2b2e0.firebasestorage.app',
+    apiKey: 'AIzaSyArVWFCR_V5-6In9VBre5IAKnJSJf-SGo4',
+    appId: '1:986927910615:android:f522bdb386027933ff6a92',
+    messagingSenderId: '986927910615',
+    projectId: 'meqat-0001',
+    storageBucket: 'meqat-0001.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAkb7nTeT2FLGjGN3rtrMgqm5gADiIL2_I',
-    appId: '1:740893627328:ios:1d1c242fdca8710c762e25',
-    messagingSenderId: '740893627328',
-    projectId: 'meqat-2b2e0',
-    storageBucket: 'meqat-2b2e0.firebasestorage.app',
+    apiKey: 'AIzaSyBYkC_c4O1LhdaNGuTIq6p7bQCLWBz7YW4',
+    appId: '1:986927910615:ios:27307f9ca896de44ff6a92',
+    messagingSenderId: '986927910615',
+    projectId: 'meqat-0001',
+    storageBucket: 'meqat-0001.firebasestorage.app',
     iosBundleId: 'com.meqat.meqat',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAkb7nTeT2FLGjGN3rtrMgqm5gADiIL2_I',
-    appId: '1:740893627328:ios:1d1c242fdca8710c762e25',
-    messagingSenderId: '740893627328',
-    projectId: 'meqat-2b2e0',
-    storageBucket: 'meqat-2b2e0.firebasestorage.app',
+    apiKey: 'AIzaSyBYkC_c4O1LhdaNGuTIq6p7bQCLWBz7YW4',
+    appId: '1:986927910615:ios:27307f9ca896de44ff6a92',
+    messagingSenderId: '986927910615',
+    projectId: 'meqat-0001',
+    storageBucket: 'meqat-0001.firebasestorage.app',
     iosBundleId: 'com.meqat.meqat',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyC1HVqw9naT6h3ddY8eJmMlMzoX8S7CaHM',
-    appId: '1:740893627328:web:18faac66fdb9eb6a762e25',
-    messagingSenderId: '740893627328',
-    projectId: 'meqat-2b2e0',
-    authDomain: 'meqat-2b2e0.firebaseapp.com',
-    storageBucket: 'meqat-2b2e0.firebasestorage.app',
+    apiKey: 'AIzaSyC4bgrEcGmTaHBxBTd6EMSCGEWYyTE8sNI',
+    appId: '1:986927910615:web:7784114e529e7d57ff6a92',
+    messagingSenderId: '986927910615',
+    projectId: 'meqat-0001',
+    authDomain: 'meqat-0001.firebaseapp.com',
+    storageBucket: 'meqat-0001.firebasestorage.app',
   );
+
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:meqat/home.dart';
-import 'package:meqat/preferences.dart';
+import 'package:meqat/signup.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,142 +83,157 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
+
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          const Spacer(flex: 2),
+      body: SafeArea(
+      child: SingleChildScrollView(
+      reverse: true,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height,
+        ),
+        child: IntrinsicHeight(
+          child: Column(
+            children: [
+              const Spacer(flex: 2),
 
-          Center(
-            child: Image.asset(
-              'assets/logo.png',
-              width: 80,
-              height: 80,
-              fit: BoxFit.contain,
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
-            child: Column(
-              children: [
-                _buildTextField(
-                  controller: _usernameController,
-                  focusNode: _focusNodeUsername,
-                  hintText: "Username, email or mobile number",
-                  obscureText: false,
+              Center(
+                child: Image.asset(
+                  'assets/logo.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 16),
-                _buildTextField(
-                  controller: _passwordController,
-                  focusNode: _focusNodePassword,
-                  hintText: "Password",
-                  obscureText: true,
-                ),
-                const SizedBox(height: 24),
+              ),
 
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(),
-                      ),
-                    );
-                  },
-                  child: const SizedBox(
-                    width: double.infinity,
-                    child: Center(
-                      child: Text(
-                        "Log in",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
+              const SizedBox(height: 32),
 
-                TextButton.icon(
-                  onPressed: _authenticate,
-                  icon: const Icon(Icons.fingerprint, size: 24, color: Colors.black),
-                  label: const Text(
-                    "Use Face or Fingerprint",
-                    style: TextStyle(color: Colors.black, fontSize: 14),
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                GestureDetector(
-                  onTap: () {},
-                  child: const Text(
-                    "Forgot password?",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          if (!_isKeyboardOpen) const Spacer(flex: 1),
-
-          if (!_isKeyboardOpen)
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
                   children: [
-                    const Text("Don't have an account?", style: TextStyle(color: Colors.black87)),
-                    TextButton(
+                    _buildTextField(
+                      controller: _usernameController,
+                      focusNode: _focusNodeUsername,
+                      hintText: "Username, email or mobile number",
+                      obscureText: false,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _passwordController,
+                      focusNode: _focusNodePassword,
+                      hintText: "Password",
+                      obscureText: true,
+                    ),
+                    const SizedBox(height: 24),
+
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => PreferencesPage(),
+                            builder: (context) => HomePage(),
                           ),
                         );
                       },
+                      child: const SizedBox(
+                        width: double.infinity,
+                        child: Center(
+                          child: Text(
+                            "Log in",
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    TextButton.icon(
+                      onPressed: _authenticate,
+                      icon: const Icon(Icons.fingerprint, size: 24, color: Colors.black),
+                      label: const Text(
+                        "Use Face or Fingerprint",
+                        style: TextStyle(color: Colors.black, fontSize: 14),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    GestureDetector(
+                      onTap: () {},
                       child: const Text(
-                        "Create new account",
-                        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                        "Forgot password?",
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
-
-          if (!_isKeyboardOpen)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 16),
-              child: Text(
-                "MeQat",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
               ),
+
+              if (!isKeyboardOpen) const Spacer(flex: 1),
+
+              if (!isKeyboardOpen)
+                Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text("Don't have an account?", style: TextStyle(color: Colors.black87)),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignUpPage(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            "Create new account",
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+
+              if (!isKeyboardOpen)
+                const Padding(
+                  padding: EdgeInsets.only(bottom: 16),
+                  child: Text(
+                    "MeQat",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
             ),
-        ],
-      ),
+            ),
+            ),
+            ),
+    ),
     );
   }
+
 
   Widget _buildTextField({
     required TextEditingController controller,

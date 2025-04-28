@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/preferences.dart';
+import 'package:meqat/signup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final Color buttonColor = Color(0xFFE5C99F);
@@ -19,7 +19,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => PreferencesPage()),
+      MaterialPageRoute(builder: (context) => SignUpPage()),
     );
   }
 
@@ -58,7 +58,7 @@ class _WelcomePageState extends State<WelcomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PreferencesPage(),
+                      builder: (context) => SignUpPage(),
                     ),
                   );
                 },
@@ -107,7 +107,7 @@ class _WelcomePageState extends State<WelcomePage> {
               _selectedLanguage = newValue!;
             });
           },
-          items: ["English", "Arabic", "French"]
+          items: ["English", "Arabic"]
               .map<DropdownMenuItem<String>>((String value) {
             return DropdownMenuItem<String>(
               value: value,

@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -5,6 +7,7 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:meqat/Settings.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 import 'menu.dart';
 
@@ -17,9 +20,15 @@ class _HomePageState extends State<HomePage> {
   bool showPolygons = false;
   late GoogleMapController mapController;
   final LatLng makkahLocation = LatLng(21.422487, 39.826206);
-  int? _selectedSayingIndex;
+  int? _selectedSayingIndex = null;
   double _currentChildSize = 0.1;
-  String _sayingDescription = "";
+  List<String> _sayingDescriptions = [
+    "Is not approved by any madhhab",  // Saying 1
+    "Is not approved by any madhhab",  // Saying 2
+    "Saying 3 is approved by all 4 madhhabs",  // Saying 3
+    "Description for Saying 4",  // Saying 4
+    "Only approved by madhhab Hanbali",  // Saying 5
+  ];
   final DraggableScrollableController _scrollController = DraggableScrollableController();
 
   Set<Marker> selectedMarkers = {};
@@ -35,11 +44,12 @@ class _HomePageState extends State<HomePage> {
   bool _isPlaying = false;
   bool showMiqatMarkers = false;
   LatLng userLocation = LatLng(21.875126, 40.464549);
+  //LatLng? userLocation = null;
 
-  void _onSayingPressed(int index, String description) {
+  void _onSayingPressed(int index) {
     setState(() {
       _selectedSayingIndex = index;
-      _sayingDescription = description;
+      _sayingDescriptions[index];
       _currentChildSize = 0.3;
     });
     _scrollController.animateTo(
@@ -85,13 +95,21 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Future.delayed(Duration.zero, () {
+        _getCurrentLocation();
+      });
+      _selectedSayingIndex = 2;
+      showSaying(2);
+    });
   }
+
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     Future.delayed(Duration.zero, () {
-      //_getCurrentLocation();
+      _getCurrentLocation();
     });
   }
 
@@ -128,9 +146,71 @@ class _HomePageState extends State<HomePage> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    setState(() {
-      userLocation = LatLng(position.latitude, position.longitude);
-    });
+    userLocation = LatLng(position.latitude, position.longitude);
+    await handlelocation(userLocation);
+    setState(() {});
+  }
+
+
+
+  Future<void> checkNotifyFiveMinutesBeforeMiqat() async {
+    const double walkingSpeed = 1.4; // meters per second (average human walking speed)
+    const double drivingSpeed = 22.22; // meters per second (80km/h average car speed)
+
+    double userDistanceToClosestMiqat = double.infinity;
+
+    for (var miqat in miqatData) {
+      double distanceToClosest = _calculateDistance(userLocation, miqat["closest"]);
+      double distanceToFarthest = _calculateDistance(userLocation, miqat["farthest"]);
+
+      double distance = distanceToClosest < distanceToFarthest ? distanceToClosest : distanceToFarthest;
+
+      if (distance < userDistanceToClosestMiqat) {
+        userDistanceToClosestMiqat = distance;
+      }
+    }
+
+    // Estimate arrival time (assuming driving)
+    double estimatedSecondsToReach = userDistanceToClosestMiqat / drivingSpeed;
+    double estimatedMinutesToReach = estimatedSecondsToReach / 60;
+
+    if (estimatedMinutesToReach <= 5) {
+      if (!alarmPlaying) {
+        startAlarm();
+        showWindowsNotification(context);
+      }
+    }
+  }
+
+
+  void showSaying(int index){
+    _onSayingPressed(index);
+    switch (index) {
+      case 0:
+        checkUserLocationSaying1();
+        showSaying1();
+        break;
+      case 1:
+        checkUserLocationSaying2();
+        showSaying2();
+        break;
+      case 2:
+        checkUserLocationSaying3();
+        showSaying3();
+        break;
+      case 3:
+        checkUserLocationSaying4();
+        showSaying4();
+        break;
+      case 4:
+        checkUserLocationSaying5();
+        showSaying5();
+        break;
+    }
+    if(userLocation!=null){
+      checkNotifyFiveMinutesBeforeMiqat();
+    }
+    _sayingDescriptions[index];
   }
 
   void showSaying1() {
@@ -378,7 +458,8 @@ class _HomePageState extends State<HomePage> {
       double innerRadius = calculateDistance(makkahLocation, miqat["closest"]);
       double outerRadius = calculateDistance(makkahLocation, miqat["farthest"]);
 
-      if (userDistance >= innerRadius && userDistance <= outerRadius) {
+      if (userDistance <= outerRadius){
+
         currentlyInsideMiqat = true;
 
         if (!insideMiqatRing) {
@@ -430,7 +511,7 @@ class _HomePageState extends State<HomePage> {
 
     bool insideOuter = isPointInsidePolygon(userLocation, outerPoints);
     bool insideInner = isPointInsidePolygon(userLocation, innerPoints);
-    bool insideZone = insideOuter && !insideInner;
+    bool insideZone = insideOuter;
 
     if (insideZone && !alarmPlaying) {
       startAlarm();
@@ -446,7 +527,7 @@ class _HomePageState extends State<HomePage> {
       double innerRadius = calculateDistance(makkahLocation, miqat["closest"]);
       double outerRadius = calculateDistance(makkahLocation, miqat["farthest"]);
 
-      if (userDistance >= innerRadius && userDistance <= outerRadius) {
+      if (userDistance <= outerRadius) {
         double userBearing = calculateBearing(makkahLocation, userLocation);
         double miqatBearing = calculateBearing(makkahLocation, miqat["closest"]);
 
@@ -675,7 +756,8 @@ class _HomePageState extends State<HomePage> {
 
           DraggableScrollableSheet(
             controller: _scrollController,
-            initialChildSize: 0.1,
+            expand: true, // ✅ keep it TRUE so it stays at bottom
+            initialChildSize: 0.16,
             minChildSize: 0.1,
             maxChildSize: 0.5,
             builder: (context, scrollController) {
@@ -706,35 +788,19 @@ class _HomePageState extends State<HomePage> {
                             padding: const EdgeInsets.symmetric(horizontal: 4),
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                _selectedSayingIndex == index ? Colors.orange : Colors.black,
+                                backgroundColor: _selectedSayingIndex == index ? Colors.orange : Colors.black,
                                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               ),
                               onPressed: () {
-                                if (index == 0) {
-                                  checkUserLocationSaying1();
-                                  showSaying1();
-                                  _onSayingPressed(index, "Is not approved by any madhhab");
-                                } else if (index == 1) {
-                                  checkUserLocationSaying2();
-                                  showSaying2();
-                                  _onSayingPressed(index, "Is not approved by any madhhab");
-                                } else if (index == 2) {
-                                  checkUserLocationSaying3();
-                                  showSaying3();
-                                  _onSayingPressed(index, "Saying 3 is approved by all 4 madhhabs");
-                                } else if (index == 3) {
-                                  checkUserLocationSaying4();
-                                  showSaying4();
-                                  _onSayingPressed(index, "Description for Saying 4");
-                                } else if (index == 4) {
-                                  checkUserLocationSaying5();
-                                  showSaying5();
-                                  _onSayingPressed(index, "Only approved by madhhab Hanbali");
-                                }
+                                setState(() {
+                                  _selectedSayingIndex = index; // Update the selected saying index
+                                });
+                                showSaying(index);
                               },
-                              child: Text('Saying ${index + 1}',
-                                  style: TextStyle(color: Colors.white)),
+                              child: Text(
+                                'Saying ${index + 1}',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ),
                         ),
@@ -746,9 +812,10 @@ class _HomePageState extends State<HomePage> {
                       Expanded(
                         child: SingleChildScrollView(
                           controller: scrollController,
+                          physics: ClampingScrollPhysics(), // ✅ <<< added this to fix pulling
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
-                            _sayingDescription,
+                            _sayingDescriptions[_selectedSayingIndex!],
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                             textAlign: TextAlign.center,
                           ),
@@ -878,5 +945,30 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  Future<void> handlelocation(userLocation) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult == ConnectivityResult.none) {
+      print("❌ No internet connection.");
+      return;
+    } else {
+
+      final prefs = await SharedPreferences.getInstance();
+      final uid = prefs.getString('uid');
+      if (uid == null) {
+        print("❌ UID not found in SharedPreferences.");
+        return;
+      }
+
+      await FirebaseFirestore.instance.collection('users').doc(uid).update({
+        'location': GeoPoint(userLocation.latitude, userLocation.longitude),
+        'lastUpdatedLocation': FieldValue.serverTimestamp(),
+      });
+
+
+
+      print("✅ Location updated for user: $uid");
+    }
   }
 }

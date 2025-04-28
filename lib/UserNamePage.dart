@@ -1,65 +1,44 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  runApp(MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: UserNamePage(),
-  ));
+  await Firebase.initializeApp(); // Initialize Firebase
+  runApp(MyApp());
 }
 
-class UserNamePage extends StatefulWidget {
+class MyApp extends StatelessWidget {
   @override
-  _UserNamePageState createState() => _UserNamePageState();
-}
-
-class _UserNamePageState extends State<UserNamePage> {
-  String userName = "Loading...";
-
-  @override
-  void initState() {
-    super.initState();
-    fetchUserName();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: CreateSchoolDocPage(),
+    );
   }
+}
 
-  Future<void> fetchUserName() async {
+class CreateSchoolDocPage extends StatelessWidget {
+  Future<void> createSchoolDoc() async {
     try {
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('user')
-          .doc('1')
-          .get();
+      await FirebaseFirestore.instance
+          .collection('school')
+          .doc('01')
+          .set({'name': 'hhhhh'});
 
-      if (userDoc.exists) {
-        setState(() {
-          userName = userDoc['name'];
-        });
-      } else {
-        setState(() {
-          userName = "User not found";
-        });
-      }
+      print("✅ Document added successfully!");
     } catch (e) {
-      setState(() {
-        userName = "Error: ${e.toString()}";
-      });
+      print("❌ Error adding document: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("User Name from Firestore")),
+      appBar: AppBar(title: Text("Create School Doc")),
       body: Center(
-        child: Text(
-          userName,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        child: ElevatedButton(
+          onPressed: createSchoolDoc,
+          child: Text("Create Document"),
         ),
       ),
     );

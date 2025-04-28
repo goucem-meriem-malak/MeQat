@@ -1,8 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:meqat/Data.dart';
+import 'package:meqat/home.dart';
 import 'package:meqat/login.dart';
-import 'package:meqat/signup.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'QRPage.dart';
+import 'firebase_options.dart';
 
 final other = Other();
 final Color buttonColor = Color(0xFFE5C99F);
@@ -13,14 +19,18 @@ class PreferencesPage extends StatefulWidget {
   _PreferencesPageState createState() => _PreferencesPageState();
 }
 
-class _PreferencesPageState extends State<PreferencesPage> {
 
+class _PreferencesPageState extends State<PreferencesPage> {
+  late SharedPreferences prefs;
+
+  String uid = "";
   String? selectedLanguage = "English";
   String? selectedGoal = "Umrah";
   String? selectedMadhhab;
   String? selectedCountry;
   String? selectedTransportation;
-  bool isWithDelegation = false;
+  bool _isWithDelegation = false;
+  bool _isLeader = false;
 
   final List<String> languages = other.languages;
   final List<String> goal = other.goal;
@@ -31,36 +41,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
-  }
-
-  _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      selectedLanguage = prefs.getString('language') ?? "English";
-      selectedGoal = goal.contains(prefs.getString('goal')) ? prefs.getString('goal') : goal[0];
-      selectedMadhhab = madhhabs.contains(prefs.getString('madhhab')) ? prefs.getString('madhhab') : null;
-      selectedCountry = countries.contains(prefs.getString('country')) ? prefs.getString('country') : null;
-      selectedTransportation = transportationMethods.contains(prefs.getString('transportation')) ? prefs.getString('transportation') : null;
-      isWithDelegation = prefs.getBool('delegation') ?? false;
-    });
-  }
-
-  _savePreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('language', selectedLanguage ?? "English");
-    prefs.setString('goal', selectedGoal ?? "");
-    prefs.setString('madhhab', selectedMadhhab ?? "");
-    prefs.setString('country', selectedCountry ?? "");
-    prefs.setString('transportation', selectedTransportation ?? "");
-    prefs.setBool('delegation', isWithDelegation);
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => SignUpPage(),
-      ),
-    );
+    getUidFromSharedPref();
   }
 
   @override
@@ -82,74 +63,100 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text("Hajj", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                  Switch(
-                    value: selectedGoal == "Umrah",
-                    activeColor: Colors.black,
-                    onChanged: (bool value) {
-                      setState(() {
-                        selectedGoal = value ? "Umrah" : "Hajj";
-                      });
-                    },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Expanded(
+                        child: Text("Hajj", textAlign: TextAlign.end),
+                      ),
+                      Switch(
+                        value: selectedGoal == "Umrah",
+                        activeColor: Colors.black,
+                        onChanged: (bool value) {
+                          setState(() {
+                            selectedGoal = value ? "Umrah" : "Hajj";
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text("Umrah", textAlign: TextAlign.start),
+                      ),
+                    ],
                   ),
-                  const Text("Umrah", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Dropdowns
-            _buildDropdown("Choose Madhhab", Icons.school, madhhabs),
-            const SizedBox(height: 16),
-            _buildDropdown("Choose Country", Icons.location_on, countries),
-            const SizedBox(height: 16),
-            _buildDropdown("Choose Transportation", Icons.directions, transportationMethods),
-
-            const SizedBox(height: 24),
-
-            // Delegation Checkbox
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: Row(
-                children: [
-                  Checkbox(
-                    value: isWithDelegation,
-                    onChanged: (value) {
-                      setState(() {
-                        isWithDelegation = value!;
-                      });
-                    },
-                    activeColor: Colors.black,
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Expanded(
+                        child: Text("Individual", textAlign: TextAlign.end),
+                      ),
+                      Switch(
+                        value: _isWithDelegation,
+                        activeColor: Colors.purple,
+                        onChanged: (value) {
+                          setState(() {
+                            _isWithDelegation = value;
+                          });
+                        },
+                      ),
+                      const Expanded(
+                        child: Text("Deligation", textAlign: TextAlign.start),
+                      ),
+                    ],
                   ),
-                  const Text("Traveling with a Delegation", style: TextStyle(fontSize: 14)),
-                ],
-              ),
-            ),
-
-            const Spacer(),
-
-            Align(
-              alignment: Alignment.centerRight,
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => LoginPage(),
+                  const SizedBox(height: 12),
+                  if (_isWithDelegation)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Expanded(
+                          child: Text("Member", textAlign: TextAlign.end),
+                        ),
+                        Switch(
+                          value: _isLeader,
+                          activeColor: Colors.purple,
+                          onChanged: (value) {
+                            setState(() {
+                              _isLeader = value;
+                            });
+                          },
+                        ),
+                        const Expanded(
+                          child: Text("Leader", textAlign: TextAlign.start),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                child: const Text(
-                  "Log In",
-                  style: TextStyle(color: Colors.blue, fontSize: 14, fontWeight: FontWeight.bold),
-                ),
+                ],
               ),
             ),
+
+
+            const SizedBox(height: 24),
+
+            _buildDropdown("Choose Madhhab", Icons.school, madhhabs, (value) {
+              setState(() {
+                selectedMadhhab = value;
+              });
+            }),
             const SizedBox(height: 16),
+            _buildDropdown("Choose Country", Icons.location_on, countries, (value) {
+              setState(() {
+                selectedCountry = value;
+              });
+            }),
+            const SizedBox(height: 16),
+            _buildDropdown("Choose Transportation", Icons.directions, transportationMethods, (value) {
+              setState(() {
+                selectedTransportation = value;
+              });
+            }),
+            const Spacer(),
 
             // Continue Button
           Padding(
@@ -161,30 +168,70 @@ class _PreferencesPageState extends State<PreferencesPage> {
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 minimumSize: const Size(double.infinity, 50),
               ),
-              onPressed: () {
-                _savePreferences();
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SignUpPage(),
-                  ),
-                );
+              onPressed: () async {
+                saveSharedPreferences();
+                if(_isWithDelegation){
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QRPage(isLeader: _isLeader),
+                    ),
+                  );
+                } else{
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(),
+                    ),
+                  );
+                }
               },
               child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
             ),
           ),
 
-            const SizedBox(height: 40),
-
-            const Text("MeQat", style: TextStyle(fontSize: 12, color: Colors.grey)),
             const SizedBox(height: 20),
+
+            const Spacer(flex: 1),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Already have an account?", style: TextStyle(color: Colors.black87)),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Log in",
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Padding(
+              padding: EdgeInsets.only(bottom: 16),
+              child: Text(
+                "MeQat",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDropdown(String hint, IconData icon, List<String> listItems) {
+  Widget _buildDropdown(String hint, IconData icon, List<String> listItems, Function(String?) onChanged) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
@@ -211,10 +258,139 @@ class _PreferencesPageState extends State<PreferencesPage> {
             child: Text(item),
           );
         }).toList(),
-        onChanged: (value) {
-          print("Selected: $value");
-        },
+        onChanged: onChanged, // Use the passed in callback to update the variable
       ),
     );
   }
+
+
+  Future<String?> getUidFromSharedPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    final uid = prefs.getString('uid');
+    print('📦 Retrieved UID from SharedPreferences: $uid');
+    return uid;
+  }
+
+
+  Future<void> saveSharedPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final userData = {
+      'goal': selectedGoal ?? "",
+      'madhhab': selectedMadhhab ?? "",
+      'country': selectedCountry ?? "",
+      'transportation': selectedTransportation ?? "",
+      'delegation': _isWithDelegation,
+      'leader': _isLeader,
+    };
+
+    for (final entry in userData.entries) {
+      if (entry.value is String) {
+        await prefs.setString(entry.key, entry.value as String);
+      } else if (entry.value is bool) {
+        await prefs.setBool(entry.key, entry.value as bool);
+      }
+    }
+
+    final connectivity = await Connectivity().checkConnectivity();
+
+    if (connectivity == ConnectivityResult.none) {
+      await prefs.setBool('update', true);
+      print("❌ No internet connection.");
+      return;
+    } else {
+      uploadToFirestore(userData);
+      await prefs.setBool('update', false);
+    }
+  }
+
+  Future<void> uploadToFirestore(Map<String, dynamic> userData) async {
+    final uid = await getUidFromSharedPref();
+
+    if (uid != null) {
+      final dataToUpload = Map<String, dynamic>.from(userData)
+        ..putIfAbsent('uid', () => uid); // 👈 add uid inside the data
+
+      await FirebaseFirestore.instance.collection('preferences').doc(uid).set(dataToUpload);
+      print('✅ Uploaded to Firestore with UID: $uid');
+    } else {
+      print("❌ UID not found in SharedPreferences.");
+    }
+  }
+
+
+
+  Future<void> _handlePreferencesUploadAndSave() async {
+    try {
+      print("🟢 Starting _handlePreferencesUploadAndSave");
+
+      // Ensure Firebase is initialized
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+
+      prefs.setString('goal', selectedGoal ?? "");
+      prefs.setString('madhhab', selectedMadhhab ?? "");
+      prefs.setString('country', selectedCountry ?? "");
+      prefs.setString('transportation', selectedTransportation ?? "");
+      prefs.setBool('delegation', _isWithDelegation);
+      prefs.setBool('leader', _isLeader);
+
+      print("💾 Preferences saved locally");
+
+      // Check internet connectivity
+      var connectivityResult = await Connectivity().checkConnectivity();
+      bool connected = connectivityResult != ConnectivityResult.none;
+
+      if (!connected) {
+        print("📴 No internet connection. Skipping Firebase upload.");
+        return;
+      }
+
+      print("🌐 Internet available. Proceeding with Firebase upload.");
+
+      String? existingDocId = prefs.getString('meriemmalak');
+      DocumentReference docRef;
+
+      if (existingDocId != null) {
+        docRef = FirebaseFirestore.instance
+            .collection('preferences')
+            .doc(existingDocId);
+        await docRef.set({
+          'language': selectedLanguage,
+          'goal': selectedGoal,
+          'madhhab': selectedMadhhab,
+          'country': selectedCountry,
+          'transportation': selectedTransportation,
+          'delegation': _isWithDelegation,
+          'leader': _isLeader,
+          'timestamp': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+
+        print("🔁 Updated existing preferences with ID: $existingDocId");
+      } else {
+        docRef = await FirebaseFirestore.instance
+            .collection('preferences')
+            .add({
+          'language': selectedLanguage,
+          'goal': selectedGoal,
+          'madhhab': selectedMadhhab,
+          'country': selectedCountry,
+          'transportation': selectedTransportation,
+          'delegation': _isWithDelegation,
+          'leader': _isLeader,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+
+        prefs.setString('meriemmalak', docRef.id);
+        print("✅ New preferences uploaded with ID: ${docRef.id}");
+      }
+    } catch (e) {
+      print("❌ Error during preferences upload: $e");
+    }
+  }
+
+
 }

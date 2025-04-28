@@ -1,0 +1,16 @@
+language = in-welcompage out-splashscreen
+
+uid = in-signup out-splashscreen out-preferences out-qrpage
+firstName = in_signup
+lastName = in_signup
+email = in_signup
+password = in_signup
+birthday = in_signup
+
+country = in_preferences
+madhhab = in_preferences out-splashscreen
+transportation = in_preferences out-splashscreen
+leader = in_preferences
+delegation = in_preferences
+
+qr = in-qrpage

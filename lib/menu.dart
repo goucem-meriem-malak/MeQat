@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meqat/Duas.dart';
 import 'package:meqat/Data.dart';
 import 'package:meqat/Settings.dart';
+import 'package:meqat/deligation.dart';
 import 'package:meqat/faceRecognition.dart';
 import 'package:meqat/med%20ui.dart';
 import 'home.dart';
@@ -65,6 +66,12 @@ class MenuPage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => MedicineAlarmApp()),
+                    );
+                  }
+                  if (index == 7) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DelegationMapPage()),
                     );
                   }
                 },

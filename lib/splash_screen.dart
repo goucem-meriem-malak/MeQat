@@ -46,6 +46,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
 
     await Future.delayed(Duration(milliseconds: 100));
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString('uid');
     String? language = prefs.getString('language');
     String? madhhab = prefs.getString('madhhab');
     String? transportation = prefs.getString('transportation');

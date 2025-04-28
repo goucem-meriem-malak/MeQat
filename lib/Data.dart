@@ -64,6 +64,7 @@ class Other {
     {'title': 'Face Scan', 'icon': Icons.face},
     {'title': 'Lost', 'icon': Icons.location_off},
     {'title': 'Medicine', 'icon': Icons.alarm},
+    {'title': 'Deligation', 'icon': Icons.people},
     {'title': 'Q&A', 'icon': Icons.question_answer_outlined},
   ];
   List<String> languages = ["English", "Arabic"];
