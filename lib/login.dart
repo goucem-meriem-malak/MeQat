@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:meqat/home.dart';
+import 'package:meqat/firebase.dart';
+import 'package:meqat/old/home.dart';
 import 'package:meqat/signup.dart';
 
 void main() {
@@ -138,13 +139,19 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.circular(30),
                         ),
                       ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => HomePage(),
-                          ),
-                        );
+                      onPressed: () async {
+                        final email = _usernameController.text.trim();
+                        final password = _passwordController.text;
+
+                        final user = await UpdateFirebase().loginWithEmail(email, password);
+                        if (user != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HomePage(),
+                            ),
+                          );
+                        }
                       },
                       child: const SizedBox(
                         width: double.infinity,

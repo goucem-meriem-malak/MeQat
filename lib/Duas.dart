@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:meqat/Dua.dart';
-import 'package:meqat/Settings.dart';
+import 'package:meqat/Profile.dart';
 import 'package:meqat/menu.dart';
+import 'package:meqat/premium.dart';
+import 'package:meqat/search.dart';
 import 'Data.dart';
+import 'UI.dart';
 import 'home.dart';
 final Other other = Other();
 
@@ -100,69 +103,7 @@ class DuasPage extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: SizedBox(
-        height: 60,
-        child: BottomAppBar(
-          color: Colors.white,
-          elevation: 10,
-          shadowColor: Colors.grey.shade400,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 6.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.home,
-                  color: Colors.black, // Home selected
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.workspace_premium),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+      bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 0),
     );
   }
 }

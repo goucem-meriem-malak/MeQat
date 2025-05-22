@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:meqat/home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'WelcomePage.dart';
-import 'home.dart';
 
 final Color primaryColor = Color(0xFF2D2D2D);
 final Color accentColor = Color(0xFF4A4A4A);
@@ -81,7 +81,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
               alignment: Alignment.center,
               child: _buildAnimatedImage(
                 step: 1,
-                image: 'assets/img1.png',
+                image: 'assets/icon/img5.png',
                 beginPosition: Offset(0, 1),
                 endPosition: Offset(0, 0),
                 isSliding: true,
@@ -91,7 +91,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
               alignment: Alignment.center,
               child: _buildAnimatedImage(
                 step: 2,
-                image: 'assets/img2.png',
+                image: 'assets/icon/img5.png',
                 beginPosition: Offset(0, 0),
                 endPosition: Offset(0, 0),
                 isSliding: false,
@@ -101,7 +101,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
               alignment: Alignment.center,
               child: _buildAnimatedImage(
                 step: 3,
-                image: 'assets/img3.png',
+                image: 'assets/icon/img5.png',
                 beginPosition: Offset(0, 0),
                 endPosition: Offset(0, 0),
                 isSliding: false,
@@ -111,7 +111,7 @@ class _AnimationScreenState extends State<AnimationScreen> {
               alignment: Alignment.center,
               child: _buildAnimatedImage(
                 step: 4,
-                image: 'assets/img4.png',
+                image: 'assets/icon/img5.png',
                 beginPosition: Offset(0, 0),
                 endPosition: Offset(0, 0),
                 isSliding: false,

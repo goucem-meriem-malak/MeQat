@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:meqat/Duas.dart';
 import 'package:meqat/Data.dart';
-import 'package:meqat/Settings.dart';
+import 'package:meqat/Profile.dart';
 import 'package:meqat/menu.dart';
+import 'package:meqat/premium.dart';
+import 'package:meqat/search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'UI.dart';
 import 'home.dart';
 
 final other = Other();
@@ -194,25 +197,7 @@ class _DuaPageState extends State<DuaPage> {
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          backgroundColor: Colors.white,
-          elevation: 10,
-          selectedItemColor: Colors.black,
-          unselectedItemColor: Colors.grey,
-          showSelectedLabels: false,
-          showUnselectedLabels: false,
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.menu), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.home, color: Colors.black), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.workspace_premium), label: ''),
-            BottomNavigationBarItem(icon: Icon(Icons.settings), label: ''),
-          ],
-          onTap: (index) {
-            if (index == 0) Navigator.push(context, MaterialPageRoute(builder: (context) => MenuPage()));
-            if (index == 4) Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
-          },
-        ),
+        bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 0),
       ),
     );
   }

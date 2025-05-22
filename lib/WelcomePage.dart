@@ -14,12 +14,20 @@ class _WelcomePageState extends State<WelcomePage> {
   String _selectedLanguage = "English";
 
   Future<void> _saveLanguageAndProceed() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language', _selectedLanguage);
+    final languageCodes = {
+      'English': 'en',
+      'French': 'fr',
+      'Arabic': 'ar',
+    };
+
+    final code = languageCodes[_selectedLanguage] ?? 'en';
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', code);
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => SignUpPage()),
+      MaterialPageRoute(builder: (_) => SignUpPage()),
     );
   }
 
@@ -38,7 +46,7 @@ class _WelcomePageState extends State<WelcomePage> {
 
             const Spacer(flex: 2),
 
-            Center(child: Image.asset('assets/logo.png', width: 120)),
+            Center(child: Image.asset('assets/icon/img5.png', width: 120)),
 
             const Spacer(flex: 2),
 
@@ -46,7 +54,7 @@ class _WelcomePageState extends State<WelcomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: Colors.deepPurple.withOpacity(0.6),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(

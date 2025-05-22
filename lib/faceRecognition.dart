@@ -2,8 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'Settings.dart';
+import 'UI.dart';
 import 'home.dart';
 import 'menu.dart';
 
@@ -62,7 +61,7 @@ class _FaceRecognitionAppState extends State<FaceRecognitionApp> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Face Scan", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          title: Text("Face Scan"),
           centerTitle: true,
           leading: IconButton(
             icon: Icon(Icons.arrow_back),
@@ -108,7 +107,6 @@ class _FaceRecognitionAppState extends State<FaceRecognitionApp> {
                 ),
               ],
 
-              // ✅ Check icon & confirmation text (Only if scanned)
               if (isFaceScanned) ...[
                 SizedBox(height: 20), // 🔹 Add spacing before the check icon
                 Icon(Icons.check_circle, color: Colors.green, size: 50),
@@ -121,69 +119,7 @@ class _FaceRecognitionAppState extends State<FaceRecognitionApp> {
             ],
           ),
         ),
-        bottomNavigationBar: SizedBox(
-          height: 60, // Adjust height to match the example proportions
-          child: BottomAppBar(
-            color: Colors.white,
-            elevation: 10, // Adds shadow effect
-            shadowColor: Colors.grey.shade400, // Soft grey shadow
-            shape: const CircularNotchedRectangle(),
-            notchMargin: 6.0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MenuPage()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MenuPage()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.home,
-                    color: Colors.black, // Home selected
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.workspace_premium),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MenuPage()),
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => SettingsPage()),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
+        bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 0),
       ),
     );
   }

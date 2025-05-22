@@ -35,72 +35,12 @@ class _QRPageState extends State<QRPage> {
   bool _isLoadingMembers = true;
   bool _noInternet = false;
 
-
-  Future<void> handleQRCode(String qrCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    final connectivityResult = await Connectivity().checkConnectivity();
-    final isConnected = connectivityResult != ConnectivityResult.none;
-
-    final isLeader = widget.isLeader;
-    final uid = prefs.getString('uid');
-
-    if (isConnected) {
-      final firestore = FirebaseFirestore.instance;
-
-      try {
-        final docRef = firestore.collection('deligation').doc(qrCode);
-
-        // Create or update deligation doc (just add timestamp)
-        await docRef.set({'timestamp': FieldValue.serverTimestamp()}, SetOptions(merge: true));
-
-        if (isLeader && uid != null) {
-          // ✅ If user is leader, update users/{uid} with leader: true
-          await firestore.collection('users').doc(uid).set(
-            {
-              'qr': qrCode,
-              'leader': true, // 🔥 Added this line
-            },
-            SetOptions(merge: true),
-          );
-
-          // ✅ Also update deligation/{qr} with leader uid
-          await docRef.update({
-            'leader': uid,
-          });
-
-        } else {
-          if (!isLeader && uid != null) {
-            await firestore.collection('users').doc(uid).set(
-              {
-                'qr': qrCode,
-                'leader': false, // 🔥 Added this line
-              },
-              SetOptions(merge: true),
-            );
-            // ✅ If user is not leader, just add to members array
-            await docRef.update({
-              'members': FieldValue.arrayUnion([uid]),
-            });
-
-            // ✅ (optional) you could also add {leader: false} to users if you want
-          }
-        }
-      } catch (e) {
-        print('Firestore error: $e');
-      }
-    }
-
-    await prefs.setString('qr', qrCode);
-  }
-
-
   @override
   void initState() {
     super.initState();
     _generateAndSaveQRId();
     fetchMemberNames();
   }
-
 
   @override
   void dispose() {
@@ -111,10 +51,10 @@ class _QRPageState extends State<QRPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: primaryColor,
-        title: Text("QR Scanner"),
+        title: Text("QR"),
+        centerTitle: true,
       ),
       body: Center(
         child: showCheckmark
@@ -124,12 +64,12 @@ class _QRPageState extends State<QRPage> {
     );
   }
 
-  // QR Scanner UI (Members)
+  // QR UI (Members)
   Widget _qrScanner() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/logo.png', width: 120),
+        Image.asset('assets/icon/img5.png', width: 120),
         SizedBox(height: 20),
         Text("SCAN QR Code", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 20),
@@ -153,13 +93,12 @@ class _QRPageState extends State<QRPage> {
             width: double.infinity,
             child: ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                backgroundColor: Colors.deepPurple.withOpacity(0.6),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(30),
                 ),
-                elevation: 2,
-                shadowColor: Colors.black12,
               ),
               onPressed: _pickFromGallery,
               icon: Icon(Icons.qr_code, color: Colors.white),
@@ -174,7 +113,9 @@ class _QRPageState extends State<QRPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 TextButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.remove('qr');
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -184,7 +125,7 @@ class _QRPageState extends State<QRPage> {
                   },
                   child: const Text(
                     "Later",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
                   ),
                 ),
               ],
@@ -209,25 +150,7 @@ class _QRPageState extends State<QRPage> {
     );
   }
 
-
-
-  Future<void> _generateAndSaveQRId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedId = prefs.getString('qr');
-    if (storedId == null) {
-      final newId = const Uuid().v4();
-      await prefs.setString('qr', newId);
-      setState(() {
-        qrId = newId;
-      });
-    } else {
-      setState(() {
-        qrId = storedId;
-      });
-    }
-  }
-
-
+  //QR UI (Leaders)
   Widget _leaderPage() {
     return Scaffold(
       body: Center(
@@ -236,7 +159,7 @@ class _QRPageState extends State<QRPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Image.asset('assets/logo.png', width: 120),
+              Image.asset('assets/icon/img5.png', width: 120),
               SizedBox(height: 5),
               Text(
                 "All members must scan this!",
@@ -301,13 +224,10 @@ class _QRPageState extends State<QRPage> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      shadowColor: Colors.black12,
+                      backgroundColor: Colors.deepPurple.withOpacity(0.6),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      minimumSize: const Size(double.infinity, 50),
                     ),
                     onPressed: () {
                       handleQRCode(qrId!);
@@ -327,6 +247,79 @@ class _QRPageState extends State<QRPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _generateAndSaveQRId() async {
+    final prefs = await SharedPreferences.getInstance();
+    final storedId = prefs.getString('qr');
+    if (storedId == null) {
+      final newId = const Uuid().v4();
+      await prefs.setString('qr', newId);
+      setState(() {
+        qrId = newId;
+      });
+    } else {
+      setState(() {
+        qrId = storedId;
+      });
+    }
+  }
+
+  Future<void> handleQRCode(String qrCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    final connectivityResult = await Connectivity().checkConnectivity();
+    final isConnected = connectivityResult != ConnectivityResult.none;
+
+    final isLeader = widget.isLeader;
+    final uid = prefs.getString('uid');
+
+    if (isConnected) {
+      final firestore = FirebaseFirestore.instance;
+
+      try {
+        final docRef = firestore.collection('deligation').doc(qrCode);
+
+        // Create or update deligation doc (just add timestamp)
+        await docRef.set({'timestamp': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+
+        if (isLeader && uid != null) {
+          // ✅ If user is leader, update users/{uid} with leader: true
+          await firestore.collection('users').doc(uid).set(
+            {
+              'qr': qrCode,
+              'leader': true, // 🔥 Added this line
+            },
+            SetOptions(merge: true),
+          );
+
+          // ✅ Also update deligation/{qr} with leader uid
+          await docRef.update({
+            'leader': uid,
+          });
+
+        } else {
+          if (!isLeader && uid != null) {
+            await firestore.collection('users').doc(uid).set(
+              {
+                'qr': qrCode,
+                'leader': false, // 🔥 Added this line
+              },
+              SetOptions(merge: true),
+            );
+            // ✅ If user is not leader, just add to members array
+            await docRef.update({
+              'members': FieldValue.arrayUnion([uid]),
+            });
+
+            // ✅ (optional) you could also add {leader: false} to users if you want
+          }
+        }
+      } catch (e) {
+        print('Firestore error: $e');
+      }
+    }
+
+    await prefs.setString('qr', qrCode);
   }
 
   Future<void> fetchMemberNames() async {

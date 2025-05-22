@@ -2,9 +2,17 @@ import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:meqat/premium.dart';
+import 'package:meqat/search.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+
+import 'Data.dart';
+import 'Profile.dart';
+import 'UI.dart';
+import 'home.dart';
+import 'menu.dart';
 
 class LostPage extends StatefulWidget {
   @override
@@ -139,6 +147,7 @@ class _LostPageState extends State<LostPage> {
           ],
         ),
       ),
+      bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 0),
     );
   }
 }

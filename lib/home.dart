@@ -1,15 +1,14 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:meqat/Settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:window_manager/window_manager.dart';
-import 'menu.dart';
+import 'package:meqat/firebase.dart';
+import 'package:meqat/ihram.dart';
+import 'package:meqat/sharedPref.dart';
+import 'Data.dart';
+import 'UI.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -17,99 +16,257 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool showPolygons = false;
-  late GoogleMapController mapController;
-  final LatLng makkahLocation = LatLng(21.422487, 39.826206);
-  int? _selectedSayingIndex = null;
-  double _currentChildSize = 0.1;
-  List<String> _sayingDescriptions = [
-    "Is not approved by any madhhab",  // Saying 1
-    "Is not approved by any madhhab",  // Saying 2
-    "Saying 3 is approved by all 4 madhhabs",  // Saying 3
-    "Description for Saying 4",  // Saying 4
-    "Only approved by madhhab Hanbali",  // Saying 5
-  ];
-  final DraggableScrollableController _scrollController = DraggableScrollableController();
 
-  Set<Marker> selectedMarkers = {};
+  bool showPolygons = false;
+  bool alarmPlaying = false;
+  bool _isPlaying = false;
+  bool showMiqatMarkers = false;
+  bool isWindowNotificationShowing = false;
+  bool userIn=false, userWasIn=false, ihram=false, approach=false, wait=false, exited=false, warned=false;
+  bool seenInsideNotif = false, seenApproachNotif = false, seenExitingNotif=false, seenWarningNotif=false;
+  int currentMiqatIndex = 0, lastPosition = -1, currentPosition = -1;
+  int? lastMiqatIndex;
+  bool nearLaststate = false;
+  bool wasInsideZoneSaying2 = false;
+
   Marker? selectedMarker;
+
+  Set<Polygon> miqatRectangles = {};
+  Set<Marker> markers = {};
+  Set<Marker> selectedMarkers = {};
   Set<Polygon> annulus = {};
   Set<Polygon> polygons = {};
   Set<Polyline> miqatLines = {};
   Set<Polyline> Lines = {};
-  bool alarmPlaying = false;
-  bool userDecisionMade = false;
-  bool insideMiqatRing = false;
+
+  Timer? _locationTimer;
+
+  late GoogleMapController mapController;
+  final LatLng makkahLocation = LatLng(21.422487, 39.826206);
+  int _selectedSayingIndex = 2;
+  double _currentChildSize = 0.3;
+  final DraggableScrollableController _scrollController = DraggableScrollableController();
   final AudioPlayer _audioPlayer = AudioPlayer();
-  bool _isPlaying = false;
-  bool showMiqatMarkers = false;
-  LatLng userLocation = LatLng(21.875126, 40.464549);
-  //LatLng? userLocation = null;
+  LatLng userLocation = LatLng(26.667018, 39.654531);
+  bool nearCurrentState = false;
 
-  void _onSayingPressed(int index) {
-    setState(() {
-      _selectedSayingIndex = index;
-      _sayingDescriptions[index];
-      _currentChildSize = 0.3;
-    });
-    _scrollController.animateTo(
-      0.3,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-  }
-
-  final List<Map<String, dynamic>> miqatData = [
-    {
-      "name": "Dhul Hulaifa",
-      "center": LatLng(24.413942807343183, 39.54297293708976),
-      "closest": LatLng(24.390, 39.535),
-      "farthest": LatLng(24.430, 39.550),
-    },
-    {
-      "name": "Dhat Irq",
-      "center": LatLng(21.930072877611384, 40.42552892351149),
-      "closest": LatLng(21.910, 40.400),
-      "farthest": LatLng(21.950, 40.450),
-    },
-    {
-      "name": "Qarn al-Manazil",
-      "center": LatLng(21.63320606975049, 40.42677866397942),
-      "closest": LatLng(21.610, 40.410),
-      "farthest": LatLng(21.650, 40.440),
-    },
-    {
-      "name": "Yalamlam",
-      "center": LatLng(20.518564356141052, 39.870803989418974),
-      "closest": LatLng(20.500, 39.850),
-      "farthest": LatLng(20.540, 39.890),
-    },
-    {
-      "name": "Juhfa",
-      "center": LatLng(22.71515249938801, 39.14514729649877),
-      "closest": LatLng(22.700, 39.140),
-      "farthest": LatLng(22.730, 39.160),
-    },
-  ];
+  final List<Map<String, dynamic>> miqatData = Other.miqatData;
+  List<String> _sayingDescriptions = Other.sayingDescriptions;
 
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(Duration.zero, () {
-        _getCurrentLocation();
+      Future.delayed(Duration.zero, () async {
+        ihram = await SharedPref().getIhramStatus();
+        //_getCurrentLocation();
+        startLocationMonitoring();
       });
       _selectedSayingIndex = 2;
       showSaying(2);
     });
+
   }
 
+  @override
+  void dispose() {
+    _stopAlarm();
+    _audioPlayer.dispose();
+    _locationTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     Future.delayed(Duration.zero, () {
-      _getCurrentLocation();
+      //_getCurrentLocation();
+      startLocationMonitoring();
+    });
+  }
+
+  void resetMap() {
+    setState(() {
+      annulus.clear();
+      polygons.clear();
+      miqatLines.clear();
+      miqatRectangles.clear();
+      showPolygons = false;
+      showMiqatMarkers = false;
+
+      userIn = false;
+      userWasIn = false;
+      wait = false;
+      warned = false;
+      exited = false;
+      approach = false;
+
+      seenApproachNotif = false;
+      seenInsideNotif = false;
+      seenWarningNotif = false;
+      seenExitingNotif = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+
+          GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: makkahLocation,
+              zoom: 6,
+            ),
+            onTap: (LatLng latLng) async {
+              setState(() {
+                userLocation = latLng;
+                selectedMarker = Marker(
+                  markerId: MarkerId("userSelected"),
+                  position: latLng,
+                  infoWindow: InfoWindow(title: "Your Selected Location"),
+                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                );
+              });
+              await UpdateFirebase().updateUserLocation(userLocation);
+              startLocationMonitoring();
+            },
+            markers: {
+              if (selectedMarker != null) selectedMarker!,
+              Marker(
+                markerId: MarkerId("makkah"),
+                position: makkahLocation,
+                infoWindow: InfoWindow(title: "Makkah"),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
+              ),
+              Marker(
+                markerId: MarkerId("userLocation"),
+                position: userLocation,
+                infoWindow: InfoWindow(title: "Your Location"),
+                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+              ),
+              ...selectedMarkers,
+            },
+            polygons: {
+              ...annulus,
+              ...polygons,
+              ...miqatRectangles,
+            },
+            polylines: miqatLines,
+            onMapCreated: (GoogleMapController controller) {
+              mapController = controller;
+            },
+          ),
+
+          DraggableScrollableSheet(
+            controller: _scrollController,
+            expand: true,
+            initialChildSize: 0.16,
+            minChildSize: 0.12,
+            maxChildSize: 0.3,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+
+                    NotificationListener<ScrollNotification>(
+                      onNotification: (notification) => true, // absorb
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(
+                            5,
+                                (index) => Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 4),
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _selectedSayingIndex == index ? Colors.deepPurple : Colors.deepPurple.withOpacity(0.3),
+                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedSayingIndex = index;
+                                  });
+                                  showSaying(index);
+                                },
+                                child: Text(
+                                  'Saying ${index + 1}',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    /// **Show Description Instead of Grid**
+                    if (_selectedSayingIndex != null)
+                      Expanded(
+                        child: SingleChildScrollView(
+                          controller: scrollController,
+                          physics: ClampingScrollPhysics(), // ✅ Pulling fix
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _sayingDescriptions[_selectedSayingIndex],
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 12),
+                              GestureDetector(
+                                onTap: () {
+                                },
+                                child: Text(
+                                  'Learn more >>',
+                                  style: TextStyle(
+                                    color: Colors.deepPurple,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 2),
+    );
+  }
+
+  Future<void> startLocationMonitoring() async {
+    if (_locationTimer?.isActive ?? false) return;
+
+    _locationTimer = Timer.periodic(Duration(seconds: 3), (timer) {
+      if (userLocation != null) {
+        checkUserPosition(_selectedSayingIndex);
+      }
     });
   }
 
@@ -147,77 +304,60 @@ class _HomePageState extends State<HomePage> {
         desiredAccuracy: LocationAccuracy.high);
 
     userLocation = LatLng(position.latitude, position.longitude);
-    await handlelocation(userLocation);
+    await UpdateFirebase().updateUserLocation(userLocation);
     setState(() {});
   }
 
+  void _onSayingPressed(int index) {
+    setState(() {
+      userIn = false;
+      userWasIn = false;
+      wait = false;
+      warned = false;
+      exited = false;
+      approach = false;
 
+      seenApproachNotif = false;
+      seenInsideNotif = false;
+      seenWarningNotif = false;
+      seenExitingNotif = false;
 
-  Future<void> checkNotifyFiveMinutesBeforeMiqat() async {
-    const double walkingSpeed = 1.4; // meters per second (average human walking speed)
-    const double drivingSpeed = 22.22; // meters per second (80km/h average car speed)
-
-    double userDistanceToClosestMiqat = double.infinity;
-
-    for (var miqat in miqatData) {
-      double distanceToClosest = _calculateDistance(userLocation, miqat["closest"]);
-      double distanceToFarthest = _calculateDistance(userLocation, miqat["farthest"]);
-
-      double distance = distanceToClosest < distanceToFarthest ? distanceToClosest : distanceToFarthest;
-
-      if (distance < userDistanceToClosestMiqat) {
-        userDistanceToClosestMiqat = distance;
-      }
-    }
-
-    // Estimate arrival time (assuming driving)
-    double estimatedSecondsToReach = userDistanceToClosestMiqat / drivingSpeed;
-    double estimatedMinutesToReach = estimatedSecondsToReach / 60;
-
-    if (estimatedMinutesToReach <= 5) {
-      if (!alarmPlaying) {
-        startAlarm();
-        showWindowsNotification(context);
-      }
-    }
+      _selectedSayingIndex = index;
+      _sayingDescriptions[index];
+      _currentChildSize = 0.3;
+    });
+    _scrollController.animateTo(
+      0.3,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
-
-
   void showSaying(int index){
-    _onSayingPressed(index);
     switch (index) {
       case 0:
-        checkUserLocationSaying1();
         showSaying1();
         break;
       case 1:
-        checkUserLocationSaying2();
         showSaying2();
         break;
       case 2:
-        checkUserLocationSaying3();
         showSaying3();
         break;
       case 3:
-        checkUserLocationSaying4();
         showSaying4();
         break;
       case 4:
-        checkUserLocationSaying5();
-        showSaying5();
+        showSaying4();
         break;
     }
-    if(userLocation!=null){
-      checkNotifyFiveMinutesBeforeMiqat();
-    }
+    _onSayingPressed(index);
     _sayingDescriptions[index];
+    checkUserPosition(index);
   }
 
   void showSaying1() {
     resetMap();
     setState(() {
-      selectedMarkers.clear();
-      annulus.clear();
       showPolygons = false;
 
       for (var miqat in miqatData) {
@@ -225,8 +365,8 @@ class _HomePageState extends State<HomePage> {
         LatLng closest = miqat["closest"];
         LatLng farthest = miqat["farthest"];
 
-        double innerRadius = calculateDistance(makkahLocation, closest);
-        double outerRadius = calculateDistance(makkahLocation, farthest);
+        double innerRadius = calculateDistance4(makkahLocation, closest);
+        double outerRadius = calculateDistance4(makkahLocation, farthest);
 
         List<LatLng> outerCircle = createCircle(makkahLocation, outerRadius, 72);
         List<LatLng> innerCircle = createCircle(makkahLocation, innerRadius, 72);
@@ -257,16 +397,46 @@ class _HomePageState extends State<HomePage> {
   }
   void showSaying2() {
     resetMap();
+
     List<LatLng> outerPoints = [
-      miqatData[0]["farthest"], miqatData[1]["farthest"], miqatData[2]["farthest"], miqatData[3]["farthest"], miqatData[4]["farthest"], miqatData[0]["farthest"]
+      miqatData[0]["farthest"],
+      miqatData[1]["farthest"],
+      miqatData[2]["farthest"],
+      miqatData[4]["farthest"],
+      miqatData[3]["farthest"],
+      miqatData[0]["farthest"]
     ];
     List<LatLng> innerPoints = [
-      miqatData[0]["closest"], miqatData[1]["closest"], miqatData[2]["closest"], miqatData[3]["closest"], miqatData[4]["closest"], miqatData[0]["closest"]
+      miqatData[0]["closest"],
+      miqatData[1]["closest"],
+      miqatData[2]["closest"],
+      miqatData[4]["closest"],
+      miqatData[3]["closest"],
+      miqatData[0]["closest"]
     ];
 
     setState(() {
       polygons.clear();
+      markers.clear(); // 🧼 Optional: clear previous markers
       showPolygons = true;
+
+      // 🔵 Add blue markers for outer polygon points
+      outerPoints.forEach((point) {
+        markers.add(Marker(
+          markerId: MarkerId("outer_${point.latitude}_${point.longitude}"),
+          position: point,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+        ));
+      });
+
+      // 🟡 Add yellow markers for inner polygon points
+      innerPoints.forEach((point) {
+        markers.add(Marker(
+          markerId: MarkerId("inner_${point.latitude}_${point.longitude}"),
+          position: point,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
+        ));
+      });
 
       polygons = {
         Polygon(
@@ -296,13 +466,11 @@ class _HomePageState extends State<HomePage> {
   void showSaying3() {
     resetMap();
     setState(() {
-      annulus.clear();
-      selectedMarkers.clear();
 
       for (var miqat in miqatData) {
         LatLng center = miqat["center"];
-        double innerRadius = calculateDistance(makkahLocation, miqat["closest"]);
-        double outerRadius = calculateDistance(makkahLocation, miqat["farthest"]);
+        double innerRadius = calculateDistance4(makkahLocation, miqat["closest"]);
+        double outerRadius = calculateDistance4(makkahLocation, miqat["farthest"]);
 
         List<LatLng> outerSector = createOpenSector(makkahLocation, center, outerRadius);
         List<LatLng> innerSector = createOpenSector(makkahLocation, center, innerRadius);
@@ -323,66 +491,71 @@ class _HomePageState extends State<HomePage> {
         ));
       }
     });
-
     mapController.animateCamera(
       CameraUpdate.newLatLngZoom(makkahLocation, 8),
     );
   }
   void showSaying4() {
     resetMap();
-    Set<Polyline> newLines = {};
+    Set<Polygon> newPolygons = {};
 
     for (var miqat in miqatData) {
       LatLng miqatCenter = miqat["center"];
       String miqatName = miqat["name"];
 
-      newLines.add(Polyline(
-        polylineId: PolylineId("direct_$miqatName"),
-        color: Colors.red,
-        width: 3,
-        points: [miqatCenter, makkahLocation],
-      ));
-
-      double miqatDistance = _calculateDistance(miqatCenter, makkahLocation);
-      double lineThickness = (miqatDistance / 1000).clamp(3, 10).toDouble();
-
+      // Direction vector from miqat to Makkah
       double dx = makkahLocation.latitude - miqatCenter.latitude;
       double dy = makkahLocation.longitude - miqatCenter.longitude;
       double length = sqrt(dx * dx + dy * dy);
 
-      double normX = dx / length;
-      double normY = dy / length;
+      double dirX = dx / length;
+      double dirY = dy / length;
 
-      double perpX = -normY;
-      double perpY = normX;
+      // Perpendicular vector (عمودي)
+      double perpX = -dirY;
+      double perpY = dirX;
 
-      double miqatLineLength = (miqatDistance / 200000);
+      // Rectangle size
+      double halfWidth = 0.2;   // perpendicular size (about 5-6km)
+      double halfLength = 0.05;  // along the direction to Makkah
 
-      LatLng miqatLineStart = LatLng(
-        miqatCenter.latitude + perpX * miqatLineLength,
-        miqatCenter.longitude + perpY * miqatLineLength,
+      // Rectangle corners around the miqat point
+      LatLng p1 = LatLng(
+        miqatCenter.latitude + dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength + perpY * halfWidth,
       );
-      LatLng miqatLineEnd = LatLng(
-        miqatCenter.latitude - perpX * miqatLineLength,
-        miqatCenter.longitude - perpY * miqatLineLength,
+      LatLng p2 = LatLng(
+        miqatCenter.latitude + dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p3 = LatLng(
+        miqatCenter.latitude - dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p4 = LatLng(
+        miqatCenter.latitude - dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength + perpY * halfWidth,
       );
 
-      newLines.add(Polyline(
-        polylineId: PolylineId("miqatline_$miqatName"),
-        color: Colors.blue,
-        width: lineThickness.toInt(),
-        points: [miqatLineStart, miqatLineEnd],
+      newPolygons.add(Polygon(
+        polygonId: PolygonId("miqat_$miqatName"),
+        points: [p1, p2, p3, p4],
+        fillColor: Colors.blue.withOpacity(0.3),
+        strokeColor: Colors.blue,
+        strokeWidth: 2,
       ));
     }
 
     setState(() {
-      miqatLines = newLines;
+      miqatRectangles.clear();
+      miqatRectangles.addAll(newPolygons);
     });
 
     mapController.animateCamera(
       CameraUpdate.newLatLngZoom(makkahLocation, 6),
     );
   }
+  /*
   void showSaying5() {
     resetMap();
     Set<Polyline> newLines = {
@@ -435,170 +608,525 @@ class _HomePageState extends State<HomePage> {
     mapController.animateCamera(
       CameraUpdate.newLatLngZoom(makkahLocation, 6),
     );
+  }*/
+
+
+  void checkUserPosition(int index){
+    switch (index) {
+      case 0:
+        handleUserPosition(
+          checkPositionFn: checkIfUserPositionSaying1,
+          checkNearFn: checkIfUserNearSaying1,
+        );
+        break;
+      case 1:
+        handleUserPositionSaying2();
+        break;
+      case 2:
+        handleUserPosition(
+          checkPositionFn: checkIfUserPositionSaying3,
+          checkNearFn: checkIfUserNearSaying3,
+        );
+        break;
+      case 3:
+        handleUserPosition(
+          checkPositionFn: checkIfUserPositionSaying4,
+          checkNearFn: checkIfUserNearSaying4,
+        );
+        break;
+      case 4:
+        handleUserPosition(
+          checkPositionFn: checkIfUserPositionSaying5,
+          checkNearFn: checkIfUserNearSaying5,
+        );
+        break;
+    }
   }
 
-  void resetMap() {
-    setState(() {
-      selectedMarkers.clear();
-      annulus.clear();
-      polygons.clear();
-      miqatLines.clear();
-      showPolygons = false;
-      showMiqatMarkers = false;
-    });
-  }
+  void handleUserPosition({
+    required int Function() checkPositionFn,
+    required bool Function() checkNearFn,
+  }) {
+    currentPosition = checkPositionFn();
+    if (!ihram) nearCurrentState = checkNearFn();
 
+    bool positionChanged = (currentPosition != lastPosition);
+    bool nearChanged = (nearLaststate != nearCurrentState);
 
-  void checkUserLocationSaying1() {
-    if (userDecisionMade) return;
-    double userDistance = calculateDistance(makkahLocation, userLocation);
-    bool currentlyInsideMiqat = false;
-
-    for (var miqat in miqatData) {
-      double innerRadius = calculateDistance(makkahLocation, miqat["closest"]);
-      double outerRadius = calculateDistance(makkahLocation, miqat["farthest"]);
-
-      if (userDistance <= outerRadius){
-
-        currentlyInsideMiqat = true;
-
-        if (!insideMiqatRing) {
-          if (!alarmPlaying) {
-            startAlarm();
-          }
-
-          Fluttertoast.showToast(
-              msg: "You entered the Miqat ring. Start Ihram!",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 3
-          );
+    if (positionChanged || nearChanged) {
+      if (ihram) {
+        if (currentPosition == 0) {
+          if (seenInsideNotif) return;
 
           setState(() {
-            insideMiqatRing = true;
+            userIn = true;
+            exited = false;
+            lastMiqatIndex = currentMiqatIndex;
           });
 
-          showWindowsNotification(context);
-        }
+          _showInsideMiqatIhramNotification();
+        } else {
+          if (seenExitingNotif) return;
 
-        break;
+          setState(() {
+            userIn = false;
+            exited = true;
+          });
+
+          _showExitingMiqatNotification();
+        }
+      } else {
+        if (currentPosition == 0) {
+          if (seenInsideNotif) return;
+
+          setState(() {
+            userIn = true;
+            userWasIn = true;
+            approach = false;
+            warned = false;
+            exited = false;
+            lastMiqatIndex = currentMiqatIndex;
+          });
+          _showInsideMiqatNotification();
+        } else {
+          setState(() {
+            userIn = false;
+          });
+
+          if (userWasIn) {
+            if (isSameMiqat()) {
+              if(_selectedSayingIndex==3){
+                if(wait){
+                  if (seenExitingNotif) return;
+                  setState(() {
+                    exited = true;
+                  });
+                  _showExitingMiqatNotification();
+                } else {
+                  if (seenWarningNotif) return;
+                  setState(() {
+                    warned = true;
+                  });
+                  _showIhramViolationWarning();
+                }
+              } else {
+                if (!wait && currentPosition == 1) {
+                  if (seenWarningNotif) return;
+                  setState(() {
+                    warned = true;
+                  });
+                  _showIhramViolationWarning();
+                }
+
+                if ((!wait && currentPosition ==-1) || (currentPosition ==1 && wait)) {
+                  if (seenExitingNotif) return;
+
+                  setState(() {
+                    exited = true;
+                  });
+
+                  _showExitingMiqatNotification();
+                }
+
+              }
+
+            } else {
+              if (wait) {
+                if (seenApproachNotif) return;
+
+                if (nearCurrentState) {
+                  setState(() {
+                    approach = true;
+                    userWasIn = false;
+                    wait = false;
+                    exited = false;
+                  });
+
+                  _showApproachMiqatNotification();
+                }
+
+              } else {
+                if(_selectedSayingIndex==3){
+                  if (seenApproachNotif) return;
+
+                  setState(() {
+                    approach = true;
+                    warned = false;
+                  });
+
+                  _showApproachMiqatNotification();
+                } else {
+                  if (seenWarningNotif) return;
+
+                  setState(() {
+                    approach = false;
+                    warned = true;
+                  });
+
+                  _showIhramViolationWarning();
+                }
+              }
+            }
+
+          } else {
+            if (seenApproachNotif) return;
+
+            if (nearCurrentState) {
+              setState(() {
+                approach = true;
+              });
+
+              _showApproachMiqatNotification();
+            }
+          }
+        }
+      }
+
+      lastPosition = currentPosition;
+      nearLaststate = nearCurrentState;
+
+    } else {
+      Future.delayed(const Duration(seconds: 10), () {
+        handleUserPosition(
+          checkPositionFn: checkPositionFn,
+          checkNearFn: checkNearFn,
+        );
+      });
+    }
+  }
+  void handleUserPositionSaying2(){
+    currentPosition = checkIfUserPositionSaying2();
+    nearCurrentState = checkIfUserNearSaying2();
+
+    if((currentPosition != lastPosition)||(nearLaststate!=nearCurrentState)){
+      if(currentPosition == 0){
+        if (seenInsideNotif || userIn) return;
+        setState(() {
+          userIn = true;
+          userWasIn = true;
+          warned = false;
+          exited = false;
+        });
+        if(ihram){
+          _showInsideMiqatIhramNotification();
+        } else _showInsideMiqatNotification();
+      } else {
+        setState(() {
+          userIn = false;
+        });
+        if (!userWasIn) {
+          if (seenApproachNotif) return;
+          if (checkIfUserNearSaying2()) {
+            setState(() {
+              approach = true;
+            });
+            _showApproachMiqatNotification();
+          }
+        } else {
+          if(!ihram){
+            if (currentPosition == -1) {
+              if (seenExitingNotif) return;
+              setState(() {
+                exited = true;
+              });
+              _showExitingMiqatNotification();
+            } if (currentPosition == 1) {
+              setState(() {
+                warned = true;
+              });
+              _showIhramViolationWarning();
+            }
+          } else {
+            if (seenExitingNotif) return;
+            setState(() {
+              exited = true;
+            });
+            _showExitingMiqatNotification();
+          }
+        }
+      }
+      lastPosition = currentPosition;
+      nearLaststate = nearCurrentState;
+    } else if (currentPosition == lastPosition){
+      Future.delayed(Duration(seconds: 10), () {
+        handleUserPositionSaying2();
+      });
+    }
+  }
+
+  int checkIfUserPositionSaying1(){
+    double userDistance = calculateDistance4(makkahLocation, userLocation);
+    int closestIndex = findClosestMiqatIndex(userLocation);
+    var miqat = miqatData[closestIndex];
+
+    double innerRadius = calculateDistance4(makkahLocation, miqat["closest"]);
+    double outerRadius = calculateDistance4(makkahLocation, miqat["farthest"]);
+
+    if((userDistance > outerRadius)){
+      return -1;
+    } else if (userDistance < innerRadius){
+      return 1;
+    } else if (userDistance <= outerRadius && userDistance>= innerRadius){
+      return 0;
+    }
+    return lastPosition;
+  }
+  int checkIfUserPositionSaying2() {
+    List<LatLng> outerPoints = [
+      miqatData[0]["farthest"],
+      miqatData[1]["farthest"],
+      miqatData[2]["farthest"],
+      miqatData[4]["farthest"],
+      miqatData[3]["farthest"],
+    ];
+
+    List<LatLng> innerPoints = [
+      miqatData[0]["closest"],
+      miqatData[1]["closest"],
+      miqatData[2]["closest"],
+      miqatData[4]["closest"],
+      miqatData[3]["closest"],
+    ];
+
+    bool insideOuter = isPointInPolygonn(userLocation, outerPoints);
+    bool insideInner = isPointInPolygonn(userLocation, innerPoints);
+
+    if (insideInner) {
+      return 1;
+    } else if (insideOuter) {
+      return 0;
+    } else {
+      return -1;
+    }
+  }
+  int checkIfUserPositionSaying3(){
+    double userDistance = calculateDistance4(makkahLocation, userLocation);
+
+    int closestIndex = findClosestMiqatIndex(userLocation);
+    var miqat = miqatData[closestIndex];
+
+    double innerRadius = calculateDistance4(makkahLocation, miqat["closest"]);
+    double outerRadius = calculateDistance4(makkahLocation, miqat["farthest"]);
+    if((userDistance > outerRadius)){
+      return -1;
+    } else if (userDistance <= innerRadius){
+      return 1;
+    } else if (userDistance <= outerRadius && userDistance> innerRadius){
+      double userBearing = calculateBearing(makkahLocation, userLocation);
+      double miqatBearing = calculateBearing(makkahLocation, miqat["closest"]);
+
+      double minAngle = (miqatBearing - 40) % 360;
+      double maxAngle = (miqatBearing + 40) % 360;
+
+      bool inSector = isBearingInRange(userBearing, minAngle, maxAngle);
+
+      if (inSector) {
+        return 0;
       }
     }
+    return -1;
+  }
+  int checkIfUserPositionSaying4() {
+    for (var miqat in miqatData) {
+      LatLng miqatCenter = miqat["center"];
 
-    if (!currentlyInsideMiqat && insideMiqatRing) {
-      Fluttertoast.showToast(
-          msg: "You exited the Miqat ring. If needed, re-enter to start Ihram!",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 3
+      // Direction vector to Makkah
+      double dx = makkahLocation.latitude - miqatCenter.latitude;
+      double dy = makkahLocation.longitude - miqatCenter.longitude;
+      double length = sqrt(dx * dx + dy * dy);
+
+      double dirX = dx / length;
+      double dirY = dy / length;
+
+      // Perpendicular vector (عمودي)
+      double perpX = -dirY;
+      double perpY = dirX;
+
+      // Same rectangle size
+      double halfWidth = 0.2;
+      double halfLength = 0.05;
+
+      LatLng p1 = LatLng(
+        miqatCenter.latitude + dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength + perpY * halfWidth,
+      );
+      LatLng p2 = LatLng(
+        miqatCenter.latitude + dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p3 = LatLng(
+        miqatCenter.latitude - dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p4 = LatLng(
+        miqatCenter.latitude - dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength + perpY * halfWidth,
       );
 
-      setState(() {
-        insideMiqatRing = false;
-      });
-    }
+      List<LatLng> polygon = [p1, p2, p3, p4];
 
-
-    if (!userDecisionMade) {
-      Future.delayed(Duration(seconds: 3), () {
-        checkUserLocationSaying1();
-      });
-    }
-  }
-  void checkUserLocationSaying2() {
-    List<LatLng> outerPoints = miqatData.map((e) => e["farthest"] as LatLng).toList();
-    List<LatLng> innerPoints = miqatData.map((e) => e["closest"] as LatLng).toList();
-
-    bool insideOuter = isPointInsidePolygon(userLocation, outerPoints);
-    bool insideInner = isPointInsidePolygon(userLocation, innerPoints);
-    bool insideZone = insideOuter;
-
-    if (insideZone && !alarmPlaying) {
-      startAlarm();
-      showWindowsNotification(context);
-    }
-  }
-  void checkUserLocationSaying3() {
-    if (insideMiqatRing || userDecisionMade) return;
-
-    double userDistance = calculateDistance(makkahLocation, userLocation);
-
-    for (var miqat in miqatData) {
-      double innerRadius = calculateDistance(makkahLocation, miqat["closest"]);
-      double outerRadius = calculateDistance(makkahLocation, miqat["farthest"]);
-
-      if (userDistance <= outerRadius) {
-        double userBearing = calculateBearing(makkahLocation, userLocation);
-        double miqatBearing = calculateBearing(makkahLocation, miqat["closest"]);
-
-        double minAngle = (miqatBearing - 60) % 360;
-        double maxAngle = (miqatBearing + 60) % 360;
-
-        bool inSector = isBearingInRange(userBearing, minAngle, maxAngle);
-
-        if (inSector) {
-          if (!alarmPlaying) {
-            startAlarm();
-          }
-
-          Fluttertoast.showToast(
-              msg: "You are inside the Miqat ring and in the Ihram sector!",
-              toastLength: Toast.LENGTH_LONG,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 3
-          );
-
-          setState(() {
-            insideMiqatRing = true;
-          });
-
-          showWindowsNotification(context);
-          break;
-        }
+      if (isPointInPolygon(userLocation, polygon)) {
+        return 0; // ✅ Inside one of the rectangles
       }
     }
 
-    if (!insideMiqatRing && !userDecisionMade) {
-      Future.delayed(Duration(seconds: 3), () {
-        checkUserLocationSaying3();
-      });
-    }
+    return -1;
   }
-  void checkUserLocationSaying4() {
+  int checkIfUserPositionSaying5(){double userDistanceToMiqatLine = _calculateDistance(userLocation, miqatLines.first.points.first);
+    if (userDistanceToMiqatLine <= 1000) {
+      return 0;
+    } else if ( userDistanceToMiqatLine >1000){
+      return -1;
+    } else return 1;
+  }
+
+  bool checkIfUserNearSaying1(){
+    double userDistance = calculateDistance4(makkahLocation, userLocation);
+
+    if (userDistance <= 2000) {
+      return true;
+    }
+    return false;
+  }
+  bool checkIfUserNearSaying2() {
+    int currentPosition = checkIfUserPositionSaying2();
+
+    List<LatLng> outerPoints = [
+      miqatData[0]["farthest"],
+      miqatData[1]["farthest"],
+      miqatData[2]["farthest"],
+      miqatData[4]["farthest"],
+      miqatData[3]["farthest"],
+      miqatData[0]["farthest"]
+    ];
+    List<LatLng> innerPoints = [
+      miqatData[0]["closest"],
+      miqatData[1]["closest"],
+      miqatData[2]["closest"],
+      miqatData[4]["closest"],
+      miqatData[3]["closest"],
+      miqatData[0]["closest"]
+    ];
+    double distanceToOuter = distanceToPolygonEdge(userLocation, outerPoints);
+    double distanceToInner = distanceToPolygonEdge(userLocation, innerPoints);
+
+    if ((currentPosition == -1 || currentPosition == 1) && (distanceToOuter <= 2000 || distanceToInner <= 2000)) {
+      print("📢 Approaching Miqat from ${(currentPosition == -1) ? "outside" : "inside"} (within 1km)");
+      return true;
+    }
+
+    return false;
+  }
+  bool checkIfUserNearSaying3() {
+    double userDistance = calculateDistance4(makkahLocation, userLocation);
+    int closestIndex = findClosestMiqatIndex(userLocation);
+    var miqat = miqatData[closestIndex];
+
+    double outerRadius = calculateDistance4(makkahLocation, miqat["farthest"]);
+
+    if (userDistance <= outerRadius + 10000 && userDistance >= outerRadius - 10000) {
+      double userBearing = calculateBearing(makkahLocation, userLocation);
+      double miqatBearing = calculateBearing(makkahLocation, miqat["closest"]);
+
+      double minAngle = (miqatBearing - 40 + 360) % 360;
+      double maxAngle = (miqatBearing + 40) % 360;
+
+      bool inSector = isBearingInRange(userBearing, minAngle, maxAngle);
+
+
+      if (inSector) {
+        return true;
+      }
+    }
+    return false;
+  }
+  bool checkIfUserNearSaying4() {
+    for (var miqat in miqatData) {
+      LatLng miqatCenter = miqat["center"];
+
+      // Direction vector to Makkah
+      double dx = makkahLocation.latitude - miqatCenter.latitude;
+      double dy = makkahLocation.longitude - miqatCenter.longitude;
+      double length = sqrt(dx * dx + dy * dy);
+
+      double dirX = dx / length;
+      double dirY = dy / length;
+
+      // Perpendicular (عمودي)
+      double perpX = -dirY;
+      double perpY = dirX;
+
+      // Rectangle size
+      double halfWidth = 0.2 + 0.02;    // 0.05 normal + 0.02 buffer (~2km)
+      double halfLength = 0.05 + 0.02;
+
+      // Inflated rectangle corners
+      LatLng p1 = LatLng(
+        miqatCenter.latitude + dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength + perpY * halfWidth,
+      );
+      LatLng p2 = LatLng(
+        miqatCenter.latitude + dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude + dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p3 = LatLng(
+        miqatCenter.latitude - dirX * halfLength - perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength - perpY * halfWidth,
+      );
+      LatLng p4 = LatLng(
+        miqatCenter.latitude - dirX * halfLength + perpX * halfWidth,
+        miqatCenter.longitude - dirY * halfLength + perpY * halfWidth,
+      );
+
+      List<LatLng> polygon = [p1, p2, p3, p4];
+
+      if (isPointInPolygon(userLocation, polygon)) {
+        return true; // ✅ User is near this miqat
+      }
+    }
+
+    return false; // ❌ Not near any
+  }
+  bool checkIfUserNearSaying5() {
+
     for (var miqat in miqatData) {
       double distance = _calculateDistance(userLocation, miqat["center"]);
+
       if (distance <= 1000) {
-        startAlarm();
-        break;
+        return true;
       }
     }
+    return false;
   }
-  void checkUserLocationSaying5() {
-    double userDistanceToMiqatLine = _calculateDistance(userLocation, miqatLines.first.points.first);
-    if (userDistanceToMiqatLine <= 1000) {
-      showWindowsNotification(context);
-      startAlarm();
+
+  double distanceToPolygonEdge(LatLng point, List<LatLng> polygon) {
+    double minDistance = double.infinity;
+    for (int i = 0; i < polygon.length; i++) {
+      LatLng a = polygon[i];
+      LatLng b = polygon[(i + 1) % polygon.length];
+      double dist = distanceToSegment(point, a, b);
+      if (dist < minDistance) minDistance = dist;
     }
+    return minDistance;
   }
+  double distanceToSegment(LatLng p, LatLng a, LatLng b) {
+    double lat1 = a.latitude;
+    double lon1 = a.longitude;
+    double lat2 = b.latitude;
+    double lon2 = b.longitude;
+    double lat3 = p.latitude;
+    double lon3 = p.longitude;
 
+    double dx = lat2 - lat1;
+    double dy = lon2 - lon1;
+    if (dx == 0 && dy == 0) {
+      return calculateDistance4(p, a);
+    }
 
-  double calculateDistance(LatLng start, LatLng end) {
-    const double earthRadius = 6371000; // meters
-    double lat1 = start.latitude * pi / 180;
-    double lon1 = start.longitude * pi / 180;
-    double lat2 = end.latitude * pi / 180;
-    double lon2 = end.longitude * pi / 180;
-
-    double dlat = lat2 - lat1;
-    double dlon = lon2 - lon1;
-
-    double a = sin(dlat / 2) * sin(dlat / 2) +
-        cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2);
-    double c = 2 * atan2(sqrt(a), sqrt(1 - a));
-
-    double distance = earthRadius * c;
-
-    return distance;
+    double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
+    t = max(0, min(1, t));
+    LatLng projection = LatLng(lat1 + t * dx, lon1 + t * dy);
+    return calculateDistance4(p, projection);
   }
   double _calculateDistance(LatLng point1, LatLng point2) {
     const double earthRadius = 6371000;
@@ -616,18 +1144,7 @@ class _HomePageState extends State<HomePage> {
     double c = 2 * atan2(sqrt(a), sqrt(1 - a));
     return earthRadius * c;
   }
-  bool isPointInsidePolygon(LatLng point, List<LatLng> polygon) {
-    bool inside = false;
-    for (int i = 0, j = polygon.length - 1; i < polygon.length; j = i, i++) {
-      if (((polygon[i].latitude > point.latitude) != (polygon[j].latitude > point.latitude)) &&
-          (point.longitude < (polygon[j].longitude - polygon[i].longitude) * (point.latitude - polygon[i].latitude) /
-              (polygon[j].latitude - polygon[i].latitude) +
-              polygon[i].longitude)) {
-        inside = !inside;
-      }
-    }
-    return inside;
-  }
+
   List<LatLng> createCircle(LatLng center, double radiusMeters, int points) {
     const double degreeStep = 360 / 72;
     List<LatLng> circlePoints = [];
@@ -651,7 +1168,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
   List<LatLng> createOpenSector(LatLng center, LatLng miqat, double radiusMeters) {
-    const double sectorAngle = 60;
+    const double sectorAngle = 40;
     List<LatLng> sectorPoints = [];
 
     double bearing = calculateBearing(center, miqat);
@@ -680,295 +1197,375 @@ class _HomePageState extends State<HomePage> {
 
     return (bearing * 180 / pi + 360) % 360;
   }
-  void _onMiqatSelected(Map<String, dynamic> miqat) {
-    LatLng closest = miqat["closest"];
-    LatLng center = miqat["center"];
-    LatLng farthest = miqat["farthest"];
+  bool isLastMiqat(){
+    int closestMiqatIndex = 0;
+    double closestDistance = double.infinity;
 
-    double innerRadius = calculateDistance(makkahLocation, closest);
-    double outerRadius = calculateDistance(makkahLocation, farthest);
+    for (int i = 0; i < miqatData.length; i++) {
+      double distance = _calculateDistance(userLocation, miqatData[i]["center"]);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestMiqatIndex = i;
+      }
+    }
 
-    List<LatLng> outerCircle = createCircle(makkahLocation, outerRadius, 72);
-    List<LatLng> innerCircle = createCircle(makkahLocation, innerRadius, 72);
+    bool isLastMiqat = closestMiqatIndex == miqatData.length - 1;
 
-    setState(() {
-      selectedMarker = Marker(
-        markerId: MarkerId(miqat["name"]),
-        position: center,
-        infoWindow: InfoWindow(title: miqat["name"]),
-        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-      );
+    return isLastMiqat;
+  }
+  int findClosestMiqatIndex(LatLng userLocation) {
+    double minDistance = double.infinity;
+    int closestIndex = -1;
 
-      annulus = {
-        Polygon(
-          polygonId: PolygonId("${miqat["name"]}_annulus"),
-          points: outerCircle,
-          holes: [innerCircle],
-          fillColor: Colors.blue.withOpacity(0.3),
-          strokeColor: Colors.blue,
-          strokeWidth: 2,
-        ),
-      };
-    });
+    for (int i = 0; i < miqatData.length; i++) {
+      double distance = calculateDistance4(userLocation, miqatData[i]["center"]);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = i;
+      }
+    }
 
-    mapController.animateCamera(
-      CameraUpdate.newLatLngZoom(closest, 9),
-    );
+    return closestIndex;
+  }
+  bool isSameMiqat(){
+    currentMiqatIndex = findClosestMiqatIndex(userLocation);
+    if (lastMiqatIndex == currentMiqatIndex){
+      return true;
+    } else {
+      return false;
+    }
+  }
+  bool isPointInPolygon(LatLng point, List<LatLng> polygon) {
+    int i, j = polygon.length - 1;
+    bool oddNodes = false;
+
+    for (i = 0; i < polygon.length; i++) {
+      if ((polygon[i].latitude < point.latitude && polygon[j].latitude >= point.latitude ||
+          polygon[j].latitude < point.latitude && polygon[i].latitude >= point.latitude) &&
+          (polygon[i].longitude <= point.longitude || polygon[j].longitude <= point.longitude)) {
+        if (polygon[i].longitude + (point.latitude - polygon[i].latitude) /
+            (polygon[j].latitude - polygon[i].latitude) *
+            (polygon[j].longitude - polygon[i].longitude) < point.longitude) {
+          oddNodes = !oddNodes;
+        }
+      }
+      j = i;
+    }
+
+    return oddNodes;
+  }
+  double calculateDistance4(LatLng p1, LatLng p2) {
+    const R = 6371000; // Earth's radius in meters
+    double dLat = _degToRad(p2.latitude - p1.latitude);
+    double dLng = _degToRad(p2.longitude - p1.longitude);
+
+    double a = sin(dLat/2) * sin(dLat/2) +
+        cos(_degToRad(p1.latitude)) * cos(_degToRad(p2.latitude)) *
+            sin(dLng/2) * sin(dLng/2);
+    double c = 2 * atan2(sqrt(a), sqrt(1-a));
+
+    return R * c;
+  }
+  double _degToRad(double deg) => deg * pi / 180;
+  bool isPointInPolygonn(LatLng point, List<LatLng> polygon) {
+    int intersections = 0;
+    int count = polygon.length;
+
+    for (int i = 0; i < count; i++) {
+      LatLng a = polygon[i];
+      LatLng b = polygon[(i + 1) % count];
+
+      // Check if point is between the y-values of a and b
+      if ((a.latitude > point.latitude) != (b.latitude > point.latitude)) {
+        double slope = (b.longitude - a.longitude) / (b.latitude - a.latitude);
+        double possibleLng = slope * (point.latitude - a.latitude) + a.longitude;
+
+        if (point.longitude < possibleLng) {
+          intersections++;
+        }
+      }
+    }
+
+    return (intersections % 2) == 1;
   }
 
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: makkahLocation,
-              zoom: 6,
-            ),
-            markers: {
-              if (selectedMarker != null) selectedMarker!,
-              Marker(
-                markerId: MarkerId("makkah"),
-                position: makkahLocation,
-                infoWindow: InfoWindow(title: "Makkah"),
-                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow),
-              ),
-              Marker(
-                markerId: MarkerId("userLocation"),
-                position: userLocation,
-                infoWindow: InfoWindow(title: "Your Location"),
-                icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-              ),
-              ...selectedMarkers,
-            },
-            polygons: {
-              ...annulus,
-              ...polygons,
-            },
-            polylines: miqatLines,
-            onMapCreated: (GoogleMapController controller) {
-              mapController = controller;
-            },
-          ),
-
-          DraggableScrollableSheet(
-            controller: _scrollController,
-            expand: true, // ✅ keep it TRUE so it stays at bottom
-            initialChildSize: 0.16,
-            minChildSize: 0.1,
-            maxChildSize: 0.5,
-            builder: (context, scrollController) {
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10)],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.symmetric(vertical: 8),
-                      width: 40,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: List.generate(
-                          5,
-                              (index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: _selectedSayingIndex == index ? Colors.orange : Colors.black,
-                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _selectedSayingIndex = index; // Update the selected saying index
-                                });
-                                showSaying(index);
-                              },
-                              child: Text(
-                                'Saying ${index + 1}',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    /// **Show Description Instead of Grid**
-                    if (_selectedSayingIndex != null)
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scrollController,
-                          physics: ClampingScrollPhysics(), // ✅ <<< added this to fix pulling
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            _sayingDescriptions[_selectedSayingIndex!],
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-      bottomNavigationBar: SizedBox(
-        height: 60,
-        child: BottomAppBar(
-          color: Colors.white,
-          elevation: 10,
-          shadowColor: Colors.grey.shade400,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 6.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.menu),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.search),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.home,
-                  color: Colors.black,
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.workspace_premium),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MenuPage()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SettingsPage()),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void startAlarm() async {
+  void _startAlarm() async {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       await _audioPlayer.play(AssetSource('alarm2.mp3'));
-      setState(() => _isPlaying = true);
     } catch (e) {
       print("Error playing alarm: $e");
     }
   }
-
   Future<void> _stopAlarm() async {
     await _audioPlayer.stop();
     setState(() => _isPlaying = false);
   }
 
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
-  void showWindowsNotification(BuildContext context) {
-    windowManager.show();
+  void _showApproachMiqatNotification() {
+    if (isWindowNotificationShowing) return;
+    isWindowNotificationShowing = true;
+    if (seenApproachNotif || userIn) return;
+    seenApproachNotif = true;
+    seenInsideNotif = false;
+    _startAlarm();
 
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Miqat Alert"),
-          content: Text("You are inside the Miqat ring. Do you want to start Ihram?"),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text("Approaching Miqat"),
+          content: Text("You are 5 minutes away from the Miqat. Get ready to enter Ihram."),
           actions: [
             TextButton(
+              child: Text("OK"),
               onPressed: () {
-                Navigator.of(context).pop();
-                debugPrint("Yes button clicked");
                 _stopAlarm();
-              },
-              child: Text("Yes"),
-            ),
-            TextButton(
-              onPressed: () {
                 Navigator.of(context).pop();
-                debugPrint("Skip button clicked");
-                _stopAlarm();
+                isWindowNotificationShowing = false;
               },
-              child: Text("Skip"),
             ),
           ],
         );
       },
     );
   }
+  void _showInsideMiqatIhramNotification(){
+    if (isWindowNotificationShowing) return;
+    isWindowNotificationShowing = true;
+    if (seenInsideNotif || !userIn) return;
+    seenInsideNotif = true;
+    seenExitingNotif = false;
+    _startAlarm();
 
-  Future<void> handlelocation(userLocation) async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.none) {
-      print("❌ No internet connection.");
-      return;
-    } else {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text("Inside Miqat"),
+          content: Text("You are inside the Miqat."),
+          actions: [
+            TextButton(
+              child: Text("Okay"),
+              onPressed: () {
+                _stopAlarm();
+                Navigator.of(context).pop();
+                isWindowNotificationShowing = false;
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _showInsideMiqatNotification() {
+    if (isWindowNotificationShowing) return;
+    isWindowNotificationShowing = true;
+    if (seenInsideNotif || !userIn) return;
+    seenInsideNotif = true;
+    seenExitingNotif = false;
+    seenWarningNotif = false;
+    _startAlarm();
 
-      final prefs = await SharedPreferences.getInstance();
-      final uid = prefs.getString('uid');
-      if (uid == null) {
-        print("❌ UID not found in SharedPreferences.");
-        return;
-      }
-
-      await FirebaseFirestore.instance.collection('users').doc(uid).update({
-        'location': GeoPoint(userLocation.latitude, userLocation.longitude),
-        'lastUpdatedLocation': FieldValue.serverTimestamp(),
-      });
-
-
-
-      print("✅ Location updated for user: $uid");
+    if (_selectedSayingIndex==1){
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            title: Text("Inside Miqat"),
+            content: Text("You are inside the Miqat. Do you want to start Ihram?"),
+            actions: [
+              TextButton(
+                child: Text("Yes"),
+                onPressed: () {
+                  _stopAlarm();
+                  setState(() {
+                    ihram=true;
+                  });
+                  Navigator.of(context).pop();
+                  isWindowNotificationShowing = false;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => IhramTutorialPage()),
+                  );
+                },
+              ),
+              TextButton(
+                child: Text("Later"),
+                onPressed: () {
+                  _stopAlarm();
+                  Navigator.of(context).pop();
+                  isWindowNotificationShowing = false;
+                  Future.delayed(Duration(seconds: 20), () {
+                    seenInsideNotif = false;
+                    _showInsideMiqatNotification();
+                  });
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
+    else {
+      if(!warned){
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              title: Text("Inside Miqat"),
+              content: Text("You are inside the Miqat. Do you want to start Ihram?"),
+              actions: [
+                TextButton(
+                  child: Text("Yes"),
+                  onPressed: () {
+                    _stopAlarm();
+                    setState(() {
+                      ihram=true;
+                      wait = false;
+                      SharedPref().saveIhramStatus(true);
+                    });
+                    Navigator.of(context).pop();
+                    isWindowNotificationShowing = false;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => IhramTutorialPage()),
+                    );
+                  },
+                ),
+                if (!isLastMiqat())
+                  TextButton(
+                    child: Text("Wait Next Miqat"),
+                    onPressed: () {
+                      _stopAlarm();
+                      setState(() {
+                        wait = true;
+                      });
+                      Navigator.of(context).pop();
+                      isWindowNotificationShowing = false;
+                    },
+                  ),
+                TextButton(
+                  child: Text("Later"),
+                  onPressed: () {
+                    _stopAlarm();
+                    setState(() {
+                      wait = false;
+                    });
+                    seenInsideNotif = false;
+                    Navigator.of(context).pop();
+                    isWindowNotificationShowing = false;
+                    Future.delayed(Duration(seconds: 20), () {
+                      _showInsideMiqatNotification();
+                    });
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              title: Text("Back inside Miqat"),
+              content: Text("You are inside the Miqat again. You can start Ihram now."),
+              actions: [
+                TextButton(
+                  child: Text("Okay"),
+                  onPressed: () {
+                    _stopAlarm();
+                    setState(() {
+                      ihram=true;
+                    });
+                    Navigator.of(context).pop();
+                    isWindowNotificationShowing = false;
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => IhramTutorialPage()),
+                    );
+                  },
+                )
+              ],
+            );
+          },
+        );
+      }
+    }
+  }
+  void _showExitingMiqatNotification() {
+    if (isWindowNotificationShowing) return;
+    isWindowNotificationShowing = true;
+    if (seenExitingNotif || userIn) return;
+    seenExitingNotif = true;
+    seenInsideNotif = false;
+    seenApproachNotif = false;
+    _startAlarm();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text("Exiting Miqat"),
+          content: Text("You are Exiting the Miqat."),
+          actions: [
+            TextButton(
+              child: Text("Okay"),
+              onPressed: () {
+                _stopAlarm();
+                Navigator.of(context).pop();
+                isWindowNotificationShowing = false;
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void _showIhramViolationWarning() {
+    if (isWindowNotificationShowing) return;
+    isWindowNotificationShowing = true;
+    if (seenWarningNotif || userIn) return;
+    if (_selectedSayingIndex==3) {seenApproachNotif = false;}
+    seenWarningNotif = true;
+    seenInsideNotif = false;
+
+    _startAlarm();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Ihram Warning"),
+          content: Text("You exited Miqat without starting Ihram. This is not permissible. You have to go back in now."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _stopAlarm();
+                Navigator.of(context).pop();
+                isWindowNotificationShowing = false;
+              },
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

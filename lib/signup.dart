@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:meqat/login.dart';
 import 'package:meqat/preferences.dart';
@@ -15,6 +17,50 @@ class SignUpPage extends StatefulWidget {
   _SignUpPageState createState() => _SignUpPageState();
 }
 
+class DateInputFormatter extends TextInputFormatter {
+  static final String _mask = '__/__/____';
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    final oldText = oldValue.text;
+    final newText = newValue.text;
+
+    // Remove all non-digits
+    final digits = newText.replaceAll(RegExp(r'[^0-9]'), '');
+
+    StringBuffer buffer = StringBuffer();
+    int digitIndex = 0;
+
+    for (int i = 0; i < _mask.length; i++) {
+      if (_mask[i] == '/') {
+        buffer.write('/');
+      } else {
+        if (digitIndex < digits.length) {
+          buffer.write(digits[digitIndex]);
+          digitIndex++;
+        } else {
+          buffer.write('_');
+        }
+      }
+    }
+
+    // Calculate new cursor position (skip slashes)
+    int cursorPosition = buffer.toString().indexOf('_');
+    if (cursorPosition == -1) {
+      cursorPosition = buffer.length;
+    }
+
+    return TextEditingValue(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: cursorPosition),
+    );
+  }
+}
+
+
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
@@ -25,16 +71,49 @@ class _SignUpPageState extends State<SignUpPage> {
 
 
   Future<void> _selectDate(BuildContext context) async {
-    DateTime? picked = await showDatePicker(
+    FocusScope.of(context).unfocus(); // Prevent soft keyboard and focus jump
+
+    final DateTime now = DateTime.now();
+
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: now,
       firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
+      lastDate: DateTime(now.year + 10), // Allows selecting all future months/years
+      helpText: 'Select Date', // Dialog title
+      initialEntryMode: DatePickerEntryMode.input, // 👈 Input mode shown first
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.deepPurple, // Accent color
+              onPrimary: Colors.white,    // Text on primary color
+              onSurface: Colors.black,    // Default text color
+            ),
+            dialogBackgroundColor: Colors.white,
+            dialogTheme: DialogTheme(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
     );
+
     if (picked != null) {
-      setState(() {
-        _birthdateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
+      // ✅ Optional validation: disallow future dates
+      if (picked.isAfter(now)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Birthdate cannot be in the future.")),
+        );
+      } else {
+        // ✅ Format and assign selected date
+        setState(() {
+          _birthdateController.text = DateFormat('MM/dd/yyyy').format(picked);
+        });
+      }
     }
   }
 
@@ -53,61 +132,77 @@ class _SignUpPageState extends State<SignUpPage> {
                     children: [
                       const Spacer(flex: 2),
                       Center(
-                        child: Image.asset(
-                          'assets/logo.png',
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.contain,
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            fontSize: 35,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF353535), // Softer than black
+                            letterSpacing: 1.4,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(0.5, 1.5),
+                                blurRadius: 4.0,
+                                color: Colors.black12,
+                              ),
+                              Shadow(
+                                offset: Offset(-0.5, -0.5),
+                                blurRadius: 2.0,
+                                color: Colors.white24,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 32),
                         child: Column(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _firstNameController,
-                                    hintText: "First Name",
-                                    obscureText: false,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: _buildTextField(
-                                    controller: _lastNameController,
-                                    hintText: "Last Name",
-                                    obscureText: false,
-                                  ),
-                                ),
-                              ],
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              controller: _firstNameController,
+                              hintText: "First name",
+                              obscureText: false,
+                              icon: Icons.person_2_outlined,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
+                            _buildTextField(
+                              controller: _lastNameController,
+                              hintText: "Last name",
+                              obscureText: false,
+                              icon: Icons.person_2_outlined,
+                            ),
+                            const SizedBox(height: 12),
                             _buildTextField(
                               controller: _emailController,
                               hintText: "Email",
                               obscureText: false,
+                              icon: Icons.email_outlined,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             _buildTextField(
                               controller: _passwordController,
                               hintText: "Password",
                               obscureText: true,
+                              icon: Icons.key,
                             ),
-                            const SizedBox(height: 16),
+                            const SizedBox(height: 12),
                             GestureDetector(
                               onTap: () => _selectDate(context),
                               child: AbsorbPointer(
-                                child: _buildTextField(
+                                child: _buildDateField(
                                   controller: _birthdateController,
                                   hintText: "Birthdate",
                                   obscureText: false,
+                                  icon: Icons.date_range_outlined,
+                                  inputFormatters: [DateInputFormatter()],
+                                  keyboardType: TextInputType.number,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
+
+                            const SizedBox(height: 2),
                             Row(
                               children: [
                                 Checkbox(
@@ -133,10 +228,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 20),
                             ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
+                                backgroundColor: Colors.deepPurple.withOpacity(0.6),
                                 foregroundColor: Colors.white,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(
@@ -168,7 +263,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ],
                         ),
                       ),
-                      const Spacer(flex: 1),
+                      const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -184,7 +279,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             },
                             child: const Text(
                               "Log in",
-                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
                             ),
                           ),
                         ],
@@ -217,27 +312,92 @@ class _SignUpPageState extends State<SignUpPage> {
     required TextEditingController controller,
     required String hintText,
     required bool obscureText,
+    required IconData? icon,
   }) {
-    return TextField(
-      controller: controller,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        decoration: InputDecoration(
+          hintText: hintText,
+          prefixIcon: icon != null
+              ? Icon(
+            icon,
+            color: Colors.deepPurple,
+          )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       ),
     );
   }
 
+  Widget _buildDateField({
+    required TextEditingController controller,
+    required String hintText,
+    required bool obscureText,
+    required IconData? icon,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        inputFormatters: inputFormatters,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          hintText: hintText,
+          prefixIcon: icon != null
+              ? Icon(icon, color: Colors.deepPurple)
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+      ),
+    );
+  }
+
+
+
   Future<void> saveSharedPreferences() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Pre-generate a Firestore document reference to get a UID
     final docRef = FirebaseFirestore.instance.collection('users').doc();
     final uid = docRef.id;
 
@@ -249,6 +409,7 @@ class _SignUpPageState extends State<SignUpPage> {
       'birthday': _birthdateController.text.trim(),
       'uid': uid,
     };
+
 
     for (final entry in userData.entries) {
       await prefs.setString(entry.key, entry.value);

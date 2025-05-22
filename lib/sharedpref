@@ -12,5 +12,14 @@ madhhab = in_preferences out-splashscreen
 transportation = in_preferences out-splashscreen
 leader = in_preferences
 delegation = in_preferences
+goal = in-preferences
 
 qr = in-qrpage
+
+face_image = profile
+Fluttertoast.showToast(
+              msg: http.get(Uri.parse("https://google.com")),
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 3
+          );

@@ -51,6 +51,15 @@ dependencies:
   firebase_core: ^3.12.1
   firebase_auth: ^5.5.2
   cloud_firestore: ^5.6.5
+  speech_to_text: ^6.4.1
+  smooth_page_indicator: ^1.1.0
+  in_app_purchase: ^3.2.0
+  image_cropper: ^1.0.8
+  path_provider: ^2.1.1
+  convert: ^3.1.1
+  archive: ^3.3.6
+  uuid: ^3.0.7
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -81,14 +90,16 @@ flutter:
 
   assets:
     - assets/alarm2.mp3
-    - assets/img1.png
-    - assets/img2.png
-    - assets/img3.png
-    - assets/img4.png
+
     - assets/icon/img5.png
-    - assets/full.png
-    - assets/logo.png
+
     - assets/facenet.tflite
+
+    - assets/Dua/Duaasforthesujood.mp3
+
+    - assets/img/food.png
+    - assets/img/hotel.png
+    - assets/img/shop.png
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
