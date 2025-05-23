@@ -5,10 +5,8 @@ import 'package:meqat/search.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:uuid/uuid.dart';
 import 'Data.dart';
-import 'Profile.dart';
 import 'UI.dart';
 import 'sharedPref.dart';
-import 'home.dart';
 import 'menu.dart';
 import 'firebase.dart';
 

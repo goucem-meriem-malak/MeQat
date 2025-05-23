@@ -1,11 +1,10 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:meqat/Duas.dart';
 import 'package:meqat/delegation.dart';
 import 'package:meqat/Profile.dart';
 import 'package:meqat/aipage.dart';
-import 'package:meqat/old/home.dart';
+import 'package:meqat/home.dart';
 import 'package:meqat/medicine.dart';
 import 'package:meqat/menu.dart';
 import 'package:meqat/preferences.dart';
@@ -35,7 +34,6 @@ class MyApp extends StatelessWidget {
         '/settings': (context) => profilePage(),
         '/home': (context) => HomePage(),
         '/preferences': (context) => PreferencesPage(),
-        '/duaa': (context) => DuasPage(),
         '/qr': (context) => DelegationPage(),
         '/medicine': (context) => MedicinePage(),
       },

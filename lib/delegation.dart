@@ -5,15 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:meqat/premium.dart';
-import 'package:meqat/search.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'Data.dart';
-import 'Profile.dart';
 import 'UI.dart';
 import 'home.dart';
 

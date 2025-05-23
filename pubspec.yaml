@@ -40,7 +40,6 @@ dependencies:
   qr_code_scanner: ^1.0.1
   image_picker: ^1.1.2
   google_mlkit_barcode_scanning: ^0.7.0
-  flutter_tts: ^3.8.5
   google_ml_kit: ^0.15.0
   google_mlkit_face_detection: ^0.7.0
   tflite_flutter: ^0.11.0
@@ -59,6 +58,7 @@ dependencies:
   convert: ^3.1.1
   archive: ^3.3.6
   uuid: ^3.0.7
+  image: ^4.0.15
 
 
 
@@ -90,16 +90,16 @@ flutter:
 
   assets:
     - assets/alarm2.mp3
+    - assets/alarm1.mp3
 
     - assets/icon/img5.png
 
     - assets/facenet.tflite
 
-    - assets/Dua/Duaasforthesujood.mp3
-
     - assets/img/food.png
     - assets/img/hotel.png
     - assets/img/shop.png
+
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

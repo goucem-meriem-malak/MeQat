@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/Profile.dart';
-import 'package:meqat/premium.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-
-import 'Data.dart';
 import 'UI.dart';
-import 'home.dart';
 import 'lost.dart';
 import 'medicine.dart';
 import 'menu.dart';

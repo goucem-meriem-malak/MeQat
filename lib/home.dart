@@ -19,7 +19,6 @@ class _HomePageState extends State<HomePage> {
 
   bool showPolygons = false;
   bool alarmPlaying = false;
-  bool _isPlaying = false;
   bool showMiqatMarkers = false;
   bool isWindowNotificationShowing = false;
   bool userIn=false, userWasIn=false, ihram=false, approach=false, wait=false, exited=false, warned=false;
@@ -44,7 +43,6 @@ class _HomePageState extends State<HomePage> {
   late GoogleMapController mapController;
   final LatLng makkahLocation = LatLng(21.422487, 39.826206);
   int _selectedSayingIndex = 2;
-  double _currentChildSize = 0.3;
   final DraggableScrollableController _scrollController = DraggableScrollableController();
   final AudioPlayer _audioPlayer = AudioPlayer();
   LatLng userLocation = LatLng(26.667018, 39.654531);
@@ -217,38 +215,37 @@ class _HomePageState extends State<HomePage> {
                     ),
 
                     /// **Show Description Instead of Grid**
-                    if (_selectedSayingIndex != null)
-                      Expanded(
-                        child: SingleChildScrollView(
-                          controller: scrollController,
-                          physics: ClampingScrollPhysics(), // ✅ Pulling fix
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _sayingDescriptions[_selectedSayingIndex],
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              GestureDetector(
-                                onTap: () {
-                                },
-                                child: Text(
-                                  'Learn more >>',
-                                  style: TextStyle(
-                                    color: Colors.deepPurple,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                    decoration: TextDecoration.underline,
-                                  ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        physics: ClampingScrollPhysics(),
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _sayingDescriptions[_selectedSayingIndex],
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: () {
+                              },
+                              child: Text(
+                                'Learn more >>',
+                                style: TextStyle(
+                                  color: Colors.deepPurple,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
+                    ),
                   ],
                 ),
               );
@@ -264,10 +261,8 @@ class _HomePageState extends State<HomePage> {
     if (_locationTimer?.isActive ?? false) return;
 
     _locationTimer = Timer.periodic(Duration(seconds: 3), (timer) {
-      if (userLocation != null) {
-        checkUserPosition(_selectedSayingIndex);
-      }
-    });
+      checkUserPosition(_selectedSayingIndex);
+        });
   }
 
   Future<void> _getCurrentLocation() async {
@@ -324,7 +319,6 @@ class _HomePageState extends State<HomePage> {
 
       _selectedSayingIndex = index;
       _sayingDescriptions[index];
-      _currentChildSize = 0.3;
     });
     _scrollController.animateTo(
       0.3,
@@ -1301,7 +1295,6 @@ class _HomePageState extends State<HomePage> {
   }
   Future<void> _stopAlarm() async {
     await _audioPlayer.stop();
-    setState(() => _isPlaying = false);
   }
 
   void _showApproachMiqatNotification() {

@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-
-import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MaterialApp(home: SubscriptionPage()));

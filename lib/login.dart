@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:meqat/firebase.dart';
-import 'package:meqat/old/home.dart';
+import 'package:meqat/home.dart';
 import 'package:meqat/signup.dart';
 
 void main() {

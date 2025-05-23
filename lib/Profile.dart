@@ -2,17 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:meqat/premium.dart';
-import 'package:meqat/search.dart';
-import 'package:meqat/login.dart';
-import 'package:meqat/sharedPref.dart';
+import 'login.dart';
+import 'sharedPref.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Data.dart';
 import 'UI.dart';
 import 'home.dart';
-import 'menu.dart';
 
 class profilePage extends StatefulWidget {
   @override

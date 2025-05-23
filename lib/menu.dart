@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/Duas.dart';
 import 'package:meqat/Data.dart';
 import 'package:meqat/delegation.dart';
-import 'package:meqat/Profile.dart';
 import 'package:meqat/aipage.dart';
 import 'package:meqat/faceRecognition.dart';
 import 'package:meqat/hajj.dart';
 import 'package:meqat/ihram.dart';
+import 'package:meqat/lost.dart';
 import 'package:meqat/medicine.dart';
-import 'package:meqat/premium.dart';
-import 'package:meqat/search.dart';
 import 'package:meqat/umrah.dart';
 import 'UI.dart';
 import 'home.dart';
@@ -60,7 +57,7 @@ class MenuPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   onTap: () {
                     if (index == 0) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => DuasPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => DelegationPage()));
                     }
                     if (index == 1) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => IhramTutorialPage()));
@@ -72,19 +69,13 @@ class MenuPage extends StatelessWidget {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => UmrahTutorialPage()));
                     }
                     if (index == 4) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => FaceRecognitionApp()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => LostPage()));
                     }
                     if (index == 5) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => MenuPage()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => MedicinePage()));
                     }
                     if (index == 6) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => MedicineAlarmApp()));
-                    }
-                    if (index == 7) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => DelegationPage()));
-                    }
-                    if (index == 8) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => AIPage()));
                     }
                   },
                   child: AnimatedContainer(

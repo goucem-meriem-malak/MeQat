@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:meqat/login.dart';
 import 'package:meqat/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 
 final Color buttonColor = Color(0xFFE5C99F);
 final Color textColor = Color(0xC52E2E2E);

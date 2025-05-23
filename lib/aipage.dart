@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/premium.dart';
-import 'package:meqat/search.dart';
-
-import 'Data.dart';
-import 'Profile.dart';
 import 'UI.dart';
-import 'home.dart';
-import 'menu.dart';
 
 class AIPage extends StatefulWidget {
   @override

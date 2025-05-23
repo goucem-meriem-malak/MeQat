@@ -10,13 +10,31 @@ class WelcomePage extends StatefulWidget {
   _WelcomePageState createState() => _WelcomePageState();
 }
 
-class _WelcomePageState extends State<WelcomePage> {
+class _WelcomePageState extends State<WelcomePage> with SingleTickerProviderStateMixin {
   String _selectedLanguage = "English";
+
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 1),
+      lowerBound: 0.95,
+      upperBound: 1.05,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   Future<void> _saveLanguageAndProceed() async {
     final languageCodes = {
       'English': 'en',
-      'French': 'fr',
       'Arabic': 'ar',
     };
 
@@ -46,7 +64,12 @@ class _WelcomePageState extends State<WelcomePage> {
 
             const Spacer(flex: 2),
 
-            Center(child: Image.asset('assets/icon/img5.png', width: 120)),
+            Center(
+              child: ScaleTransition(
+                scale: _controller,
+                child: Image.asset('assets/icon/img5.png', width: 80, height: 80,),
+              ),
+            ),
 
             const Spacer(flex: 2),
 

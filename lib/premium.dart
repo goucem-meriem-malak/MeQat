@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/search.dart';
 import 'package:meqat/subscribe.dart';
 
 import 'Data.dart';
-import 'Profile.dart';
 import 'UI.dart';
-import 'home.dart';
-import 'menu.dart';
 
 class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
