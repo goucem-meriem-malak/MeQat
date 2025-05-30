@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:meqat/premium.dart';
 
+import 'premium.dart';
+import 'search.dart';
 import 'Profile.dart';
 import 'home.dart';
 import 'menu.dart';
@@ -53,7 +53,7 @@ class UIFunctions {
             ),
             Expanded(
               child: buildNavItem(Icons.search, "Search", () {
-                // Handle search
+                Navigator.push(context, MaterialPageRoute(builder: (_) => SearchPage()));
               }, selectedIndex == 1),
             ),
             Expanded(
@@ -68,7 +68,7 @@ class UIFunctions {
             ),
             Expanded(
               child: buildNavItem(Icons.settings, "Profile", () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => profilePage()));
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
               }, selectedIndex == 4),
             ),
           ],
@@ -76,4 +76,60 @@ class UIFunctions {
       ),
     );
   }
+
+  AppBar buildAppBar(String title) {
+    return AppBar(
+      title: Text(title, style: const TextStyle(color: Colors.black)),
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      elevation: 4,
+      shadowColor: Colors.grey[300],
+      automaticallyImplyLeading: false,
+    );
+  }
+  AppBar buildAppBarSub(String title) {
+    return AppBar(
+      title: Text(title, style: const TextStyle(color: Colors.black)),
+      centerTitle: true,
+      backgroundColor: Colors.white,
+      elevation: 4,
+      shadowColor: Colors.grey[300],
+      automaticallyImplyLeading: true,
+    );
+  }
+  AppBar buildAppBarPremium(String title) {
+    return AppBar(
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      centerTitle: true,
+      backgroundColor: Color(0xFF3A7BD5),
+      automaticallyImplyLeading: false,
+    );
+  }
+
+  Widget buildRoundedButton({
+    required String title,
+    required VoidCallback onPressed,
+    double fontSize = 16,
+    FontWeight fontWeight = FontWeight.w500,
+  }) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.deepPurple.withOpacity(0.6),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      ),
+      onPressed: onPressed,
+      child: SizedBox(
+        width: double.infinity,
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(fontSize: fontSize, fontWeight: fontWeight),
+          ),
+        ),
+      ),
+    );
+  }
+
 }

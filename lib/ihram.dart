@@ -2,13 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:meqat/Data.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: IhramTutorialPage(),
-  ));
-}
-
-
 class IhramTutorialPage extends StatefulWidget {
   @override
   _IhramTutorialPageState createState() => _IhramTutorialPageState();

@@ -1,45 +1,37 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:google_mlkit_barcode_scanning/google_mlkit_barcode_scanning.dart';
-import 'package:meqat/home.dart';
+
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'dart:async';
+
+import 'package:image_picker/image_picker.dart';
+
 import 'package:uuid/uuid.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:meqat/firebase.dart';
+import 'package:meqat/sharedPref.dart';
+
+import 'home.dart';
 
 class QRPage extends StatefulWidget {
   final bool isLeader;
-
-  QRPage({required this.isLeader});
+  const QRPage({required this.isLeader});
 
   @override
   _QRPageState createState() => _QRPageState();
 }
 
 class _QRPageState extends State<QRPage> {
-  final Color primaryColor = Color(0xFF2D2D2D);
-  final Color background = Color(0xFFF8F5F0);
   final qrKey = GlobalKey(debugLabel: 'qr');
-  String? qrId;
+  final primaryColor = const Color(0xFF2D2D2D);
   QRViewController? qrController;
-
+  String? qrId;
   bool showCheckmark = false;
-
-  List<String> _memberNames = [];
-  bool _isLoadingMembers = true;
-  bool _noInternet = false;
 
   @override
   void initState() {
     super.initState();
     _generateAndSaveQRId();
-    fetchMemberNames();
   }
 
   @override
@@ -52,31 +44,23 @@ class _QRPageState extends State<QRPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text("QR"),
-        centerTitle: true,
-      ),
-      body: Center(
-        child: showCheckmark
-            ? _showCheckmarkScreen()
-            : (!widget.isLeader ? _qrScanner() : _leaderPage()),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10),
+        child: widget.isLeader ? _leaderPage() : _memberPage(),
       ),
     );
   }
 
-  // QR UI (Members)
-  Widget _qrScanner() {
+  Widget _memberPage() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Image.asset('assets/icon/img5.png', width: 120),
-        SizedBox(height: 20),
-        Text("SCAN QR Code", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 20),
-
+        const Spacer(flex: 2),
+        const Text("SCAN QR Code", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Spacer(flex: 2),
         Container(
-          height: 200,
-          width: 200,
+          height: 400,
+          width: 400,
           decoration: BoxDecoration(
             border: Border.all(color: primaryColor, width: 2),
             borderRadius: BorderRadius.circular(12),
@@ -86,355 +70,164 @@ class _QRPageState extends State<QRPage> {
             onQRViewCreated: _onQRViewCreated,
           ),
         ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple.withOpacity(0.6),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-              ),
-              onPressed: _pickFromGallery,
-              icon: Icon(Icons.qr_code, color: Colors.white),
-              label: Text("Pick from Gallery", style: TextStyle(color: Colors.white)),
-            ),
-          ),
+        const Spacer(flex: 2),
+        _customButton(
+          icon: Icons.qr_code,
+          label: "Pick from Gallery",
+          onPressed: _pickFromGallery,
         ),
-
-        Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(
-                  onPressed: () async {
-                    SharedPreferences prefs = await SharedPreferences.getInstance();
-                    await prefs.remove('qr');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(), // make sure SignUpPage is imported
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Later",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: () async {
+            await SharedPref().removeQRCode();
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+          },
+          child: const Text("Later", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
         ),
-
-        const SizedBox(height: 16),
-        const Padding(
-          padding: EdgeInsets.only(bottom: 16),
-          child: Text(
-            "MeQat",
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
+        const Spacer(flex: 1),
+        const Text("MeQat", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
       ],
     );
   }
 
-  //QR UI (Leaders)
   Widget _leaderPage() {
-    return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset('assets/icon/img5.png', width: 120),
-              SizedBox(height: 5),
-              Text(
-                "All members must scan this!",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-
-              const SizedBox(height: 5),
-              QrImageView(
-                data: qrId!,
-                version: QrVersions.auto,
-                size: 200.0,
-              ),
-
-
-              const SizedBox(height: 5),
-              Text(
-                "New members:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-
-              Container(
-                width: 200,
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(color: primaryColor, width: 2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: _isLoadingMembers
-                    ? Center(child: CircularProgressIndicator()) // Loading spinner
-                    : _noInternet
-                    ? Center(
-                  child: Text(
-                    "No Internet Connection",
-                    style: TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                )
-                    : _memberNames.isEmpty
-                    ? Center(
-                  child: Text(
-                    "No members found",
-                    style: TextStyle(color: primaryColor),
-                  ),
-                )
-                    : ConstrainedBox(
-                  constraints: BoxConstraints(maxHeight: 120),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: _memberNames
-                          .map((name) => Text(name, style: TextStyle(color: primaryColor)))
-                          .toList(),
-                    ),
-                  ),
-                ),
-              ),
-
-
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple.withOpacity(0.6),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    onPressed: () {
-                      handleQRCode(qrId!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HomePage(),
-                        ),
-                      );
-                    },
-                    child: const Text("Done", style: TextStyle(fontSize: 18, color: Colors.white)),
-                  ),
-                ),
-              ),
-            ],
-          ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Spacer(flex: 2),
+        const Text("All members must scan this!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Spacer(flex: 1),
+        QrImageView(data: qrId!, version: QrVersions.auto, size: 200),
+        const SizedBox(height: 16),
+        const Text("New members:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        _memberListDisplay(qrId!),
+        const Spacer(flex: 1),
+        _customButton(
+          label: "Done",
+          onPressed: () {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+          },
         ),
+        const Spacer(flex: 1),
+        const Text("MeQat", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+      ],
+    );
+  }
+
+  Widget _customButton({required String label, IconData? icon, required VoidCallback onPressed}) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        icon: icon != null ? Icon(icon, color: Colors.white) : const SizedBox.shrink(),
+        label: Text(label, style: const TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.deepPurple.withOpacity(0.6),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        ),
+        onPressed: onPressed,
       ),
     );
   }
 
   Future<void> _generateAndSaveQRId() async {
-    final prefs = await SharedPreferences.getInstance();
-    final storedId = prefs.getString('qr');
-    if (storedId == null) {
+    String? storedId = await SharedPref().getQRCode();
+    if (storedId == null || storedId.isEmpty) {
       final newId = const Uuid().v4();
-      await prefs.setString('qr', newId);
-      setState(() {
-        qrId = newId;
-      });
+      qrId = newId;
     } else {
-      setState(() {
-        qrId = storedId;
-      });
+      qrId = storedId;
     }
+    handleQRCode(qrId!);
+    setState(() {});
   }
 
   Future<void> handleQRCode(String qrCode) async {
-    final prefs = await SharedPreferences.getInstance();
-    final connectivityResult = await Connectivity().checkConnectivity();
-    final isConnected = connectivityResult != ConnectivityResult.none;
+    await SharedPref().saveQRCode(qrCode);
+    await UpdateFirebase().addDelegation(widget.isLeader, qrCode);
+    print('✅✅✅✅✅✅✅✅✅'+ qrCode);
+  }
 
-    final isLeader = widget.isLeader;
-    final uid = prefs.getString('uid');
+  Widget _memberListDisplay(String qrcode) {
+    return Container(
+      width: 200,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        border: Border.all(color: primaryColor, width: 2),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance.collection('delegation').doc(qrcode).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-    if (isConnected) {
-      final firestore = FirebaseFirestore.instance;
+          if (!snapshot.hasData || !snapshot.data!.exists) {
+            return Text("No members yet", style: TextStyle(color: primaryColor));
+          }
 
-      try {
-        final docRef = firestore.collection('deligation').doc(qrCode);
+          final data = snapshot.data!.data() as Map<String, dynamic>?;
 
-        // Create or update deligation doc (just add timestamp)
-        await docRef.set({'timestamp': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+          if (data == null || data['members'] == null) {
+            return Text("No members yet", style: TextStyle(color: primaryColor));
+          }
 
-        if (isLeader && uid != null) {
-          // ✅ If user is leader, update users/{uid} with leader: true
-          await firestore.collection('users').doc(uid).set(
-            {
-              'qr': qrCode,
-              'leader': true, // 🔥 Added this line
-            },
-            SetOptions(merge: true),
+          final members = (data['members'] as Map<String, dynamic>?) ?? {};
+
+          if (members.isEmpty) {
+            return Text("No members yet", style: TextStyle(color: primaryColor));
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "New members:",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 120),
+                child: ListView(
+                  shrinkWrap: true,
+                  children: members.keys
+                      .map((uid) => Text(uid, style: const TextStyle(fontSize: 14)))
+                      .toList(),
+                ),
+              ),
+            ],
           );
-
-          // ✅ Also update deligation/{qr} with leader uid
-          await docRef.update({
-            'leader': uid,
-          });
-
-        } else {
-          if (!isLeader && uid != null) {
-            await firestore.collection('users').doc(uid).set(
-              {
-                'qr': qrCode,
-                'leader': false, // 🔥 Added this line
-              },
-              SetOptions(merge: true),
-            );
-            // ✅ If user is not leader, just add to members array
-            await docRef.update({
-              'members': FieldValue.arrayUnion([uid]),
-            });
-
-            // ✅ (optional) you could also add {leader: false} to users if you want
-          }
-        }
-      } catch (e) {
-        print('Firestore error: $e');
-      }
-    }
-
-    await prefs.setString('qr', qrCode);
-  }
-
-  Future<void> fetchMemberNames() async {
-    try {
-      var connectivityResult = await Connectivity().checkConnectivity();
-      if (connectivityResult == ConnectivityResult.none) {
-        setState(() {
-          _noInternet = true;
-          _isLoadingMembers = false;
-        });
-        return;
-      }
-
-      var delegationDoc = await FirebaseFirestore.instance.collection('delegation').doc('yourDelegationDocID').get();
-
-      if (delegationDoc.exists) {
-        List<dynamic> members = delegationDoc.data()?['members'] ?? [];
-
-        List<String> names = [];
-
-        for (var memberId in members) {
-          var userDoc = await FirebaseFirestore.instance.collection('users').doc(memberId).get();
-          if (userDoc.exists) {
-            String firstName = userDoc.data()?['firstName'] ?? '';
-            String lastName = userDoc.data()?['lastName'] ?? '';
-            names.add('$firstName $lastName');
-          }
-        }
-
-        setState(() {
-          _memberNames = names;
-          _isLoadingMembers = false;
-        });
-      } else {
-        setState(() {
-          _isLoadingMembers = false;
-        });
-      }
-
-    } catch (e) {
-      setState(() {
-        _isLoadingMembers = false;
-        _noInternet = true; // Assume error means no connection or Firestore problem
-      });
-    }
-  }
-
-  Widget _showCheckmarkScreen() {
-    return Center(
-      child: Icon(Icons.check_circle, size: 100, color: Colors.green),
+        },
+      ),
     );
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    setState(() {
-      qrController = controller;
-    });
-
-    controller.scannedDataStream.listen((scanData) {
-      final qrCode = scanData.code;
-
-      if (qrCode != null && qrCode.isNotEmpty) {
-        qrId = qrCode;
+    qrController = controller;
+    controller.scannedDataStream.listen((scanData) async {
+      if (scanData.code != null && scanData.code!.isNotEmpty) {
         controller.pauseCamera();
-        handleQRCode(qrId!);
+        print('✅✅✅✅✅✅✅✅✅'+ scanData.code!);
+        await handleQRCode(scanData.code!);
         _showCheckmark();
       }
     });
-  }
-
-  void _pickFromGallery() async {
-    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      final qrCode = await _extractQRCode(File(pickedFile.path));
-      if (qrCode != null) {
-        handleQRCode(qrCode); // pass the actual decoded QR code
-        _showCheckmark();
-      } else {
-        print("❌ No QR code found in the image.");
-      }
-    }
-  }
-
-  Future<String?> _extractQRCode(File imageFile) async {
-    final inputImage = InputImage.fromFile(imageFile);
-    final barcodeScanner = BarcodeScanner();
-
-    // Use processImage to scan the QR code in the image
-    final result = await barcodeScanner.processImage(inputImage);
-    await barcodeScanner.close();
-
-    // The result is a string value that represents the decoded QR code
-    if (result.isNotEmpty) {
-      return result[0].displayValue; // Display the first found value (QR code text)
-    }
-
-    return null; // No QR code found
   }
 
   void _showCheckmark() {
-    setState(() {
-      showCheckmark = true;
-    });
-
-    Future.delayed(Duration(milliseconds: 500), () {
-      setState(() {
-        showCheckmark = false;
-      });
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
+    setState(() => showCheckmark = true);
+    Future.delayed(const Duration(milliseconds: 500), () {
+      setState(() => showCheckmark = false);
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
     });
   }
+  void _pickFromGallery() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      _showCheckmark();
+    }
+  }
+
+
 }

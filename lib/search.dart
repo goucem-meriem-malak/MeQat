@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:speech_to_text/speech_to_text.dart';
-import 'UI.dart';
-import 'lost.dart';
-import 'medicine.dart';
-import 'menu.dart';
+import 'package:meqat/sharedPref.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'package:flutter_tts/flutter_tts.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: SearchPage(),
-  ));
-}
+import 'UI.dart';
+import 'home.dart';
+import 'menu.dart';
 
 class SearchPage extends StatefulWidget {
   @override
@@ -17,90 +13,194 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  final SpeechToText _speech = SpeechToText();
+  stt.SpeechToText _speech = stt.SpeechToText();
+  FlutterTts _tts = FlutterTts();
   bool _isListening = false;
-  String _command = '';
-  TextEditingController _searchController = TextEditingController();
+  String _text = '';
+  String _response = '';
+  String _currentLocale = 'en-US';
 
-  void _listen() async {
-    if (!_isListening) {
-      bool available = await _speech.initialize();
-      if (available) {
-        setState(() => _isListening = true);
-        _speech.listen(
-          onResult: (result) {
-            setState(() {
-              _command = result.recognizedWords.toLowerCase();
-            });
-            _handleCommand(_command);
-          },
-        );
-      }
-    } else {
-      setState(() => _isListening = false);
-      _speech.stop();
-    }
+  final List<Map<String, dynamic>> intents = [
+    {
+      'keywords': [
+        'what is ihram', 'hello', 'what is a rum','define ihram', 'ihram meaning', 'ihram',
+        'whats ihram', 'iran', 'ear arm', 'air ham',
+        'احرام', 'الإحرام', 'ما هو الإحرام', 'تعريف الإحرام',
+      ],
+      'answer': 'Ihram is a sacred state Muslims enter for Hajj or Umrah.',
+    },
+    {
+      'keywords': [
+        'what is tawaf', 'tawaf', 'go off','define tawaf', 'tawaf meaning', 'tawaf', 'whats tawaf'
+      ],
+      'answer': 'Tawaf is the act of circumambulating the Kaaba seven times.',
+    },
+    {
+      'keywords': [
+        'what is saee', 'define saee', 'saee meaning', 'saee', 'whats saee'
+      ],
+      'answer': 'Sa\'ee is the act of walking between Safa and Marwah seven times.',
+    },
+    // Add more intents here
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLanguagePreference();
   }
 
-  void _handleCommand(String command) {
-    if (command.contains('menu')) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MenuPage()));
-    } else if (command.contains('lost')) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => LostPage()));
-    } else if (command.contains('medicine') || command.contains('alarm')) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => MedicinePage()));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Command not recognized: $command')),
+  void _loadLanguagePreference() async {
+    String? userLanguage = await SharedPref().getLanguage();
+    if (userLanguage == null || userLanguage.isEmpty) {
+      userLanguage = 'en';
+    }
+    setState(() {
+      _currentLocale = (userLanguage == 'ar') ? 'ar-SA' : 'en-US';
+    });
+  }
+
+  void _startListening() async {
+    bool available = await _speech.initialize();
+    if (available) {
+      setState(() => _isListening = true);
+      _speech.listen(
+        localeId: _currentLocale,
+        listenMode: stt.ListenMode.dictation,
+        partialResults: true,
+        listenFor: Duration(seconds: 10), // Listen for 10 seconds
+        pauseFor: Duration(seconds: 3), // Wait for 3s pause before auto-stop
+        onResult: (result) {
+          setState(() {
+            _text = result.recognizedWords;
+          });
+        },
       );
     }
   }
 
+  void _stopListening() async {
+    setState(() => _isListening = false);
+    await _speech.stop();
+    _processSpeech();
+  }
+
+  void _processSpeech() async {
+    if (_text.isEmpty) {
+      setState(() => _response = 'We didn\'t detect anything.');
+      await _tts.speak(_response);
+      return;
+    }
+
+    for (var intent in intents) {
+      for (var keyword in intent['keywords']) {
+        if (_text.toLowerCase().contains(keyword.toLowerCase())) {
+          setState(() => _response = intent['answer']);
+          await _tts.speak(_response);
+          return;
+        }
+      }
+    }
+
+    setState(() => _response = 'Sorry, I\'m not sure about that.');
+    await _tts.speak(_response);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[200],
-      body: SafeArea(
-        child: Column(
-          children: [
-            SizedBox(height: 10),
-            Center(child: Text('MeQat', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey))),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextField(
-                controller: _searchController,
-                onSubmitted: (value) => _handleCommand(value.toLowerCase()),
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  suffixIcon: IconButton(
-                    icon: Icon(Icons.search),
-                    onPressed: () => _handleCommand(_searchController.text.toLowerCase()),
-                  ),
-                  filled: true,
-                  fillColor: Colors.grey[300],
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! > 50) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MenuPage()));
+        } else {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+        }
+      },
+      child: Scaffold(
+        appBar: UIFunctions().buildAppBar('Search'),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.all(16),
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        padding: EdgeInsets.all(12),
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.deepPurple.withOpacity(0.2),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16),
+                            topRight: Radius.circular(16),
+                            bottomLeft: Radius.circular(16),
+                            bottomRight: Radius.circular(0),
+                          ),
+                        ),
+                        child: Text(
+                          'Ask something like "What is ihram?", "ihram prohibitions", and we will answer you.. :)',
+                          style: TextStyle(fontSize: 16, color: Colors.black87),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    if (_response.isNotEmpty)
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: EdgeInsets.all(12),
+                          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(0),
+                              topRight: Radius.circular(16),
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            _response,
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ),
-            Spacer(),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: GestureDetector(
-                  onTap: _listen,
-                  child: CircleAvatar(
-                    radius: 25,
-                    backgroundColor: _isListening ? Colors.green : Colors.grey[400],
-                    child: Icon(Icons.mic, color: Colors.black),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 32.0),
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (_isListening) {
+                        _stopListening();
+                      } else {
+                        _startListening();
+                      }
+                    },
+                    child: Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: _isListening ? Colors.deepPurple.withOpacity(0.8) : Colors.deepPurple.withOpacity(0.4),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        _isListening ? Icons.mic : Icons.mic_none,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+        bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 1),
       ),
-      bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 1),
     );
   }
 }

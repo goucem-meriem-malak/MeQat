@@ -1,0 +1,12 @@
+{
+  "@@locale": "ar",
+  "welcomeBack": "مرحبًا بعودتك!",
+  "signInToContinue": "سجّل الدخول للمتابعة",
+  "usernameHint": "اسم المستخدم أو البريد أو الرقم",
+  "passwordHint": "كلمة المرور",
+  "loginButton": "تسجيل الدخول",
+  "forgotPassword": "هل نسيت كلمة المرور؟",
+  "createAccount": "إنشاء حساب جديد",
+  "dontHaveAccount": "ليس لديك حساب؟",
+  "appName": "ميقات"
+}

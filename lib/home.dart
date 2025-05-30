@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:math';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:math';
-import 'package:audioplayers/audioplayers.dart';
+
 import 'package:meqat/firebase.dart';
 import 'package:meqat/ihram.dart';
 import 'package:meqat/sharedPref.dart';
@@ -47,6 +49,8 @@ class _HomePageState extends State<HomePage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   LatLng userLocation = LatLng(26.667018, 39.654531);
   bool nearCurrentState = false;
+  bool firstTime=false;
+  bool auto = true;
 
   final List<Map<String, dynamic>> miqatData = Other.miqatData;
   List<String> _sayingDescriptions = Other.sayingDescriptions;
@@ -54,12 +58,18 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
+    getData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(Duration.zero, () async {
         ihram = await SharedPref().getIhramStatus();
-        //_getCurrentLocation();
-        startLocationMonitoring();
+        firstTime = await SharedPref().getFirstTime();
+        if(firstTime==false){
+          auto = await SharedPref().getFirstTime();
+          if(auto==true){
+            _getCurrentLocation();
+            startLocationMonitoring();
+          } else startLocationMonitoring();
+        }
       });
       _selectedSayingIndex = 2;
       showSaying(2);
@@ -67,6 +77,9 @@ class _HomePageState extends State<HomePage> {
 
   }
 
+  Future<void> getData() async {
+    ihram = await SharedPref().getIhramStatus();
+  }
   @override
   void dispose() {
     _stopAlarm();
@@ -109,10 +122,73 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (firstTime) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        // Avoid showing multiple times:
+        setState(() => firstTime = false);
+        await SharedPref().saveFirstTime(firstTime);
+        showDialog(
+          context: context,
+          barrierDismissible: false, // force user to choose
+          builder: (context) => AlertDialog(
+            title: Text('Allow Location Access?'),
+            content: Text(
+              'To provide better guidance, would you like to select your location manually by tapping on the map? Or use GPS',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    auto = true;
+                  });
+                  await SharedPref().saveAuto(auto);
+                  _getCurrentLocation();
+                  startLocationMonitoring();
+                },
+                child: Text('Auto Detect'),
+              ),
+              TextButton(
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  auto = false;
+                  await SharedPref().saveAuto(auto);
+                  startLocationMonitoring();
+                },
+                child: Text('Select Manually'),
+              ),
+            ],
+          ),
+        );
+      });
+    }
     return Scaffold(
       body: Stack(
         children: [
-
+          Positioned(
+            top: 40,   // adjust for status bar height
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.deepPurple.withOpacity(0.6),
+              child: Icon(
+                auto ? Icons.gps_fixed : Icons.pan_tool,
+                color: Colors.white,
+              ),
+              onPressed: () async {
+                setState(() {
+                  auto = !auto;
+                  if (auto) {
+                    _getCurrentLocation();
+                    startLocationMonitoring();
+                  } else {
+                    startLocationMonitoring();
+                    selectedMarker = null;
+                  }
+                });
+                await SharedPref().saveAuto(auto);  // save current state
+              },
+            ),
+          ),
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: makkahLocation,
@@ -120,13 +196,15 @@ class _HomePageState extends State<HomePage> {
             ),
             onTap: (LatLng latLng) async {
               setState(() {
-                userLocation = latLng;
-                selectedMarker = Marker(
-                  markerId: MarkerId("userSelected"),
-                  position: latLng,
-                  infoWindow: InfoWindow(title: "Your Selected Location"),
-                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-                );
+                if(auto==false){
+                  userLocation = latLng;
+                  selectedMarker = Marker(
+                    markerId: MarkerId("userSelected"),
+                    position: latLng,
+                    infoWindow: InfoWindow(title: "Your Selected Location"),
+                    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                  );
+                }
               });
               await UpdateFirebase().updateUserLocation(userLocation);
               startLocationMonitoring();
@@ -157,7 +235,30 @@ class _HomePageState extends State<HomePage> {
               mapController = controller;
             },
           ),
-
+          Positioned(
+            top: 40,
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.deepPurple.withOpacity(0.6),
+              child: Icon(
+                auto ? Icons.gps_fixed : Icons.pan_tool,
+                color: Colors.white,
+              ),
+              onPressed: () async {
+                setState(() {
+                  auto = !auto;
+                  if (auto) {
+                    _getCurrentLocation();
+                    startLocationMonitoring();
+                  } else {
+                    startLocationMonitoring();
+                    selectedMarker = null;
+                  }
+                });
+                await SharedPref().saveAuto(auto);
+              },
+            ),
+          ),
           DraggableScrollableSheet(
             controller: _scrollController,
             expand: true,
@@ -298,9 +399,9 @@ class _HomePageState extends State<HomePage> {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
 
-    userLocation = LatLng(position.latitude, position.longitude);
+
     await UpdateFirebase().updateUserLocation(userLocation);
-    setState(() {});
+    setState(() {userLocation = LatLng(position.latitude, position.longitude);});
   }
 
   void _onSayingPressed(int index) {
@@ -603,7 +704,6 @@ class _HomePageState extends State<HomePage> {
       CameraUpdate.newLatLngZoom(makkahLocation, 6),
     );
   }*/
-
 
   void checkUserPosition(int index){
     switch (index) {
@@ -1288,7 +1388,7 @@ class _HomePageState extends State<HomePage> {
   void _startAlarm() async {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await _audioPlayer.play(AssetSource('alarm2.mp3'));
+      await _audioPlayer.play(AssetSource('alarm1.mp3'));
     } catch (e) {
       print("Error playing alarm: $e");
     }
@@ -1562,3 +1662,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:flutter/foundation.dart';
 
 class Alarm {
   final String id;
@@ -118,6 +117,41 @@ class Preference {
   }
 }
 
+class myUser {
+  String? firstName;
+  String? lastName;
+  String? email;
+  String? password;
+  String? birthday;
+
+  myUser({
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.password,
+    this.birthday,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'firstName': firstName,
+    'lastName': lastName,
+    'email': email,
+    'password': password,
+    'birthday': birthday,
+  };
+
+
+  factory myUser.fromJson(Map<String, dynamic> json) {
+    return myUser(
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
+      password: json['password'],
+      birthday: json['birthday'],
+    );
+  }
+}
+
 class Other {
   static final List<Map<String, String>> premiumItems = const [
     {
@@ -142,7 +176,6 @@ class Other {
     {'title': 'Umrah', 'icon': Icons.people},
     {'title': 'Lost', 'icon': Icons.location_off},
     {'title': 'Medicine', 'icon': Icons.alarm},
-    {'title': 'Q&A', 'icon': Icons.question_answer_outlined},
   ];
   static List<String> languages = ["English", "Arabic"];
   static List<String> goal = ["Hajj", "Umrah"];
@@ -260,33 +293,30 @@ class Other {
       'description': 'Avoid cutting hair, perfume, arguing, or intimate relations while in Ihram.'
     },
   ];
-}
-
-class UI {
-  Widget buildNavItem(IconData icon, String label, VoidCallback onTap, bool isSelected) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Center( // Ensures the column is centered vertically
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? Colors.deepPurple.withOpacity(0.8) : Colors.grey,
-            ),
-            SizedBox(height: 4), // optional spacing
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.deepPurple.withOpacity(0.8) : Colors.grey,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  static final List<Map<String, String>> umrahSteps = [
+    {
+      'title': 'Step 1: Ihram',
+      'description': 'Enter the state of Ihram from the Miqat with intention and Talbiyah.'
+    },
+    {
+      'title': 'Step 2: Tawaf',
+      'description': 'Perform 7 rounds of Tawaf around the Kaaba in a counter-clockwise direction.'
+    },
+    {
+      'title': 'Step 3: Prayer at Maqam Ibrahim',
+      'description': 'Pray two Rak’ahs behind Maqam Ibrahim after completing Tawaf.'
+    },
+    {
+      'title': 'Step 4: Sa’i',
+      'description': 'Walk 7 times between Safa and Marwah, starting at Safa and ending at Marwah.'
+    },
+    {
+      'title': 'Step 5: Hair Cut or Shave',
+      'description': 'Men shave or trim hair; women cut a small portion of their hair.'
+    },
+    {
+      'title': 'Step 6: Exit Ihram',
+      'description': 'After the haircut, you are out of Ihram and the Umrah is complete.'
+    },
+  ];
 }

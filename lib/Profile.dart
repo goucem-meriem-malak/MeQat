@@ -1,23 +1,21 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
+
 import 'package:image_picker/image_picker.dart';
+import 'package:meqat/firebase.dart';
+
+import 'premium.dart';
 import 'login.dart';
 import 'sharedPref.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import 'Data.dart';
 import 'UI.dart';
-import 'home.dart';
 
-class profilePage extends StatefulWidget {
+class ProfilePage extends StatefulWidget {
   @override
-  _profilePageState createState() => _profilePageState();
+  _ProfilePageState createState() => _ProfilePageState();
 }
 
-class _profilePageState extends State<profilePage> {
-  Preference pref = Preference();
+class _ProfilePageState extends State<ProfilePage> {
   String? language, madhhab, country, transportation;
   bool? delegation, goal, leader;
   String? firstName, lastName, imageUrl;
@@ -28,50 +26,45 @@ class _profilePageState extends State<profilePage> {
   @override
   void initState() {
     super.initState();
-    loadData();
     _loadPreferences();
     _loadImageFromPrefs();
   }
 
-  Future<void> loadData() async {
-    pref = await SharedPref().loadPreferences();
-  }
-
-
   Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
+    myUser? user = await SharedPref().getUser();
+    Preference pref = await SharedPref().getPreferences();
+    String languge = await SharedPref().getLanguage();
+    String? img = await SharedPref().getImg();
+    if(languge.isEmpty || languge == null){
+      languge = 'en';
+    }
     setState(() {
-      language = prefs.getString('language');
-      madhhab = prefs.getString('madhhab');
-      country = prefs.getString('country');
-      transportation = prefs.getString('transportation');
-      delegation = prefs.getBool('delegation');
-      goal = prefs.getBool('goal');
-      leader = prefs.getBool('leader');
-      firstName = prefs.getString('firstName');
-      lastName = prefs.getString('lastName');
-      imageUrl = prefs.getString('face_image');
+      language = languge;
+      madhhab = pref.maddhab;
+      country = pref.country;
+      transportation = pref.transportation;
+      delegation = pref.delegation;
+      goal = pref.goal;
+      leader = pref.leader;
+      firstName = user!.firstName;
+      lastName = user.lastName;
+      imageUrl = img;
     });
   }
 
   Future<void> _savePreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    await Future.wait([
-      prefs.setString('language', language ?? ''),
-      prefs.setString('madhhab', madhhab ?? ''),
-      prefs.setString('country', country ?? ''),
-      prefs.setString('transportation', transportation ?? ''),
-      prefs.setBool('leader', leader ?? false),
-      prefs.setBool('goal', goal ?? false),
-      prefs.setBool('delegation', delegation ?? false),
-      prefs.setString('firstName', firstName ?? ''),
-      prefs.setString('lastName', lastName ?? ''),
-    ]);
+    await SharedPref().saveLanguage(language ?? 'en');
+    await SharedPref().savePreference('madhhab', madhhab);
+    await SharedPref().savePreference('country', country);
+    await SharedPref().savePreference('transportation', transportation);
+    await SharedPref().savePreference('leader', leader);
+    await SharedPref().savePreference('goal', goal);
+    await SharedPref().savePreference('delegation', delegation);
+    await SharedPref().updateUserName(firstName!, lastName!);
   }
 
   Future<void> _loadImageFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final imagePath = prefs.getString('face_image');
+    final String? imagePath = await SharedPref().getImg();
     if (imagePath != null && imagePath.isNotEmpty) {
       setState(() {
         _imageFile = File(imagePath);
@@ -81,11 +74,7 @@ class _profilePageState extends State<profilePage> {
   }
 
   Future<void> _saveImageToPrefs(File imageFile) async {
-    final prefs = await SharedPreferences.getInstance();
-    final directory = await getApplicationDocumentsDirectory();
-    final fileName = 'profile_${DateTime.now().millisecondsSinceEpoch}.png';
-    final savedImage = await imageFile.copy('${directory.path}/$fileName');
-    await prefs.setString('face_image', savedImage.path);
+    File savedImage = await SharedPref().saveImg(imageFile);
     setState(() {
       _imageFile = savedImage;
       imageUrl = savedImage.path;
@@ -100,6 +89,7 @@ class _profilePageState extends State<profilePage> {
         _imageFile = file;
       });
       await _saveImageToPrefs(file);
+      await UpdateFirebase().uploadPicSupbase(file);
     }
   }
 
@@ -110,7 +100,7 @@ class _profilePageState extends State<profilePage> {
         if (details.primaryVelocity! > 50) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => PremiumPage()),
           );
         }
       },
@@ -122,8 +112,7 @@ class _profilePageState extends State<profilePage> {
             IconButton(
               icon: Icon(Icons.exit_to_app_rounded, color: Colors.deepPurple),
               onPressed: () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.clear();
+                SharedPref().clearAll();
                 Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
               },
             ),

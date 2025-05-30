@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import 'Data.dart';
+
 class UmrahTutorialPage extends StatefulWidget {
   @override
   _UmrahTutorialPageState createState() => _UmrahTutorialPageState();
@@ -9,33 +11,7 @@ class UmrahTutorialPage extends StatefulWidget {
 class _UmrahTutorialPageState extends State<UmrahTutorialPage> {
   final PageController _controller = PageController();
   bool onLastPage = false;
-
-  final List<Map<String, String>> umrahSteps = [
-    {
-      'title': 'Step 1: Ihram',
-      'description': 'Enter the state of Ihram from the Miqat with intention and Talbiyah.'
-    },
-    {
-      'title': 'Step 2: Tawaf',
-      'description': 'Perform 7 rounds of Tawaf around the Kaaba in a counter-clockwise direction.'
-    },
-    {
-      'title': 'Step 3: Prayer at Maqam Ibrahim',
-      'description': 'Pray two Rak’ahs behind Maqam Ibrahim after completing Tawaf.'
-    },
-    {
-      'title': 'Step 4: Sa’i',
-      'description': 'Walk 7 times between Safa and Marwah, starting at Safa and ending at Marwah.'
-    },
-    {
-      'title': 'Step 5: Hair Cut or Shave',
-      'description': 'Men shave or trim hair; women cut a small portion of their hair.'
-    },
-    {
-      'title': 'Step 6: Exit Ihram',
-      'description': 'After the haircut, you are out of Ihram and the Umrah is complete.'
-    },
-  ];
+  final List<Map<String, String>> umrahSteps = Other.umrahSteps;
 
   @override
   Widget build(BuildContext context) {

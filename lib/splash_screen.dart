@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:meqat/home.dart';
-import 'package:meqat/signup.dart';
+import 'package:meqat/UI.dart';
+import 'package:meqat/sharedPref.dart';
+
+import 'home.dart';
+import 'signup.dart';
 
 final Color primaryColor = Color(0xFF2D2D2D);
 final Color accentColor = Color(0xFF4A4A4A);
@@ -15,71 +17,98 @@ class AnimationScreen extends StatefulWidget {
 }
 
 class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
+
   List<bool> _showLetters = [];
   Color _backgroundColor = primaryColor;
-  bool _showWelcomeUI = false;
   String _selectedLanguage = "English";
-
+  bool _hasUID = false;
+  bool show=false;
   late AnimationController _controller;
+  late Animation<int> _visibleLettersCount;
+
 
   @override
   void initState() {
     super.initState();
-    _showLetters = List<bool>.filled("MeQat".length, false);
+    getuid();
+
+    // Initialize _showLetters with 'MeQat' letters
+    _showLetters = List<bool>.filled('MeQat'.length, false);
+
     _controller = AnimationController(
       vsync: this,
-      duration: Duration(seconds: 1),
-      lowerBound: 0.95,
-      upperBound: 1.05,
-    )..repeat(reverse: true);
+      duration: Duration(milliseconds: 1200),
+    );
 
-    _startAnimationSequence();
+    _visibleLettersCount = StepTween(begin: 0, end: _showLetters.length).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+
+    // Start the animation always, regardless of UID presence
+    _controller.forward().whenComplete(() async {
+      await Future.delayed(Duration(milliseconds: 500));
+      setState(() {
+        _backgroundColor = background;
+      });
+
+      await Future.delayed(Duration(milliseconds: 800));
+
+      if (_hasUID) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+      } else {
+        setState(() {
+          show = true;
+        });
+      }
+    });
   }
 
+
+
+
+  Future<void> getuid() async {
+    String? uid = await SharedPref().getUID();
+    if(uid!.isNotEmpty){
+      setState(() {
+        _hasUID = true;
+      });
+    }
+  }
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  void _startAnimationSequence() async {
-    for (int i = 0; i < _showLetters.length; i++) {
-      await Future.delayed(Duration(milliseconds: 200));
-      setState(() {
-        _showLetters[i] = true;
-      });
-    }
-
-    await Future.delayed(Duration(milliseconds: 500));
-    setState(() {
-      _backgroundColor = background;
-    });
-
-    await Future.delayed(Duration(milliseconds: 800));
-    setState(() {
-      _showWelcomeUI = true;
-    });
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? uid = prefs.getString('uid');
-
-    if (uid != null && uid.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
-    } else {
-      setState(() {
-        _showWelcomeUI = true;
-      });
-    }
+  Widget _buildAnimatedLetters(Color textColor) {
+    return AnimatedBuilder(
+      animation: _visibleLettersCount,
+      builder: (context, child) {
+        int count = _visibleLettersCount.value;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_showLetters.length, (index) {
+            return AnimatedOpacity(
+              duration: Duration(milliseconds: 300),
+              opacity: index < count ? 1.0 : 0.0,
+              child: Text(
+                "MeQat"[index],
+                style: TextStyle(
+                  fontFamily: 'Scheherazade',
+                  color: textColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
   }
 
   Future<void> _saveLanguageAndProceed() async {
-    final prefs = await SharedPreferences.getInstance();
-    final languageCodes = {'English': 'en', 'Arabic': 'ar'};
-    await prefs.setString('language', languageCodes[_selectedLanguage] ?? 'en');
-
+    await SharedPref().saveLanguage(_selectedLanguage == 'Arabic' ? 'ar' : 'en');
     Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => SignUpPage()));
   }
 
@@ -101,9 +130,9 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
 
             const SizedBox(height: 40),
             Opacity(
-              opacity: _showWelcomeUI ? 1.0 : 0.0,
+              opacity: show ? 1.0 : 0.0,
               child: IgnorePointer(
-                ignoring: !_showWelcomeUI,
+                ignoring: !show,
                 child: _buildLanguageSelector(),
               ),
             ),
@@ -118,26 +147,7 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                       child: Image.asset('assets/icon/img5.png', width: 80, height: 80),
                     ),
                     const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: "MeQat".split("").asMap().entries.map((entry) {
-                        int idx = entry.key;
-                        String letter = entry.value;
-                        return AnimatedOpacity(
-                          duration: Duration(milliseconds: 300),
-                          opacity: _showLetters[idx] ? 1.0 : 0.0,
-                          child: Text(
-                            letter,
-                            style: TextStyle(
-                              fontFamily: 'Scheherazade',
-                              color: textColor,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    _buildAnimatedLetters(textColor),
                   ],
                 ),
               ),
@@ -147,23 +157,12 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10.0),
               child: Opacity(
-                opacity: _showWelcomeUI ? 1.0 : 0.0,
+                opacity: show ? 1.0 : 0.0,
                 child: IgnorePointer(
-                  ignoring: !_showWelcomeUI,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepPurple.withOpacity(0.6),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                    ),
+                  ignoring: !show,
+                  child: UIFunctions().buildRoundedButton(
+                    title: "Continue",
                     onPressed: _saveLanguageAndProceed,
-                    child: const SizedBox(
-                      width: double.infinity,
-                      child: Center(
-                        child: Text("Continue", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -176,50 +175,37 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
     );
   }
 
-
   Widget _buildLanguageSelector() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _selectedLanguage,
-          icon: Icon(Icons.arrow_drop_down, color: fontColor),
-          dropdownColor: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          onChanged: (String? newValue) {
-            setState(() {
-              _selectedLanguage = newValue!;
-            });
-          },
-          items: ["English", "Arabic"]
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Row(
-                children: [
-                  Icon(
-                    _selectedLanguage == value ? Icons.check_circle : Icons.circle_outlined,
-                    color: _selectedLanguage == value ? buttonColor : Colors.grey,
-                    size: 18,
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: _selectedLanguage == value ? fontColor : Colors.grey.shade700,
-                      fontWeight: _selectedLanguage == value ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: _selectedLanguage,
+        icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.black54, size: 20),
+        style: const TextStyle(
+          color: Colors.black87,
+          fontWeight: FontWeight.w500,
+          fontSize: 16,
         ),
+        dropdownColor: background,
+        borderRadius: BorderRadius.circular(12),
+        onChanged: (String? newValue) {
+          setState(() {
+            _selectedLanguage = newValue!;
+          });
+        },
+        items: ["English", "Arabic"].map((String value) {
+          bool isSelected = _selectedLanguage == value;
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? fontColor : Colors.black.withOpacity(0.6), // cheerier unselected
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

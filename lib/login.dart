@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
+
 import 'package:local_auth/local_auth.dart';
+
+import 'package:meqat/UI.dart';
 import 'package:meqat/firebase.dart';
 import 'package:meqat/home.dart';
 import 'package:meqat/signup.dart';
-
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(Myapp());
-}
 
 class Myapp extends StatelessWidget {
   @override
@@ -29,7 +27,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.light(
           primary: Colors.black,
-          background: Colors.white,
+          surface: Colors.white,
         ),
       ),
       home: const LoginPage(),
@@ -98,71 +96,60 @@ class _LoginPageState extends State<LoginPage> {
         child: IntrinsicHeight(
           child: Column(
             children: [
+
               const Spacer(flex: 2),
 
               Center(
-                child: Image.asset(
-                  'assets/logo.png',
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.contain,
+                child: Text(
+                      'Welcome Back!',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black54,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            offset: Offset(0, 2),
+                            blurRadius: 4,
+                            color: Colors.deepPurpleAccent.withOpacity(0.3),
+                          ),
+                        ],
+                      ),
+                    ),
+              ),
+              const SizedBox(height: 40),
+
+              Center(
+                child: Text(
+                  'Sign in to continue',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 32),
-
+              const Spacer(flex: 1),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32),
                 child: Column(
                   children: [
                     _buildTextField(
                       controller: _usernameController,
-                      focusNode: _focusNodeUsername,
-                      hintText: "Username, email or mobile number",
+                      hintText: "Username, email, mobile number",
                       obscureText: false,
+                      icon: Icons.person_2_outlined,
                     ),
-                    const SizedBox(height: 16),
                     _buildTextField(
                       controller: _passwordController,
-                      focusNode: _focusNodePassword,
                       hintText: "Password",
                       obscureText: true,
+                      icon: Icons.key,
                     ),
                     const SizedBox(height: 24),
 
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () async {
-                        final email = _usernameController.text.trim();
-                        final password = _passwordController.text;
-
-                        final user = await UpdateFirebase().loginWithEmail(email, password);
-                        if (user != null) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HomePage(),
-                            ),
-                          );
-                        }
-                      },
-                      child: const SizedBox(
-                        width: double.infinity,
-                        child: Center(
-                          child: Text(
-                            "Log in",
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ),
-                    ),
+                    UIFunctions().buildRoundedButton(title: "Log In", onPressed: onPress),
+                    /*
                     const SizedBox(height: 16),
 
                     TextButton.icon(
@@ -174,6 +161,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
 
+
+                     */
                     const SizedBox(height: 16),
 
                     GestureDetector(
@@ -181,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: const Text(
                         "Forgot password?",
                         style: TextStyle(
-                          color: Colors.blue,
+                          color: Colors.deepPurpleAccent,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -211,7 +200,7 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           child: const Text(
                             "Create new account",
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurpleAccent),
                           ),
                         ),
                       ],
@@ -241,26 +230,72 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Future<void> onPress() async {
+    final email = _usernameController.text.trim();
+    final password = _passwordController.text;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomePage(),
+      ),
+    );
+/*
+    final user = await UpdateFirebase().loginWithEmail(email, password);
+    if (user != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+    }
+
+ */
+  }
+
 
   Widget _buildTextField({
     required TextEditingController controller,
-    required FocusNode focusNode,
     required String hintText,
     required bool obscureText,
+    required IconData? icon,
   }) {
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: obscureText,
-      decoration: InputDecoration(
-        hintText: hintText,
-        filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 6,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(
+            color: Colors.black45.withOpacity(0.4), // lighter, cheerier color
+            fontWeight: FontWeight.w500, // optional: a bit bolder for friendliness
+          ),
+          prefixIcon: icon != null
+              ? Icon(
+            icon,
+            color: Colors.deepPurple,
+          )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          filled: true,
+          fillColor: Colors.white,
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       ),
     );
   }

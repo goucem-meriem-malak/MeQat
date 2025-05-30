@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:meqat/Data.dart';
-import 'package:meqat/firebase.dart';
-import 'package:meqat/home.dart';
-import 'package:meqat/login.dart';
+
+import 'Data.dart';
+import 'firebase.dart';
+import 'home.dart';
+import 'login.dart';
 import 'QRPage.dart';
+import 'UI.dart';
 import 'sharedPref.dart';
 
 final other = Other();
@@ -24,6 +26,10 @@ class _PreferencesPageState extends State<PreferencesPage> {
   String? selectedTransportation;
   bool _isWithDelegation = false;
   bool _isLeader = false;
+  bool hasMadhabError = false;
+  bool hasCountryError = false;
+  bool hasTransportError = false;
+
 
   final List<String> languages = Other.languages;
   final List<String> goal = Other.goal;
@@ -45,7 +51,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
         padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 10),
         child: Column(
           children: [
-            const Spacer(flex: 5),
+            const Spacer(flex: 2),
 
             Center(
               child: Text(
@@ -71,155 +77,156 @@ class _PreferencesPageState extends State<PreferencesPage> {
               ),
             ),
 
-            const SizedBox(height: 26),
+            const Spacer(flex: 1),
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // First Switch: Hajj / Umrah
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("Hajj", textAlign: TextAlign.end),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text("Hajj"),
+                        ),
                       ),
                       Switch(
                         value: selectedGoal,
                         activeColor: Colors.deepPurpleAccent,
+                        inactiveThumbColor: Colors.deepPurple,
                         onChanged: (bool value) {
                           setState(() {
                             selectedGoal = value;
                           });
-                        }
+                        },
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Text("Umrah", textAlign: TextAlign.start),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("Umrah"),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+
+                  const SizedBox(height: 5),
+
+                  // Second Switch: Individual / Delegation
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Expanded(
-                        child: Text("Individual", textAlign: TextAlign.end),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: Text("Individual"),
+                        ),
                       ),
                       Switch(
                         value: _isWithDelegation,
-                        activeColor: Colors.deepPurple,
+                        activeColor: Colors.deepPurpleAccent,
+                        inactiveThumbColor: Colors.deepPurple,
                         onChanged: (value) {
                           setState(() {
                             _isWithDelegation = value;
                           });
                         },
                       ),
-                      const Expanded(
-                        child: Text("Deligation", textAlign: TextAlign.start),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text("Delegation"),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  if (_isWithDelegation)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
+
+                  const SizedBox(height: 5),
+
+                  AnimatedOpacity(
+                    opacity: _isWithDelegation ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 300), // optional fade animation
+                    child: Row(
                       children: [
-                        const Expanded(
-                          child: Text("Member", textAlign: TextAlign.end),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            child: Text("Member"),
+                          ),
                         ),
                         Switch(
                           value: _isLeader,
-                          activeColor: Colors.purple,
-                          onChanged: (value) {
+                          activeColor: Colors.deepPurpleAccent,
+                          inactiveThumbColor: Colors.deepPurple,
+                          onChanged: _isWithDelegation
+                              ? (value) {
                             setState(() {
                               _isLeader = value;
                             });
-                          },
+                          }
+                              : null, // disable switch if delegation off
                         ),
-                        const Expanded(
-                          child: Text("Leader", textAlign: TextAlign.start),
+                        Expanded(
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text("Leader"),
+                          ),
                         ),
                       ],
                     ),
+                  ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 10),
+
+            _buildDropdown(
+              "Select Madhab",
+              Icons.account_balance,
+              ["Hanafi", "Shafi'i"],
+                  (value) => setState(() => selectedMadhhab = value),
+              hasMadhabError,
+            ),
+
+            _buildDropdown(
+              "Select Country",
+              Icons.public,
+              ["Saudi Arabia", "Egypt", "USA"],
+                  (value) => setState(() => selectedCountry = value),
+              hasCountryError,
+            ),
+
+            _buildDropdown(
+              "Select Transportation",
+              Icons.directions_car,
+              ["Bus", "Taxi", "Train"],
+                  (value) => setState(() => selectedTransportation = value),
+              hasTransportError,
             ),
 
 
             const SizedBox(height: 16),
 
-            _buildDropdown("Choose Madhhab", Icons.school, madhhabs, (value) {
-              setState(() {
-                selectedMadhhab = value;
-              });
-            }),
-            const SizedBox(height: 10),
-            _buildDropdown("Choose Country", Icons.location_on, countries, (value) {
-              setState(() {
-                selectedCountry = value;
-              });
-            }),
-            const SizedBox(height: 10),
-            _buildDropdown("Choose Transportation", Icons.directions, transportationMethods, (value) {
-              setState(() {
-                selectedTransportation = value;
-              });
-            }),
-            const Spacer(),
-
             // Continue Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.deepPurple.withOpacity(0.6),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                minimumSize: const Size(double.infinity, 50),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: UIFunctions().buildRoundedButton(
+                title: "Next",
+                onPressed: () {
+                  setState(() {
+                    hasMadhabError = selectedMadhhab == null || selectedMadhhab!.isEmpty;
+                    hasCountryError = selectedCountry == null || selectedCountry!.isEmpty;
+                    hasTransportError = selectedTransportation == null || selectedTransportation!.isEmpty;
+                  });
+
+                  if (!hasMadhabError && !hasCountryError && !hasTransportError) {
+                    onPress();
+                  }
+                },
               ),
-              onPressed: () async {
-                SharedPref().savePreference("goal", goal);
-                SharedPref().savePreference("delegation", _isWithDelegation);
-                SharedPref().savePreference("leader", _isLeader);
-                SharedPref().savePreference("madhhab", selectedMadhhab);
-                SharedPref().savePreference("country", selectedCountry);
-                SharedPref().savePreference("transportation", selectedTransportation);
-
-                final userData = {
-                  'goal': selectedGoal,
-                  'madhhab': selectedMadhhab,
-                  'country': selectedCountry,
-                  'transportation': selectedTransportation,
-                  'delegation': _isWithDelegation,
-                  'leader': _isLeader,
-                };
-                await UpdateFirebase().uploadPreferences(userData);
-
-                if(_isWithDelegation){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QRPage(isLeader: _isLeader),
-                    ),
-                  );
-                } else{
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(),
-                    ),
-                  );
-                }
-              },
-              child: const Text("Next", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
             ),
-          ),
-
-            const SizedBox(height: 20),
 
             const Spacer(flex: 1),
             Row(
@@ -261,7 +268,12 @@ class _PreferencesPageState extends State<PreferencesPage> {
   }
 
   Widget _buildDropdown(
-      String hint, IconData icon, List<String> listItems, Function(String?) onChanged) {
+      String hint,
+      IconData icon,
+      List<String> listItems,
+      Function(String?) onChanged,
+      bool hasError,
+      ) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -285,11 +297,11 @@ class _PreferencesPageState extends State<PreferencesPage> {
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(25),
-            borderSide: BorderSide(color: Colors.transparent),
+            borderSide: BorderSide(color: hasError ? Colors.red : Colors.transparent, width: 1.5),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(25),
-            borderSide: BorderSide(color: Colors.deepPurpleAccent, width: 1.5),
+            borderSide: BorderSide(color: hasError ? Colors.red : Colors.deepPurpleAccent, width: 1.5),
           ),
         ),
         dropdownColor: Colors.white,
@@ -312,6 +324,46 @@ class _PreferencesPageState extends State<PreferencesPage> {
       ),
     );
   }
+
+
+  Future<void> onPress() async {
+    Preference pref = Preference();
+    pref.leader = _isLeader;
+    pref.delegation = _isWithDelegation;
+    pref.goal = selectedGoal;
+    pref.transportation = selectedTransportation;
+    pref.maddhab = selectedMadhhab;
+    pref.country = selectedCountry;
+
+    SharedPref().savePreferences(pref);
+
+    final userData = {
+      'goal': selectedGoal,
+      'madhhab': selectedMadhhab,
+      'country': selectedCountry,
+      'transportation': selectedTransportation,
+      'delegation': _isWithDelegation,
+      'leader': _isLeader,
+    };
+    await UpdateFirebase().uploadPreferences(userData);
+
+    if(_isWithDelegation){
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => QRPage(isLeader: _isLeader),
+        ),
+      );
+    } else{
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(),
+        ),
+      );
+    }
+  }
+
 
   void _loadData() async {
   uid = await SharedPref().getUID();

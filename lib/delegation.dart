@@ -1,229 +1,361 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
+
 import 'package:qr_code_scanner/qr_code_scanner.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:zxing2/qrcode.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+
 import 'package:image_picker/image_picker.dart';
+
+import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+
 import 'UI.dart';
-import 'home.dart';
+import 'firebase.dart';
+import 'sharedPref.dart';
 
 class DelegationPage extends StatefulWidget {
   @override
   _DelegationPageState createState() => _DelegationPageState();
 }
 class _DelegationPageState extends State<DelegationPage> {
+  StreamSubscription<Position>? _positionStreamSubscription;
+  final LatLng makkahLatLng = LatLng(21.4225, 39.8262);
   List<Map<String, dynamic>> membersList = [];
   bool? delegation;
-  String? qrCode;
-  bool? isLeader;
   bool showMembers = false;
   bool showCheckmark = false;
-  String? leaderName;
+  String? leaderName, firstNAme, lastName;
   Map<String, DateTime> lastAlarmTime = {}; // ✅ Track when last alarm triggered per user
   Map<String, bool> userAlarmCleared = {};  // ✅ Track if user pressed OK (alarm cleared)
   bool isAlarmDialogShowing = false;
-  Map<String, LatLng> _userLocations = {}; // 🔥 Track all users' locations live
   int markerCounter = 0;
-  late GoogleMapController _mapController;
+  late GoogleMapController _mapController ;
   final Set<Marker> _markers = {};
-  bool _isLoading = true;
+  LatLng? lostUser;
+  LatLng? userLocation;
+  String? uid, qr;
+  bool? leader = false;
+  late List<Map<String, dynamic>> members;
+
+  void updateGroupMarkers({
+    required bool isLeader,
+    required List<Map<String, dynamic>> members, // List of user maps with uid, firstName, lastName, location (LatLng)
+    Map<String, dynamic>? leaderInfo, // Contains uid, firstName, lastName, location if user is not the leader
+  }) {
+    final Set<Marker> newMarkers = {};
+
+    // Add all members
+    for (var member in members) {
+      final marker = Marker(
+        markerId: MarkerId(member['uid']),
+        position: member['location'] is LatLng
+            ? member['location']
+            : LatLng(
+          (member['location'] as GeoPoint).latitude,
+          (member['location'] as GeoPoint).longitude,
+        ),
+        infoWindow: InfoWindow(
+          title: '${member['firstName']} ${member['lastName']}',
+          snippet: 'Group Member',
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+      );
+      newMarkers.add(marker);
+    }
+
+    if (!isLeader && leaderInfo != null) {
+      final dynamic locationField = leaderInfo['location'];
+
+      LatLng position;
+
+      if (locationField is GeoPoint) {
+        position = LatLng(locationField.latitude, locationField.longitude);
+      } else if (locationField is LatLng) {
+        position = locationField;
+      } else {
+        print("🚫 Invalid location type for leader: $locationField");
+        return; // Skip adding marker
+      }
+
+      final leaderMarker = Marker(
+        markerId: MarkerId(leaderInfo['uid']),
+        position: position,
+        infoWindow: InfoWindow(
+          title: '${leaderInfo['firstName']} ${leaderInfo['lastName']}',
+          snippet: 'Group Leader',
+        ),
+        icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+      );
+
+      newMarkers.add(leaderMarker);
+    }
+
+    print("❌❌❌❌❌❌"+_markers.length.toString());
+    setState(() {
+      _markers.clear();
+      _markers.addAll(newMarkers);
+    });
+    print("❌❌❌❌❌❌"+_markers.length.toString());
+  }
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
     _initialize();
   }
-
-
   Future<void> _initialize() async {
-    try {
-      await Firebase.initializeApp();
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      bool? isDelegation = prefs.getBool('delegation');
+    uid = await SharedPref().getUID();
+    qr = await SharedPref().getQRCode();
+    leader = await SharedPref().getLeader();
+    firstNAme = await SharedPref().getFirstName();
+    lastName = await SharedPref().getLastName();
 
-      if (isDelegation == true) {
-        String? qr = prefs.getString('qr');
-        if (qr != null) {
-          await _loadMembers(qr);
+    // Load members if qr exists
+    if (qr != null && qr!.isNotEmpty) {
+      if (leader == true) {
+        if (uid != null) {
+          final firstNameValue = await SharedPref().getFirstName();
+          final lastNameValue = await SharedPref().getLastName();
+          leaderName = "$firstNameValue $lastNameValue";
 
-          Timer.periodic(Duration(seconds: 10), (timer) {
-            if (_userLocations.isNotEmpty) {
-              checkIfMemberIsStraying(_userLocations, context);
-            }
-          });
-        } else {
-          print("❌ QR code is null!");
+          members = await UpdateFirebase().getDelegationMembersInfo(uid!, qr!);
         }
       } else {
-        print("ℹ️ Delegation is false or not set");
-      }
-    } catch (e) {
-      print("❌ Error during initialization: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  LatLng _getCenterOfMarkers() {
-    double lat = 0;
-    double lng = 0;
-
-    for (var marker in _markers) {
-      lat += marker.position.latitude;
-      lng += marker.position.longitude;
-    }
-
-    int count = _markers.length;
-    return LatLng(lat / count, lng / count);
-  }
-
-  void _moveCameraToCenter() async {
-    if (_markers.isEmpty) return;
-
-    LatLng center = _getCenterOfMarkers();
-
-    CameraPosition cameraPosition = CameraPosition(
-      target: center,
-      zoom: 10, // <<< You can set 13-15 depending how close you want
-    );
-
-    await _mapController.animateCamera(
-      CameraUpdate.newCameraPosition(cameraPosition),
-    );
-  }
-
-  Future<void> _loadMembers(String qr) async {
-    final delegationDoc = await FirebaseFirestore.instance
-        .collection('deligation')
-        .doc(qr)
-        .get();
-
-    if (!delegationDoc.exists) return;
-
-    final data = delegationDoc.data();
-    final String? leaderId = data?['leader'];
-    final List<dynamic>? members = data?['members'];
-
-    List<Map<String, String>> loadedMembers = [];
-
-    if (leaderId != null) {
-      // ✅ Load leader location and add to members list
-      final leaderDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(leaderId)
-          .get();
-
-      if (leaderDoc.exists) {
-        final leaderData = leaderDoc.data();
-        final firstName = leaderData?['firstName'] ?? '';
-        final lastName = leaderData?['lastName'] ?? '';
-        loadedMembers.add({'firstName': firstName, 'lastName': lastName});
-
-        await _loadUserLocation(leaderId, isLeader: true); // 🔥 Yellow marker for leader
+        members = await UpdateFirebase().getGroupMembersAndLeader(uid!, qr!);
+        leaderInfo = await UpdateFirebase().getLeaderInfo(qr!);
       }
     }
+    print("❌❌❌❌❌❌❌"+leaderInfo.toString());
+    if(leaderInfo != null) {print("❌❌");updateGroupMarkers(isLeader: false, members: members, leaderInfo: leaderInfo);}
+    _startListeningToLocationChanges();
 
-    if (members != null && members.isNotEmpty) {
-      for (var memberId in members) {
-        if (memberId != leaderId) {
-          final userDoc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(memberId)
-              .get();
-
-          if (userDoc.exists) {
-            final userData = userDoc.data();
-            final firstName = userData?['firstName'] ?? '';
-            final lastName = userData?['lastName'] ?? '';
-            loadedMembers.add({'firstName': firstName, 'lastName': lastName});
-
-            await _loadUserLocation(memberId, isLeader: false); // 🔥 Red marker for member
-          }
-        }
-      }
-    }
-
-    setState(() {
-      membersList = loadedMembers;
-    });
-
-    Future.delayed(const Duration(milliseconds: 300), () {
-      _moveCameraToCenter(); // 🔥 Move map camera after all markers are loaded
-    });
+    // Finally, update the UI
+    setState(() {});
   }
-
-  Future<void> _loadUserLocation(String userId, {required bool isLeader}) async {
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(userId)
-        .get();
-
-    if (userDoc.exists) {
-      var data = userDoc.data();
-      String firstName = data?['firstName'] ?? '';
-      String lastName = data?['lastName'] ?? '';
-      GeoPoint? location = data?['location'];
-
-      if (location != null) {
-        double lat = location.latitude;
-        double lng = location.longitude;
-
-        setState(() {
-          _markers.add(
-            Marker(
-              markerId: MarkerId('marker_${userId}_${DateTime.now().millisecondsSinceEpoch}'),
-              position: LatLng(lat, lng),
-              infoWindow: InfoWindow(
-                title: '$firstName $lastName',
-                snippet: isLeader ? 'Leader' : 'Member',
-              ),
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                isLeader ? BitmapDescriptor.hueYellow : BitmapDescriptor.hueRed,
-              ),
-            ),
-          );
-
-          // ✅ Save location
-          _userLocations[userId] = LatLng(lat, lng);
-        });
-
-        print('✅ Added ${isLeader ? "Leader" : "Member"}: $firstName $lastName at ($lat, $lng)');
-      } else {
-        print('❌ Missing location for $userId');
-      }
-    } else {
-      print('❌ User document does not exist for $userId');
-    }
-  }
-
   void _onMapCreated(GoogleMapController controller) {
     _mapController = controller;
+
+    LatLng target;
+
+    if (lostUser != null) {
+      target = lostUser!;
+    } else if (userLocation != null) {
+      target = userLocation!;
+    } else {
+      target = makkahLatLng;
+    }
+
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(target: target, zoom: lostUser != null ? 16 : (userLocation != null ? 14 : 12)),
+      ),
+    );
   }
 
-  Future<void> checkIfMemberIsStraying(
-      Map<String, LatLng> userLocations, BuildContext context) async {
+  void _startListeningToLocationChanges() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location services are disabled. Please enable them.')),
+      );
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Location permissions are denied.')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location permissions are permanently denied.')),
+      );
+      return;
+    }
+
+    _positionStreamSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Only emit if user moved 10+ meters
+      ),
+    ).listen((Position position) {
+      final newLocation = LatLng(position.latitude, position.longitude);
+      setState(() {
+        userLocation = newLocation;
+      });
+
+      updateCameraToLocation(newLocation);
+      UpdateFirebase().updateUserLocation(newLocation);
+    });
+  }
+/*
+  Future<void> _getCurrentLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location services are disabled. Please enable them.')),
+      );
+      return;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Location permissions are denied.')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Location permissions are permanently denied.')),
+      );
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+
+    setState(() {userLocation = LatLng(position.latitude, position.longitude);});
+    Future.delayed(const Duration(milliseconds: 300), () {
+      updateCameraToUserLocation(userLocation!);
+    });
+    await UpdateFirebase().updateUserLocation(userLocation!);
+  }
+*/
+  void updateCameraToLocation(LatLng target) {
+    _mapController.animateCamera(
+      CameraUpdate.newCameraPosition(
+        CameraPosition(
+          target: target,
+          zoom: lostUser != null ? 16 : (userLocation != null ? 14 : 12),
+        ),
+      ),
+    );
+
+    final markerId = MarkerId('target_marker');
+    final marker = Marker(
+      markerId: markerId,
+      position: target,
+      infoWindow: InfoWindow(title: 'Target Location'),
+      icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+    );
+
+    setState(() {
+      _markers.removeWhere((m) => m.markerId == markerId); // avoid duplicates
+      _markers.add(marker);
+    });
+  }
+  Map<String, dynamic>? leaderInfo;
+
+
+
+  Future<void> checkIfMemberIsStrayingFromGroup(
+      List<Map<String, dynamic>> members, // Excludes current user
+      BuildContext context,
+      ) async {
     const double maxAllowedDistance = 15.0; // meters
     const int cooldownSeconds = 300; // 5 minutes
 
-    for (var entry in userLocations.entries) {
-      String userId = entry.key;
-      LatLng userPos = entry.value;
+    double closestDistance = double.infinity;
+
+    for (var other in members) {
+      final GeoPoint? geo = other['location'];
+      if (geo == null) {
+        print("🚫 Missing location data for member: $other");
+        continue;
+      }
+
+      LatLng otherPos = LatLng(geo.latitude, geo.longitude);
+      print("✅ Member location: ${otherPos.latitude}, ${otherPos.longitude}");
+
+      double distance = Geolocator.distanceBetween(
+        userLocation!.latitude,
+        userLocation!.longitude,
+        otherPos.latitude,
+        otherPos.longitude,
+      );
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+      }
+    }
+
+    if (closestDistance > maxAllowedDistance) {
+      DateTime now = DateTime.now();
+
+      if (lastAlarmTime.containsKey(uid)) {
+        DateTime lastTime = lastAlarmTime[uid]!;
+        if (now.difference(lastTime).inSeconds < cooldownSeconds) {
+          return; // Cooldown active
+        }
+      }
+
+      setState(() {
+        lostUser = userLocation;
+      });
+
+      Future.delayed(const Duration(milliseconds: 300), () {
+        updateCameraToLocation(lostUser!); // Center camera on self
+      });
+
+      // Alert the user
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: Text("⚠️ You're Straying"),
+          content: Text("Hey $firstNAme $lastName, you’re too far from your group. Please go back."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("OK"),
+            ),
+          ],
+        ),
+      );
+
+      startAlarmForUser(uid!, context);
+      lastAlarmTime[uid!] = now;
+    }
+  }
+
+  Future<void> checkIfLeaderDetectsStraying(
+      List<Map<String, dynamic>> members, // Each contains uid, firstName, lastName, location (LatLng)
+      BuildContext context,
+      ) async {
+    const double maxAllowedDistance = 15.0; // meters
+    const int cooldownSeconds = 300; // 5 minutes
+
+    for (var member in members) {
+      String userId = member['uid'];
+      LatLng userPos = member['location'];
 
       double closestDistance = double.infinity;
 
-      for (var otherEntry in userLocations.entries) {
-        if (userId == otherEntry.key) continue; // Skip self
+      for (var other in members) {
+        if (userId == other['uid']) continue;
 
-        LatLng otherPos = otherEntry.value;
+        LatLng otherPos = other['location'];
 
         double distance = Geolocator.distanceBetween(
           userPos.latitude,
@@ -248,13 +380,71 @@ class _DelegationPageState extends State<DelegationPage> {
           }
         }
 
-        // 🔥 Trigger alarm only once
+        setState(() {
+          lostUser = userPos;
+        });
+
+        Future.delayed(const Duration(milliseconds: 300), () {
+          updateCameraToLocation(lostUser!); // Move camera to lost user
+        });
+
+        // Show full name alert to the leader
+        String fullName = "${member['firstName']} ${member['lastName']}";
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: Text("⚠️ Member Straying"),
+            content: Text("$fullName is straying from the group. Please locate them."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text("OK"),
+              ),
+            ],
+          ),
+        );
+
+        // Optionally play sound or start other alerts
         startAlarmForUser(userId, context);
 
-        // Update last alarm time
         lastAlarmTime[userId] = now;
 
-        break; // ✅ STOP checking after first alarm
+        break; // Alert for one user only
+      }
+    }
+  }
+
+  bool _isStrayingCheckActive = false;
+  void _startStrayingCheck() async {
+    setState(() {
+      _isStrayingCheckActive = !_isStrayingCheckActive; // toggle state
+    });
+
+    String message = _isStrayingCheckActive
+        ? "Straying detection activated. We'll now start monitoring your delegation's location."
+        : "Straying detection deactivated. Monitoring stopped.";
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(_isStrayingCheckActive ? "Detection Started" : "Detection Stopped"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (_isStrayingCheckActive) {
+      if (leader == true) {
+        await checkIfLeaderDetectsStraying(members, context);
+      } else {
+        await checkIfMemberIsStrayingFromGroup(members, context);
       }
     }
   }
@@ -288,50 +478,6 @@ class _DelegationPageState extends State<DelegationPage> {
     );
   }
 
-  Future<void> _loadPreferences() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    delegation = prefs.getBool('delegation') ?? false;
-    qrCode = prefs.getString('qr');
-    isLeader = prefs.getBool('leader') ?? false;
-
-    if (delegation == true && qrCode != null) {
-      if (isLeader == true) {
-        final currentUserId = prefs.getString('uid'); // ensure this is saved
-        if (currentUserId != null) {
-          final firstName = prefs.getBool('firstName');
-          final lastName = prefs.getBool('lastName');
-          leaderName = "$firstName $lastName";
-        }
-      } else {
-        // Get leader ID from delegation
-        final delegationDoc = await FirebaseFirestore.instance
-            .collection('deligation')
-            .doc(qrCode)
-            .get();
-
-        if (delegationDoc.exists) {
-          final data = delegationDoc.data();
-          final leaderId = data?['leader'];
-          if (leaderId != null) {
-            final leaderDoc = await FirebaseFirestore.instance
-                .collection('users')
-                .doc(leaderId)
-                .get();
-
-            if (leaderDoc.exists) {
-              final leaderData = leaderDoc.data();
-              final firstName = leaderData?['firstName'] ?? '';
-              final lastName = leaderData?['lastName'] ?? '';
-              leaderName = "$firstName $lastName";
-            }
-          }
-        }
-      }
-    }
-
-    setState(() {});
-  }
-
   void _scanQRCode() async {
     final result = await Navigator.push(
       context,
@@ -343,7 +489,6 @@ class _DelegationPageState extends State<DelegationPage> {
       _showCheckmark();      // optionally navigate forward
     }
   }
-
   void _pickFromGallery() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -356,20 +501,45 @@ class _DelegationPageState extends State<DelegationPage> {
       }
     }
   }
-
   Future<String?> _extractQRCode(File imageFile) async {
-    final inputImage = InputImage.fromFile(imageFile);
-    final barcodeScanner = BarcodeScanner();
+    try {
+      final bytes = await imageFile.readAsBytes();
+      final decodedImage = img.decodeImage(bytes);
+      if (decodedImage == null) return null;
 
-    final result = await barcodeScanner.processImage(inputImage);
-    await barcodeScanner.close();
+      final pixels = Int32List(decodedImage.width * decodedImage.height);
+      int index = 0;
 
-    if (result.isNotEmpty) {
-      return result[0].displayValue;
+      for (int y = 0; y < decodedImage.height; y++) {
+        for (int x = 0; x < decodedImage.width; x++) {
+          final pixel = decodedImage.getPixel(x, y);
+          final r = pixel.r.toInt();
+          final g = pixel.g.toInt();
+          final b = pixel.b.toInt();
+
+          final rgb = (r << 16) | (g << 8) | b;
+          pixels[index++] = rgb;
+        }
+      }
+
+      final luminanceSource = RGBLuminanceSource(
+        decodedImage.width,
+        decodedImage.height,
+        pixels,
+      );
+
+      final bitmap = BinaryBitmap(HybridBinarizer(luminanceSource));
+      final reader = QRCodeReader();
+
+      final result = reader.decode(bitmap);
+
+      print(result.text);
+      return result.text;
+    } catch (e) {
+      print('QR decode error: $e');
+      return null;
     }
-    return null;
   }
-
   void _showCheckmark() {
     setState(() {
       showCheckmark = true;
@@ -379,34 +549,18 @@ class _DelegationPageState extends State<DelegationPage> {
       setState(() {
         showCheckmark = false;
       });
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(), // Replace with your actual home page
-        ),
-      );
     });
   }
-
-  void handleQRCode(String code) {
-    // Save QR and refresh UI
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setString('qr', code);
-      setState(() {
-        qrCode = code;
-      });
+  Future<void> handleQRCode(String code) async {
+    setState(() {
+      qr = code;
     });
+    await SharedPref().saveQRCode(code);
+    _startListeningToLocationChanges();
   }
 
   @override
   Widget build(BuildContext context) {
-    /*if (delegation == null) {
-      return Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-     */
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Delegation Page'),
@@ -416,157 +570,47 @@ class _DelegationPageState extends State<DelegationPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          if (qrCode != null)
+          if (qr != null)
             IconButton(
               icon: Icon(Icons.qr_code, color: Colors.deepPurple),
               onPressed: () {
-                setState(() {
-                  (_showQRCodeSheet);
-                });
+                _showQRCodeSheet();
               },
             ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: _buildBody(),
+      body: Stack(
+        children: [
+          _mapPage(),
+
+          // Overlay QR panel if no QR exists and no checkmark
+          if (qr == null)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.3), // Optional dim background
+                child: Center(child: _qrPage()),
+              ),
+            ),
+
+          // Show checkmark on top of everything
+          if (showCheckmark)
+            Positioned.fill(
+              child: Center(
+                child: const Icon(Icons.check_circle, size: 100, color: Colors.green),
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: UIFunctions().buildBottomNavBar(context, 0),
     );
   }
 
-  void _showQRCodeSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return DraggableScrollableSheet(
-          expand: false,
-          maxChildSize: 0.9,
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          builder: (_, controller) {
-            return SingleChildScrollView(
-              controller: controller,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    QrImageView(
-                      data: qrCode!,
-                      version: QrVersions.auto,
-                      size: 200,
-                    ),
-                    SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () async {
-                        if (!showMembers) {
-                          await _loadMembers(qrCode!);
-                        }
-                        setState(() {
-                          showMembers = !showMembers;
-                        });
-                      },
-                      child: Column(
-                        children: [
-                          Text(
-                            "Delegation members",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                              decoration: TextDecoration.underline,
-                            ),
-                          ),
-                          Icon(
-                            showMembers ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                            size: 28,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    AnimatedCrossFade(
-                      duration: Duration(milliseconds: 300),
-                      crossFadeState: showMembers
-                          ? CrossFadeState.showFirst
-                          : CrossFadeState.showSecond,
-                      firstChild: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            padding: EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            constraints: BoxConstraints(
-                              maxWidth: 300,
-                              maxHeight: 300,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                if (leaderName != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Text(
-                                      "Leader $leaderName",
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                if (membersList.isEmpty)
-                                  Text("No members found.",
-                                      style: TextStyle(color: Colors.grey)),
-                                if (membersList.isNotEmpty)
-                                  SizedBox(
-                                    height: 200,
-                                    child: Scrollbar(
-                                      thumbVisibility: true,
-                                      child: ListView.builder(
-                                        itemCount: membersList.length,
-                                        itemBuilder: (context, index) {
-                                          final member = membersList[index];
-                                          return Padding(
-                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                            child: Center(
-                                              child: Text(
-                                                '${member['firstName']} ${member['lastName']}',
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      secondChild: SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildBody() {
-    if (qrCode == null || qrCode!.isEmpty || delegation == false) {
-      return Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
+  Widget _qrPage(){
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+          child: Container(
+          padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.grey.shade300,
@@ -611,19 +655,146 @@ class _DelegationPageState extends State<DelegationPage> {
             ],
           ),
         ),
-      );
-    } else {
-      return _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : GoogleMap(
-        onMapCreated: _onMapCreated,
-        initialCameraPosition: const CameraPosition(
-          target: LatLng(0.0, 0.0),
-          zoom: 2,
+      ),
+    );
+  }
+  Widget _mapPage() {
+    return Stack(
+      children: [
+        GoogleMap(
+          onMapCreated: _onMapCreated,
+          initialCameraPosition: const CameraPosition(
+            target: LatLng(0.0, 0.0),
+            zoom: 2,
+          ),
+          markers: _markers,
+          myLocationEnabled: true,
+          myLocationButtonEnabled: true,
         ),
-        markers: _markers,
-      );
-    }
+        Positioned(
+          bottom: 16,
+          right: 16,
+          child: FloatingActionButton(
+            onPressed: _startStrayingCheck,
+            backgroundColor: _isStrayingCheckActive ? Colors.green.shade900 : Colors.red.shade900,
+            child: const Icon(Icons.warning_amber_rounded, color: Colors.white,),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showQRCodeSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white, // Transparent to allow custom color
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          maxChildSize: 0.9,
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          builder: (_, controller) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SingleChildScrollView(
+                controller: controller,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // QR Code
+                      QrImageView(
+                        data: qr ?? '',
+                        version: QrVersions.auto,
+                        size: 200,
+                      ),
+
+                      SizedBox(height: 16),
+
+                      // Delegation members text
+                      Text(
+                        "Delegation members",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+
+                      SizedBox(height: 12),
+
+                      // Members List or "No members yet"
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Container(
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            constraints: BoxConstraints(
+                              maxWidth: 300,
+                              maxHeight: 300,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                if (leaderName != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: Text(
+                                      "Leader $leaderName",
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                if (members.isEmpty)
+                                  Text("No members yet.", style: TextStyle(color: Colors.grey)),
+                                if (members.isNotEmpty)
+                                  SizedBox(
+                                    height: 200,
+                                    child: Scrollbar(
+                                      thumbVisibility: true,
+                                      child: ListView.builder(
+                                        itemCount: members.length,
+                                        itemBuilder: (context, index) {
+                                          final member = members[index];
+                                          final fullName = '${member['firstName'] ?? ''} ${member['lastName'] ?? ''}'.trim();
+                                          return Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            child: Center(
+                                              child: Text(
+                                                fullName.isNotEmpty ? fullName : 'Unnamed Member',
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
 
@@ -652,7 +823,7 @@ class _QRScanPageState extends State<QRScanPage> {
         key: qrKey,
         onQRViewCreated: _onQRViewCreated,
         overlay: QrScannerOverlayShape(
-          borderColor: Colors.blue,
+          borderColor: Colors.deepPurple,
           borderRadius: 10,
           borderLength: 30,
           borderWidth: 10,
@@ -669,6 +840,7 @@ class _QRScanPageState extends State<QRScanPage> {
       final qrCode = scanData.code;
       if (qrCode != null) {
         controller.pauseCamera();
+
         Navigator.pop(context, qrCode); // return QR string to previous page
       }
     });

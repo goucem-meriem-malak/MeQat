@@ -1,0 +1,12 @@
+{
+  "@@locale": "en",
+  "welcomeBack": "Welcome Back!",
+  "signInToContinue": "Sign in to continue",
+  "usernameHint": "Username, email, mobile number",
+  "passwordHint": "Password",
+  "loginButton": "Log In",
+  "forgotPassword": "Forgot password?",
+  "createAccount": "Create new account",
+  "dontHaveAccount": "Don't have an account?",
+  "appName": "MeQat"
+}

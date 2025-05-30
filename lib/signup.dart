@@ -1,64 +1,19 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
+import 'package:meqat/firebase.dart';
 import 'package:meqat/login.dart';
 import 'package:meqat/preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:meqat/sharedPref.dart';
 
-final Color buttonColor = Color(0xFFE5C99F);
-final Color textColor = Color(0xC52E2E2E);
+import 'Data.dart';
+import 'UI.dart';
 
 class SignUpPage extends StatefulWidget {
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
-
-class DateInputFormatter extends TextInputFormatter {
-  static final String _mask = '__/__/____';
-
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
-    final oldText = oldValue.text;
-    final newText = newValue.text;
-
-    // Remove all non-digits
-    final digits = newText.replaceAll(RegExp(r'[^0-9]'), '');
-
-    StringBuffer buffer = StringBuffer();
-    int digitIndex = 0;
-
-    for (int i = 0; i < _mask.length; i++) {
-      if (_mask[i] == '/') {
-        buffer.write('/');
-      } else {
-        if (digitIndex < digits.length) {
-          buffer.write(digits[digitIndex]);
-          digitIndex++;
-        } else {
-          buffer.write('_');
-        }
-      }
-    }
-
-    // Calculate new cursor position (skip slashes)
-    int cursorPosition = buffer.toString().indexOf('_');
-    if (cursorPosition == -1) {
-      cursorPosition = buffer.length;
-    }
-
-    return TextEditingValue(
-      text: buffer.toString(),
-      selection: TextSelection.collapsed(offset: cursorPosition),
-    );
-  }
-}
-
 
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _firstNameController = TextEditingController();
@@ -67,57 +22,119 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _birthdateController = TextEditingController();
   bool _isAgreed = false;
+  int _selectedYear = 2000; // class level variable, default 2000
+  bool _fnameError = false;
+  bool _lnameError = false;
+  bool _emailError = false;
+  bool _passwordError = false; // Example for text fields
+  bool _birthError = false; // Example for text fields
 
 
-  Future<void> _selectDate(BuildContext context) async {
-    FocusScope.of(context).unfocus(); // Prevent soft keyboard and focus jump
 
-    final DateTime now = DateTime.now();
+  Future<void> _selectYear(BuildContext context) async {
+    SystemChannels.textInput.invokeMethod('TextInput.hide');
+    final currentYear = DateTime.now().year;
+    final firstYear = currentYear - 110;
 
-    final DateTime? picked = await showDatePicker(
+    int tempSelectedYear = _selectedYear; // Temp var to hold selection inside dialog
+
+    await showDialog(
       context: context,
-      initialDate: now,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(now.year + 10), // Allows selecting all future months/years
-      helpText: 'Select Date', // Dialog title
-      initialEntryMode: DatePickerEntryMode.input, // 👈 Input mode shown first
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: Colors.deepPurple, // Accent color
-              onPrimary: Colors.white,    // Text on primary color
-              onSurface: Colors.black,    // Default text color
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            width: 320,
+            height: 400,
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12)],
             ),
-            dialogBackgroundColor: Colors.white,
-            dialogTheme: DialogTheme(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+            child: StatefulBuilder(
+              builder: (context, setStateDialog) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text(
+                      'Select Year of Birth',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black54,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 15),
+
+                    // Apply a Theme override to the YearPicker
+                    Expanded(
+                      child: Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: Theme.of(context).colorScheme.copyWith(
+                            primary: Colors.deepPurple.shade200,
+                            onPrimary: Colors.white,
+                            onSurface: Colors.black,
+                          ),
+                          textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.deepPurple.shade100,
+                            ),
+                          ),
+                        ),
+                        child: YearPicker(
+                          firstDate: DateTime(firstYear),
+                          lastDate: DateTime(currentYear),
+                          selectedDate: DateTime(tempSelectedYear),
+                          onChanged: (DateTime dateTime) {
+                            setStateDialog(() {
+                              tempSelectedYear = dateTime.year;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 15),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple.withOpacity(0.6),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(); // close dialog
+                      },
+                      child: Text(
+                        'Done',
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
-          child: child!,
         );
       },
     );
 
-    if (picked != null) {
-      // ✅ Optional validation: disallow future dates
-      if (picked.isAfter(now)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Birthdate cannot be in the future.")),
-        );
-      } else {
-        // ✅ Format and assign selected date
-        setState(() {
-          _birthdateController.text = DateFormat('MM/dd/yyyy').format(picked);
-        });
-      }
-    }
+    FocusScope.of(context).unfocus();
+
+    // Update the global _selectedYear with the tempSelectedYear after dialog closes
+    setState(() {
+      _selectedYear = tempSelectedYear;
+      _birthdateController.text = _selectedYear.toString();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -129,7 +146,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      const Spacer(flex: 2),
+                      const Spacer(flex: 1),
                       Center(
                         child: Text(
                           'Sign Up',
@@ -153,7 +170,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const Spacer(flex: 1),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 32),
                         child: Column(
@@ -164,13 +181,15 @@ class _SignUpPageState extends State<SignUpPage> {
                               hintText: "First name",
                               obscureText: false,
                               icon: Icons.person_2_outlined,
+                              hasError: _fnameError,
                             ),
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _lastNameController,
-                              hintText: "Last name",
+                              hintText: "First name",
                               obscureText: false,
                               icon: Icons.person_2_outlined,
+                              hasError: _lnameError,
                             ),
                             const SizedBox(height: 12),
                             _buildTextField(
@@ -178,6 +197,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               hintText: "Email",
                               obscureText: false,
                               icon: Icons.email_outlined,
+                              hasError: _emailError,
                             ),
                             const SizedBox(height: 12),
                             _buildTextField(
@@ -185,10 +205,14 @@ class _SignUpPageState extends State<SignUpPage> {
                               hintText: "Password",
                               obscureText: true,
                               icon: Icons.key,
+                              hasError: _passwordError,
                             ),
                             const SizedBox(height: 12),
                             GestureDetector(
-                              onTap: () => _selectDate(context),
+                              onTap: () {
+                                FocusManager.instance.primaryFocus?.unfocus();
+                                _selectYear(context);
+                              },
                               child: AbsorbPointer(
                                 child: _buildDateField(
                                   controller: _birthdateController,
@@ -197,72 +221,84 @@ class _SignUpPageState extends State<SignUpPage> {
                                   icon: Icons.date_range_outlined,
                                   inputFormatters: [DateInputFormatter()],
                                   keyboardType: TextInputType.number,
+                                  hasError: _birthError,
                                 ),
                               ),
                             ),
-
-                            const SizedBox(height: 2),
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Checkbox(
                                   value: _isAgreed,
                                   onChanged: (value) {
                                     setState(() {
-                                      _isAgreed = value!;
+                                      _isAgreed = value ?? false;
                                     });
                                   },
                                 ),
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _isAgreed = !_isAgreed;
-                                    });
-                                  },
-                                  child: const Text(
-                                    "I agree to the terms and conditions",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.underline, // optional (to show it's clickable)
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      FocusManager.instance.primaryFocus?.unfocus();
+                                      setState(() {
+                                        _isAgreed = !_isAgreed;
+                                      });
+                                    },
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: TextStyle(color: Colors.black),
+                                        children: [
+                                          TextSpan(
+                                            text: 'I agree to the ',
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () {
+                                                setState(() {
+                                                  _isAgreed = !_isAgreed;
+                                                });
+                                              },
+                                          ),
+                                          TextSpan(
+                                            text: 'terms and conditions',
+                                            style: TextStyle(
+                                              color: Colors.deepPurple,
+                                              decoration: TextDecoration.underline,
+                                            ),
+                                            recognizer: TapGestureRecognizer()
+                                              ..onTap = () async {
+                                                FocusManager.instance.primaryFocus?.unfocus();
+                                                final agreed = await Navigator.push<bool>(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => TermsAndConditionsPage(),
+                                                  ),
+                                                );
+
+                                                if (agreed == true) {
+                                                  setState(() {
+                                                    _isAgreed = true;
+                                                  });
+                                                }
+                                              },
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
                             const SizedBox(height: 20),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.deepPurple.withOpacity(0.6),
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                              ),
-                              onPressed: () async {
-                                if (_isAgreed) {
-                                  saveSharedPreferences();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => PreferencesPage(),
-                                    ),
-                                  );
-                                }
-                              },
-                              child: const SizedBox(
-                                width: double.infinity,
-                                child: Center(
-                                  child: Text(
-                                    "Sign Up",
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                                  ),
-                                ),
-                              ),
+                            UIFunctions().buildRoundedButton(
+                              title: "Sign Up",
+                              onPressed: onPress,
                             ),
                             const SizedBox(height: 16),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
+
+                      if (!isKeyboardOpen)
+                        const Spacer(flex: 1),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -305,13 +341,46 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
+  Future<void> onPress() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    setState(() {
+      _fnameError = _firstNameController.text.trim().isEmpty;
+      _lnameError = _lastNameController.text.trim().isEmpty;
+      _emailError = _emailController.text.trim().isEmpty;
+      _passwordError = _passwordController.text.trim().isEmpty;
+      _birthError = _birthdateController.text.trim().isEmpty;
+    });
 
+    if (!_isAgreed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("You must agree to the terms and conditions.")),
+      );
+      return;
+    }
+
+    if (_fnameError || _lnameError || _emailError || _passwordError || _birthError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please fill in all fields.")),
+      );
+      return;
+    }
+
+    // All good, proceed
+    await saveSharedPreferences();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PreferencesPage(),
+      ),
+    );
+  }
 
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
     required bool obscureText,
     required IconData? icon,
+    bool hasError = false,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -331,15 +400,24 @@ class _SignUpPageState extends State<SignUpPage> {
         obscureText: obscureText,
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: icon != null
-              ? Icon(
-            icon,
-            color: Colors.deepPurple,
-          )
-              : null,
-          border: OutlineInputBorder(
+          hintStyle: TextStyle(
+            color: Colors.black45.withOpacity(0.4),
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: icon != null ? Icon(icon, color: Colors.deepPurple) : null,
+          enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : Colors.deepPurpleAccent,
+              width: 1.5,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           filled: true,
@@ -356,6 +434,7 @@ class _SignUpPageState extends State<SignUpPage> {
     required IconData? icon,
     List<TextInputFormatter>? inputFormatters,
     TextInputType? keyboardType,
+    bool hasError = false,
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -377,12 +456,24 @@ class _SignUpPageState extends State<SignUpPage> {
         keyboardType: keyboardType,
         decoration: InputDecoration(
           hintText: hintText,
-          prefixIcon: icon != null
-              ? Icon(icon, color: Colors.deepPurple)
-              : null,
-          border: OutlineInputBorder(
+          hintStyle: TextStyle(
+            color: Colors.black45.withOpacity(0.4),
+            fontWeight: FontWeight.w500,
+          ),
+          prefixIcon: icon != null ? Icon(icon, color: Colors.deepPurple) : null,
+          enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30),
+            borderSide: BorderSide(
+              color: hasError ? Colors.red : Colors.deepPurpleAccent,
+              width: 1.5,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           filled: true,
@@ -392,43 +483,148 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-
-
   Future<void> saveSharedPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
+    final uid = await UpdateFirebase().createDoc('users');
+    await SharedPref().saveUId(uid);
 
-    final docRef = FirebaseFirestore.instance.collection('users').doc();
-    final uid = docRef.id;
+    myUser user = myUser();
+    user.firstName = _firstNameController.text.trim();
+    user.lastName = _lastNameController.text.trim();
+    user.email = _emailController.text.trim();
+    user.password = _passwordController.text.trim();
+    user.birthday = _birthdateController.text.trim();
 
-    final userData = {
-      'firstName': _firstNameController.text.trim(),
-      'lastName': _lastNameController.text.trim(),
-      'email': _emailController.text.trim(),
-      'password': _passwordController.text.trim(),
-      'birthday': _birthdateController.text.trim(),
-      'uid': uid,
-    };
-
-
-    for (final entry in userData.entries) {
-      await prefs.setString(entry.key, entry.value);
-    }
-
-    final connectivity = await Connectivity().checkConnectivity();
-
-    if (connectivity == ConnectivityResult.none) {
-      await prefs.setBool('update', true);
-      print("❌ No internet connection.");
-      return;
-    } else {
-      await uploadToFirestore(userData);
-      await prefs.setBool('update', false);
-    }
-  }
-
-  Future<void> uploadToFirestore(Map<String, String> userData) async {
-    final uid = userData['uid']!;
-    final dataToUpload = Map<String, String>.from(userData)..remove('uid');
-    await FirebaseFirestore.instance.collection('users').doc(uid).set(dataToUpload);
+    await SharedPref().saveUser(user);
+    await UpdateFirebase().addUser(user, uid);
   }
 }
+
+class DateInputFormatter extends TextInputFormatter {
+  static final String _mask = '__/__/____';
+
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue,
+      TextEditingValue newValue,
+      ) {
+    final newText = newValue.text;
+
+    final digits = newText.replaceAll(RegExp(r'[^0-9]'), '');
+
+    StringBuffer buffer = StringBuffer();
+    int digitIndex = 0;
+
+    for (int i = 0; i < _mask.length; i++) {
+      if (_mask[i] == '/') {
+        buffer.write('/');
+      } else {
+        if (digitIndex < digits.length) {
+          buffer.write(digits[digitIndex]);
+          digitIndex++;
+        } else {
+          buffer.write('_');
+        }
+      }
+    }
+
+    int cursorPosition = buffer.toString().indexOf('_');
+    if (cursorPosition == -1) {
+      cursorPosition = buffer.length;
+    }
+
+    return TextEditingValue(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: cursorPosition),
+    );
+  }
+}
+
+class TermsAndConditionsPage extends StatelessWidget {
+  const TermsAndConditionsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Terms and Conditions'),
+        centerTitle: true,
+        elevation: 4,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Please read carefully',
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: Colors.deepPurple.shade700,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Container(
+              height: 3,
+              width: 60,
+              decoration: BoxDecoration(
+                color: Colors.deepPurple,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Text(
+                    '''Welcome to our app’s Terms and Conditions.
+
+By using this app, you agree to the following terms:
+
+- You acknowledge that the information provided is for general purposes.
+- We are not liable for any damages arising from the use.
+- Please ensure you use the app responsibly and respect privacy policies.
+
+Thank you for taking the time to read this. If you have questions, please contact support.
+
+Happy using!''',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      height: 1.4,
+                      fontSize: 16,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepPurple,
+                elevation: 5,
+                minimumSize: const Size.fromHeight(48),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                shadowColor: Colors.deepPurpleAccent.withOpacity(0.6),
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                'Agree',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  letterSpacing: 0.5,
+                  color: CupertinoColors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+

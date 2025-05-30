@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:meqat/premium.dart';
-import 'package:meqat/search.dart';
 import 'package:flutter/cupertino.dart';
+
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+
 import 'Data.dart';
 import 'UI.dart';
 import 'sharedPref.dart';
 import 'menu.dart';
 import 'firebase.dart';
 
-
-void main() {
-  runApp(MedicineAlarmApp());
-}
 class MedicineAlarmApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -30,7 +26,6 @@ class MedicinePage extends StatefulWidget {
 }
 class _MedicinePageState extends State<MedicinePage> {
   PageController _pageController = PageController();
-  int _currentPage = 0;
 
   List<Alarm> alarms = [];
 
@@ -42,7 +37,7 @@ class _MedicinePageState extends State<MedicinePage> {
   }
 
   Future<void> loadData() async {
-    await SharedPref().loadAlarms().then((loadedAlarms) {
+    await SharedPref().getAlarms().then((loadedAlarms) {
       setState(() {
         alarms = loadedAlarms;
       });
@@ -70,7 +65,7 @@ class _MedicinePageState extends State<MedicinePage> {
       });
       await SharedPref().saveAlarms(alarms);
       await UpdateFirebase().UploadAlarmToFirebase(newAlarm);
-      await SharedPref().loadAlarms();
+      await SharedPref().getAlarms();
     }
   }
 
@@ -116,8 +111,8 @@ class _MedicinePageState extends State<MedicinePage> {
                         },
                       ),
                       title: Text(
-                        alarm.times != null && alarm.times!.isNotEmpty
-                            ? alarm.times!.join(', ')
+                        alarm.times.isNotEmpty
+                            ? alarm.times.join(', ')
                             : 'No time set',
                       ),
                       subtitle: Text(alarm.medicineName ?? 'No medicine name'),
@@ -286,7 +281,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
   @override
   Widget build(BuildContext context) {
     final alarm = widget.alarm;
-    final nextTime = getNextAlarmTime(alarm.times ?? []);
+    final nextTime = getNextAlarmTime(alarm.times);
     final nextTimeFormatted = nextTime != null
         ? DateFormat.jm().format(nextTime)
         : 'No times set';
@@ -396,7 +391,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                   if (widget.alarm.doctor?.isNotEmpty ?? false)
                     _infoTile(Icons.person_outline, "Prescribed by", widget.alarm.doctor!),
 
-                  if (widget.alarm.timesPerDay > 1 && widget.alarm.times!.length > 1)
+                  if (widget.alarm.timesPerDay > 1 && widget.alarm.times.length > 1)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -405,7 +400,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                         const SizedBox(height: 6),
                         Wrap(
                           spacing: 8,
-                          children: widget.alarm.times!
+                          children: widget.alarm.times
                               .skip(1) // skip the first one that's already shown
                               .map((time) => Chip(
                             label: Text(time),
@@ -513,8 +508,6 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
   final List<String> days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 
   PageController _pageController = PageController();
-  int _currentPage = 0;
-
 
 
 
