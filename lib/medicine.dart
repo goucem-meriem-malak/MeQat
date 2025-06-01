@@ -9,6 +9,7 @@ import 'UI.dart';
 import 'sharedPref.dart';
 import 'menu.dart';
 import 'firebase.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class MedicineAlarmApp extends StatelessWidget {
   @override
@@ -78,7 +79,7 @@ class _MedicinePageState extends State<MedicinePage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Delete Alarms'),
+              title: Text(AppLocalizations.of(context)!.delete_alarms),
               content: SizedBox(
                 width: double.maxFinite,
                 child: ListView(
@@ -113,9 +114,9 @@ class _MedicinePageState extends State<MedicinePage> {
                       title: Text(
                         alarm.times.isNotEmpty
                             ? alarm.times.join(', ')
-                            : 'No time set',
+                            : AppLocalizations.of(context)!.no_time_set,
                       ),
-                      subtitle: Text(alarm.medicineName ?? 'No medicine name'),
+                      subtitle: Text(alarm.medicineName ?? AppLocalizations.of(context)!.no_med_name),
                     );
                   }).toList(),
                 ),
@@ -123,7 +124,7 @@ class _MedicinePageState extends State<MedicinePage> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(AppLocalizations.of(context)!.cancel),
                 ),
                 TextButton(
                   onPressed: selectedIndexes.isNotEmpty
@@ -139,7 +140,7 @@ class _MedicinePageState extends State<MedicinePage> {
                     Navigator.pop(context);
                   }
                       : null,
-                  child: const Text('Delete Selected'),
+                  child: Text(AppLocalizations.of(context)!.delete_selected),
                 ),
               ],
             );
@@ -149,52 +150,11 @@ class _MedicinePageState extends State<MedicinePage> {
     );
   }
 
-  TimeOfDay stringToTimeOfDay(String timeStr) {
-    final parts = timeStr.split(':');
-    return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
-  }
-
-  DateTime? getNextAlarmTime(List<String> times) {
-    final now = DateTime.now();
-
-    // Convert all times to DateTime today
-    List<DateTime> todayTimes = times.map((t) {
-      final parts = t.split(':');
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-      return DateTime(now.year, now.month, now.day, hour, minute);
-    }).toList();
-
-    // Sort and find the next one
-    todayTimes.sort();
-    for (final time in todayTimes) {
-      if (time.isAfter(now)) return time;
-    }
-
-    // If all today's times are past, return the first time tomorrow
-    final firstTomorrow = todayTimes.first.add(Duration(days: 1));
-    return firstTomorrow;
-  }
-
-  String timeUntil(DateTime target) {
-    final now = DateTime.now();
-    final diff = target.difference(now);
-
-    final hours = diff.inHours;
-    final minutes = diff.inMinutes % 60;
-
-    if (hours > 0) {
-      return 'in $hours hour${hours == 1 ? '' : 's'} ${minutes > 0 ? '$minutes min${minutes == 1 ? '' : 's'}' : ''}';
-    } else {
-      return 'in $minutes min${minutes == 1 ? '' : 's'}';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Medicine'),
+        title: Text(AppLocalizations.of(context)!.medicine),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -245,7 +205,16 @@ class ExpandableAlarmCard extends StatefulWidget {
 }
 class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
   bool _isExpanded = false;
-  static const List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  static List<String> days(BuildContext context) => [
+    AppLocalizations.of(context)!.day_mon,
+    AppLocalizations.of(context)!.day_tue,
+    AppLocalizations.of(context)!.day_wed,
+    AppLocalizations.of(context)!.day_thu,
+    AppLocalizations.of(context)!.day_fri,
+    AppLocalizations.of(context)!.day_sat,
+    AppLocalizations.of(context)!.day_sun,
+  ];
+
 
 
   DateTime? getNextAlarmTime(List<String> times) {
@@ -272,19 +241,27 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
     final minutes = diff.inMinutes % 60;
 
     if (hours > 0) {
-      return 'in $hours hour${hours == 1 ? '' : 's'} ${minutes > 0 ? '$minutes min${minutes == 1 ? '' : 's'}' : ''}';
+      return AppLocalizations.of(context)!.in_hours_and_minutes(hours, minutes);
     } else {
-      return 'in $minutes min${minutes == 1 ? '' : 's'}';
+      return AppLocalizations.of(context)!.in_minutes(minutes);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final List<String> days = [
+      AppLocalizations.of(context)!.day_mon,
+      AppLocalizations.of(context)!.day_tue,
+      AppLocalizations.of(context)!.day_wed,
+      AppLocalizations.of(context)!.day_thu,
+      AppLocalizations.of(context)!.day_fri,
+      AppLocalizations.of(context)!.day_sat,
+      AppLocalizations.of(context)!.day_sun,];
     final alarm = widget.alarm;
     final nextTime = getNextAlarmTime(alarm.times);
     final nextTimeFormatted = nextTime != null
         ? DateFormat.jm().format(nextTime)
-        : 'No times set';
+        : AppLocalizations.of(context)!.no_time_set;
     final timeRemaining = nextTime != null ? timeUntil(nextTime) : '';
 
     return GestureDetector(
@@ -320,7 +297,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                           const SizedBox(width: 12),
                           Flexible(
                             child: Text(
-                              alarm.medicineName ?? "No name",
+                              alarm.medicineName ?? AppLocalizations.of(context)!.no_med_name,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(fontSize: 16, color: Colors.black87),
                             ),
@@ -331,7 +308,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                         Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
-                            'Alarm $timeRemaining',
+                          AppLocalizations.of(context)!.alarm_remaining(timeRemaining),
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                         ),
@@ -371,32 +348,32 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                 runSpacing: 12,
                 children: [
 
-                  _infoTile(Icons.repeat_rounded, "Repeat", widget.alarm.repeatDays),
+                  _infoTile(Icons.repeat_rounded, AppLocalizations.of(context)!.repeat, widget.alarm.repeatDays),
 
                   if (widget.alarm.importance?.isNotEmpty ?? false)
-                    _infoTile(Icons.priority_high_rounded, "Importance", widget.alarm.importance!),
+                    _infoTile(Icons.priority_high_rounded, AppLocalizations.of(context)!.importance, widget.alarm.importance!),
 
                   if (widget.alarm.dosage?.isNotEmpty ?? false)
-                    _infoTile(Icons.medication_outlined, "Dosage", widget.alarm.dosage!),
+                    _infoTile(Icons.medication_outlined, AppLocalizations.of(context)!.dosage, widget.alarm.dosage!),
 
                   if (widget.alarm.whenToTake?.isNotEmpty ?? false)
-                    _infoTile(Icons.access_time_rounded, "When to take", widget.alarm.whenToTake!),
+                    _infoTile(Icons.access_time_rounded, AppLocalizations.of(context)!.when, widget.alarm.whenToTake!),
 
                   if (widget.alarm.purpose?.isNotEmpty ?? false)
-                    _infoTile(Icons.favorite_outline, "Purpose", widget.alarm.purpose!),
+                    _infoTile(Icons.favorite_outline, AppLocalizations.of(context)!.purpose, widget.alarm.purpose!),
 
                   if (widget.alarm.notes?.isNotEmpty ?? false)
-                    _infoTile(Icons.notes_rounded, "Notes", widget.alarm.notes!),
+                    _infoTile(Icons.notes_rounded, AppLocalizations.of(context)!.notes, widget.alarm.notes!),
 
                   if (widget.alarm.doctor?.isNotEmpty ?? false)
-                    _infoTile(Icons.person_outline, "Prescribed by", widget.alarm.doctor!),
+                    _infoTile(Icons.person_outline, AppLocalizations.of(context)!.doctor, widget.alarm.doctor!),
 
                   if (widget.alarm.timesPerDay > 1 && widget.alarm.times.length > 1)
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 8),
-                        const Text("Other Times", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                        Text(AppLocalizations.of(context)!.other_times, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 6),
                         Wrap(
                           spacing: 8,
@@ -412,7 +389,7 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
                       ],
                     ),
 
-                  if (widget.alarm.repeatDays == 'Custom' &&
+                  if (widget.alarm.repeatDays == AppLocalizations.of(context)!.custom &&
                       widget.alarm.selectedDays.any((day) => day))
                     Padding(
                       padding: const EdgeInsets.only(top: 8.0),
@@ -488,16 +465,8 @@ class _ExpandableAlarmCardState extends State<ExpandableAlarmCard> {
   }
 }
 
-class AddAlarmPage extends StatefulWidget {
-  final Function(Alarm) onSave;
-
-  AddAlarmPage({required this.onSave});
-
-  @override
-  _AddAlarmPageState createState() => _AddAlarmPageState();
-}
 class _AddAlarmPageState extends State<AddAlarmPage> {
-  String medicineName='', repeatDays='Once';
+  String medicineName='';
   String? dosage, purpose, notes, doctor, whenToTake, importance;
   int timesPerDay = 1;
   List<bool> selectedDays = List.filled(7, false);
@@ -505,7 +474,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
 
   TimeOfDay selectedTime = TimeOfDay.now();
   List<TimeOfDay> timesList = [TimeOfDay(hour: 8, minute: 0)];
-  final List<String> days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+
 
   PageController _pageController = PageController();
 
@@ -537,7 +506,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
               children: [
                 TextField(
                   decoration: InputDecoration(
-                    labelText: 'Dosage (e.g. 1 tablet, 5ml)',
+                    labelText: AppLocalizations.of(context)!.dosage_hint,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -550,11 +519,16 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                 /// Timing Instruction
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
-                    labelText: 'When to take?',
+                    labelText: AppLocalizations.of(context)!.when_hint,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  items: ['Before Food', 'After Food', 'With Food', 'Empty Stomach']
+                  items: [
+                    AppLocalizations.of(context)!.before_food,
+                    AppLocalizations.of(context)!.after_food,
+                    AppLocalizations.of(context)!.with_food,
+                    AppLocalizations.of(context)!.empty_stomach,
+                  ]
                       .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                       .toList(),
                   onChanged: (value) {
@@ -566,7 +540,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                 /// Purpose of Medicine
                 TextField(
                   decoration: InputDecoration(
-                    labelText: 'Purpose (e.g. For blood pressure)',
+                    labelText: AppLocalizations.of(context)!.purpose_hint,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -579,11 +553,14 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                 /// Urgency
                 DropdownButtonFormField<String>(
                   decoration: InputDecoration(
-                    labelText: 'Importance',
+                    labelText: AppLocalizations.of(context)!.importance,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  items: ['Optional', 'Important', 'Must Not Miss']
+                  items: [
+                    AppLocalizations.of(context)!.optional,
+                    AppLocalizations.of(context)!.important,
+                    AppLocalizations.of(context)!.must_not_miss,]
                       .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                       .toList(),
                   onChanged: (value) {
@@ -596,7 +573,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                 TextField(
                   maxLines: 3,
                   decoration: InputDecoration(
-                    labelText: 'Notes (e.g. Carry in a cold pouch)',
+                    labelText: AppLocalizations.of(context)!.notes_hint,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -608,7 +585,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
 
                 TextField(
                   decoration: InputDecoration(
-                    labelText: 'Prescriber (Doctor\'s Name or Contact)',
+                    labelText: AppLocalizations.of(context)!.doctor_hint,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -636,7 +613,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: Text(
-                'Cancel',
+                AppLocalizations.of(context)!.cancel,
                 style: TextStyle(
                   color: Colors.deepPurple,
                   fontWeight: FontWeight.w600,
@@ -651,6 +628,15 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
     );
   }
   Widget _buildMainPage(ScrollController controller) {
+    String repeatDays=AppLocalizations.of(context)!.once;
+    final List<String> days = [
+      AppLocalizations.of(context)!.day_mon,
+      AppLocalizations.of(context)!.day_tue,
+      AppLocalizations.of(context)!.day_wed,
+      AppLocalizations.of(context)!.day_thu,
+      AppLocalizations.of(context)!.day_fri,
+      AppLocalizations.of(context)!.day_sat,
+      AppLocalizations.of(context)!.day_sun,];
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -688,7 +674,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                   ...List.generate(timesPerDay, (index) {
                     final time = timesList[index];
                     return ListTile(
-                      title: Text('Time ${index + 1}'),
+                      title: Text(AppLocalizations.of(context)!.select_time(index + 1)),
                       subtitle: Text(time.format(context)),
                       trailing: const Icon(Icons.edit),
                       onTap: () {
@@ -713,7 +699,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                                         child: Row(
                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text('Select Time ${index + 1}',
+                                            Text(AppLocalizations.of(context)!.select_time(index + 1),
                                                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                             Row(
                                               children: [
@@ -775,11 +761,13 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                   value: repeatDays,
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   decoration: InputDecoration(
-                    labelText: 'Repeat',
+                    labelText: AppLocalizations.of(context)!.repeat,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  items: ['Once', 'Daily', 'Custom'].map((String value) {
+                  items: [AppLocalizations.of(context)!.repeat_once,
+                    AppLocalizations.of(context)!.repeat_daily,
+                    AppLocalizations.of(context)!.repeat_custom,].map((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
                       child: Text(value),
@@ -844,7 +832,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                   value: timesPerDay,
                   icon: const Icon(Icons.keyboard_arrow_down_rounded),
                   decoration: InputDecoration(
-                    labelText: 'Times per Day',
+                    labelText: AppLocalizations.of(context)!.times_per_day,
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
@@ -882,7 +870,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
                 });
               },
               child: Text(
-                'Advanced >',
+                AppLocalizations.of(context)!.btn_advanced,
                 style: TextStyle(
                   color: Colors.deepPurple,
                   fontWeight: FontWeight.w600,
@@ -897,6 +885,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
     );
   }
   Widget _buildSharedHeader() {
+    String repeatDays=AppLocalizations.of(context)!.once;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -920,7 +909,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
               child: TextField(
                 textAlign: TextAlign.center,
                 decoration: InputDecoration(
-                  hintText: 'Medicine Name',
+                  hintText: AppLocalizations.of(context)!.med_name,
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(
@@ -936,27 +925,27 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.check_circle_rounded, color: Colors.deepPurple.shade400, size: 28),
-              onPressed: () async {
-                final uuid = Uuid();
-                String alarmId = uuid.v4();
-                Alarm newAlarm = Alarm(id: alarmId);
-                newAlarm.medicineName = medicineName;
-                newAlarm.timesPerDay = timesPerDay;
-                newAlarm.repeatDays = repeatDays;
-                newAlarm.advanced = advanced;
-                newAlarm.enabled = true;
-                newAlarm.times = timesList.map((e) => e.format(context)).toList();
-                if(advanced){
-                  newAlarm.purpose = purpose;
-                  newAlarm.notes = notes;
-                  newAlarm.dosage = dosage;
-                  newAlarm.whenToTake = whenToTake;
-                  newAlarm.doctor = doctor;
-                  newAlarm.importance = importance;
-                }
-                Navigator.pop(context, newAlarm);
-              }),
+                icon: Icon(Icons.check_circle_rounded, color: Colors.deepPurple.shade400, size: 28),
+                onPressed: () async {
+                  final uuid = Uuid();
+                  String alarmId = uuid.v4();
+                  Alarm newAlarm = Alarm(id: alarmId);
+                  newAlarm.medicineName = medicineName;
+                  newAlarm.timesPerDay = timesPerDay;
+                  newAlarm.repeatDays = repeatDays;
+                  newAlarm.advanced = advanced;
+                  newAlarm.enabled = true;
+                  newAlarm.times = timesList.map((e) => e.format(context)).toList();
+                  if(advanced){
+                    newAlarm.purpose = purpose;
+                    newAlarm.notes = notes;
+                    newAlarm.dosage = dosage;
+                    newAlarm.whenToTake = whenToTake;
+                    newAlarm.doctor = doctor;
+                    newAlarm.importance = importance;
+                  }
+                  Navigator.pop(context, newAlarm);
+                }),
           ],
         ),
       ],
@@ -965,6 +954,7 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
       minChildSize: 0.3,
@@ -1005,5 +995,13 @@ class _AddAlarmPageState extends State<AddAlarmPage> {
       },
     );
   }
+}
+class AddAlarmPage extends StatefulWidget {
+  final Function(Alarm) onSave;
+
+  AddAlarmPage({required this.onSave});
+
+  @override
+  _AddAlarmPageState createState() => _AddAlarmPageState();
 }
 

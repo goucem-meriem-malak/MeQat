@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'Data.dart';
 
@@ -11,10 +12,10 @@ class UmrahTutorialPage extends StatefulWidget {
 class _UmrahTutorialPageState extends State<UmrahTutorialPage> {
   final PageController _controller = PageController();
   bool onLastPage = false;
-  final List<Map<String, String>> umrahSteps = Other.umrahSteps;
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> umrahSteps = Other.umrahSteps(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -35,6 +36,13 @@ class _UmrahTutorialPageState extends State<UmrahTutorialPage> {
                       umrahSteps[index]['title']!,
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 30),
+                    Image.asset(
+                      umrahSteps[index]['image']!,
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.contain,
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -62,10 +70,10 @@ class _UmrahTutorialPageState extends State<UmrahTutorialPage> {
                 SizedBox(height: 20),
                 if (onLastPage)
                   ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
                       Navigator.pop(context); // or navigate somewhere else
                     },
-                    child: Text('Done'),
+                    child: Text(AppLocalizations.of(context)!.done),
                   ),
               ],
             ),
@@ -74,4 +82,5 @@ class _UmrahTutorialPageState extends State<UmrahTutorialPage> {
       ),
     );
   }
+
 }

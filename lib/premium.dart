@@ -4,6 +4,7 @@ import 'Profile.dart';
 import 'home.dart';
 import 'Data.dart';
 import 'UI.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PremiumPage extends StatefulWidget {
   const PremiumPage({super.key});
@@ -15,8 +16,6 @@ class PremiumPage extends StatefulWidget {
 class _PremiumPageState extends State<PremiumPage> {
   int _selectedIndex = 3;
 
-  final List<Map<String, String>> premiumItems = Other.premiumItems;
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -25,6 +24,7 @@ class _PremiumPageState extends State<PremiumPage> {
 
   @override
   Widget build(BuildContext context) {
+    final premiumItems = Other.premiumItems(context);
     return GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! > 50) {
@@ -40,7 +40,7 @@ class _PremiumPageState extends State<PremiumPage> {
           }
         },
       child: Scaffold(
-        appBar: UIFunctions().buildAppBarPremium("MeQat Premium"),
+        appBar: UIFunctions().buildAppBarPremium(AppLocalizations.of(context)!.premium),
         extendBody: true,
         body: Container(
           decoration: const BoxDecoration(
@@ -92,8 +92,8 @@ class _PremiumPageState extends State<PremiumPage> {
                       ),
                       elevation: 8,
                     ),
-                    child: const Text(
-                      "Subscribe Now",
+                    child: Text(
+                      AppLocalizations.of(context)!.subscribe,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -165,8 +165,8 @@ class SubscriptionPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 20),
-              const Text(
-                "Premium Subscription",
+              Text(
+                AppLocalizations.of(context)!.premium_sub,
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -178,11 +178,11 @@ class SubscriptionPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
-                  children: const [
-                    SubscriptionFeature(icon: Icons.hotel, text: "Up to 75% off fine hotels"),
-                    SubscriptionFeature(icon: Icons.restaurant, text: "Affordable and delicious meals"),
-                    SubscriptionFeature(icon: Icons.store, text: "Cheaper shopping (85% off)"),
-                    SubscriptionFeature(icon: Icons.star, text: "Priority support & recommendations"),
+                  children: [
+                    SubscriptionFeature(icon: Icons.hotel, text: AppLocalizations.of(context)!.hotel_text),
+                    SubscriptionFeature(icon: Icons.restaurant, text: AppLocalizations.of(context)!.restaurant_text),
+                    SubscriptionFeature(icon: Icons.store, text: AppLocalizations.of(context)!.shops_text),
+                    SubscriptionFeature(icon: Icons.star, text: AppLocalizations.of(context)!.support_text),
                   ],
                 ),
               ),
@@ -206,8 +206,8 @@ class SubscriptionPage extends StatelessWidget {
                     ),
                     elevation: 6,
                   ),
-                  child: const Text(
-                    "Proceed to Payment",
+                  child: Text(
+                    AppLocalizations.of(context)!.start_payement,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -254,7 +254,7 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text("Payment Information"),
+        title: Text(AppLocalizations.of(context)!.payement_info),
         elevation: 0,
       ),
       body: Container(
@@ -294,11 +294,11 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
                         ],
                         validator: (value) {
                           if (value == null || value.length != 16) {
-                            return 'Enter a valid 16-digit card number';
+                            return AppLocalizations.of(context)!.card_nbr_title;
                           }
                           return null;
                         },
-                        decoration: _buildInputDecoration("Card Number", "1234 5678 9012 3456"),
+                        decoration: _buildInputDecoration(AppLocalizations.of(context)!.card_nbr, AppLocalizations.of(context)!.card_hint),
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -312,11 +312,11 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
                               ],
                               validator: (value) {
                                 if (value == null || !RegExp(r'^\d{2}/\d{2}$').hasMatch(value)) {
-                                  return 'Use MM/YY';
+                                  return AppLocalizations.of(context)!.exiting_title;
                                 }
                                 return null;
                               },
-                              decoration: _buildInputDecoration("Expiry", "MM/YY"),
+                              decoration: _buildInputDecoration(AppLocalizations.of(context)!.expery, AppLocalizations.of(context)!.expity_hint),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -330,11 +330,11 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
                               ],
                               validator: (value) {
                                 if (value == null || value.length < 3 || value.length > 4) {
-                                  return 'Enter valid CVV';
+                                  return AppLocalizations.of(context)!.enter_ccv;
                                 }
                                 return null;
                               },
-                              decoration: _buildInputDecoration("CVV", "123"),
+                              decoration: _buildInputDecoration(AppLocalizations.of(context)!.ccv, AppLocalizations.of(context)!.ccv_hint),
                             ),
                           ),
                         ],
@@ -342,46 +342,46 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
                         value: selectedCountry,
-                        decoration: _buildInputDecoration("Country", ""),
-                        items: const [
-                          DropdownMenuItem(value: "Algeria", child: Text("Algeria")),
-                          DropdownMenuItem(value: "Saudi Arabia", child: Text("Saudi Arabia")),
-                          DropdownMenuItem(value: "USA", child: Text("USA")),
+                        decoration: _buildInputDecoration(AppLocalizations.of(context)!.country, ""),
+                        items: [
+                          DropdownMenuItem(value: AppLocalizations.of(context)!.country_algeria, child: Text(AppLocalizations.of(context)!.country_algeria)),
+                          DropdownMenuItem(value: AppLocalizations.of(context)!.country_saudi_arabia, child: Text(AppLocalizations.of(context)!.country_saudi_arabia)),
+                          DropdownMenuItem(value: AppLocalizations.of(context)!.country_malaysia, child: Text(AppLocalizations.of(context)!.country_malaysia)),
                         ],
                         onChanged: (val) => setState(() => selectedCountry = val),
                       ),
                       const SizedBox(height: 20),
                       DropdownButtonFormField<String>(
                         value: selectedMethod,
-                        decoration: _buildInputDecoration("Payment Method", ""),
-                        items: const [
+                        decoration: _buildInputDecoration(AppLocalizations.of(context)!.payement_method, ""),
+                        items: [
                           DropdownMenuItem(
-                            value: "Edahabia",
+                            value: AppLocalizations.of(context)!.edhahabia,
                             child: Row(
                               children: [
                                 Icon(Icons.credit_card, color: Colors.blueGrey),
                                 SizedBox(width: 10),
-                                Text("Edahabia"),
+                                Text(AppLocalizations.of(context)!.edhahabia),
                               ],
                             ),
                           ),
                           DropdownMenuItem(
-                            value: "MasterCard",
+                            value: AppLocalizations.of(context)!.mastercard,
                             child: Row(
                               children: [
                                 Icon(Icons.credit_card, color: Colors.red),
                                 SizedBox(width: 10),
-                                Text("MasterCard"),
+                                Text(AppLocalizations.of(context)!.mastercard),
                               ],
                             ),
                           ),
                           DropdownMenuItem(
-                            value: "Visa",
+                            value: AppLocalizations.of(context)!.visa,
                             child: Row(
                               children: [
                                 Icon(Icons.credit_card, color: Colors.blue),
                                 SizedBox(width: 10),
-                                Text("Visa"),
+                                Text(AppLocalizations.of(context)!.visa),
                               ],
                             ),
                           ),
@@ -408,8 +408,8 @@ class _PaymentInputPageState extends State<PaymentInputPage> {
                             backgroundColor: const Color(0xFF6A4BC4),
                             elevation: 10,
                           ),
-                          child: const Text(
-                            "Pay Now",
+                          child: Text(
+                            AppLocalizations.of(context)!.pay,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -474,8 +474,8 @@ class PaymentSuccessPage extends StatelessWidget {
           children: [
             const Icon(Icons.check_circle, color: Colors.white, size: 100),
             const SizedBox(height: 20),
-            const Text(
-              "Payment Successful!",
+            Text(
+              AppLocalizations.of(context)!.payement_successful,
               style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -488,7 +488,7 @@ class PaymentSuccessPage extends StatelessWidget {
                 foregroundColor: Colors.deepPurple,
                 padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14),
               ),
-              child: const Text("Continue"),
+              child: Text(AppLocalizations.of(context)!.continue_btn),
             )
           ],
         ),

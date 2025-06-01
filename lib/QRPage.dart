@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:uuid/uuid.dart';
@@ -56,7 +56,7 @@ class _QRPageState extends State<QRPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Spacer(flex: 2),
-        const Text("SCAN QR Code", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(AppLocalizations.of(context)!.scan_qr_code, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Spacer(flex: 2),
         Container(
           height: 400,
@@ -73,7 +73,7 @@ class _QRPageState extends State<QRPage> {
         const Spacer(flex: 2),
         _customButton(
           icon: Icons.qr_code,
-          label: "Pick from Gallery",
+          label: AppLocalizations.of(context)!.pick_gallery,
           onPressed: _pickFromGallery,
         ),
         const SizedBox(height: 8),
@@ -82,7 +82,7 @@ class _QRPageState extends State<QRPage> {
             await SharedPref().removeQRCode();
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
           },
-          child: const Text("Later", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+          child: Text(AppLocalizations.of(context)!.later, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
         ),
         const Spacer(flex: 1),
         const Text("MeQat", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
@@ -95,15 +95,15 @@ class _QRPageState extends State<QRPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Spacer(flex: 2),
-        const Text("All members must scan this!", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(AppLocalizations.of(context)!.members_must_scan, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Spacer(flex: 1),
         QrImageView(data: qrId!, version: QrVersions.auto, size: 200),
         const SizedBox(height: 16),
-        const Text("New members:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(AppLocalizations.of(context)!.new_members, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         _memberListDisplay(qrId!),
         const Spacer(flex: 1),
         _customButton(
-          label: "Done",
+          label: AppLocalizations.of(context)!.done,
           onPressed: () {
             Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
           },
@@ -145,7 +145,6 @@ class _QRPageState extends State<QRPage> {
   Future<void> handleQRCode(String qrCode) async {
     await SharedPref().saveQRCode(qrCode);
     await UpdateFirebase().addDelegation(widget.isLeader, qrCode);
-    print('✅✅✅✅✅✅✅✅✅'+ qrCode);
   }
 
   Widget _memberListDisplay(String qrcode) {
@@ -164,26 +163,26 @@ class _QRPageState extends State<QRPage> {
           }
 
           if (!snapshot.hasData || !snapshot.data!.exists) {
-            return Text("No members yet", style: TextStyle(color: primaryColor));
+            return Text(AppLocalizations.of(context)!.no_members, style: TextStyle(color: primaryColor));
           }
 
           final data = snapshot.data!.data() as Map<String, dynamic>?;
 
           if (data == null || data['members'] == null) {
-            return Text("No members yet", style: TextStyle(color: primaryColor));
+            return Text(AppLocalizations.of(context)!.no_members, style: TextStyle(color: primaryColor));
           }
 
           final members = (data['members'] as Map<String, dynamic>?) ?? {};
 
           if (members.isEmpty) {
-            return Text("No members yet", style: TextStyle(color: primaryColor));
+            return Text(AppLocalizations.of(context)!.no_members, style: TextStyle(color: primaryColor));
           }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                "New members:",
+              Text(
+                AppLocalizations.of(context)!.new_members,
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -208,7 +207,6 @@ class _QRPageState extends State<QRPage> {
     controller.scannedDataStream.listen((scanData) async {
       if (scanData.code != null && scanData.code!.isNotEmpty) {
         controller.pauseCamera();
-        print('✅✅✅✅✅✅✅✅✅'+ scanData.code!);
         await handleQRCode(scanData.code!);
         _showCheckmark();
       }
@@ -228,6 +226,5 @@ class _QRPageState extends State<QRPage> {
       _showCheckmark();
     }
   }
-
 
 }

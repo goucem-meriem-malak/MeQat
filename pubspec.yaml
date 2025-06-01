@@ -67,6 +67,8 @@ dependencies:
 
   supabase_flutter: ^1.10.23
 
+
+
   flutter_localizations:
     sdk: flutter
   intl: ^0.19.0
@@ -82,7 +84,7 @@ dev_dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/img5.png"
+  image_path: "assets/icon/img5.webp"
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
@@ -95,21 +97,46 @@ flutter_icons:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  generate: true
   assets:
     - assets/alarm2.mp3
     - assets/alarm1.mp3
 
     -  assets/facenet.zip
 
-    - assets/icon/img5.png
+    - assets/icon/img5.webp
 
-    - assets/img/food.png
-    - assets/img/hotel.png
-    - assets/img/shop.png
+    - assets/img/food.webp
+    - assets/img/hajj.webp
+    - assets/img/hotel.webp
+    - assets/img/ihram.webp
+    - assets/img/kabah.webp
+    - assets/img/lost.webp
+    - assets/img/meds.webp
+    - assets/img/shops.webp
+    - assets/img/tawaf.webp
+
+    - assets/img/niya.webp
+    - assets/img/talbiya.webp
+    - assets/img/dont.webp
+    - assets/img/clean.webp
+
+    - assets/img/cut_hair.webp
+    - assets/img/saae.webp
+    - assets/img/makam_ibrahim.webp
+    - assets/img/done.webp
+
+    - assets/img/arafah.webp
+    - assets/img/throw.webp
+    - assets/img/rock.webp
+    - assets/img/sleep.webp
+    - assets/img/sheep.webp
+
+    - assets/img/delegation.webp
+    - assets/img/umrah.webp
 
   uses-material-design: true
-  generate: true
+
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -6,7 +6,7 @@ import 'package:meqat/firebase.dart';
 import 'package:meqat/login.dart';
 import 'package:meqat/preferences.dart';
 import 'package:meqat/sharedPref.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'Data.dart';
 import 'UI.dart';
 
@@ -59,7 +59,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
-                      'Select Year of Birth',
+                      AppLocalizations.of(context)!.birth_selector_title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
@@ -110,7 +110,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         Navigator.of(context).pop(); // close dialog
                       },
                       child: Text(
-                        'Done',
+                        AppLocalizations.of(context)!.done,
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
@@ -149,7 +149,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       const Spacer(flex: 1),
                       Center(
                         child: Text(
-                          'Sign Up',
+                          AppLocalizations.of(context)!.sign_up,
                           style: TextStyle(
                             fontSize: 35,
                             fontWeight: FontWeight.w600,
@@ -178,7 +178,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _firstNameController,
-                              hintText: "First name",
+                              hintText: AppLocalizations.of(context)!.fname,
                               obscureText: false,
                               icon: Icons.person_2_outlined,
                               hasError: _fnameError,
@@ -186,7 +186,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _lastNameController,
-                              hintText: "First name",
+                              hintText: AppLocalizations.of(context)!.lname,
                               obscureText: false,
                               icon: Icons.person_2_outlined,
                               hasError: _lnameError,
@@ -194,7 +194,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _emailController,
-                              hintText: "Email",
+                              hintText: AppLocalizations.of(context)!.email,
                               obscureText: false,
                               icon: Icons.email_outlined,
                               hasError: _emailError,
@@ -202,7 +202,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             const SizedBox(height: 12),
                             _buildTextField(
                               controller: _passwordController,
-                              hintText: "Password",
+                              hintText: AppLocalizations.of(context)!.pass,
                               obscureText: true,
                               icon: Icons.key,
                               hasError: _passwordError,
@@ -216,7 +216,7 @@ class _SignUpPageState extends State<SignUpPage> {
                               child: AbsorbPointer(
                                 child: _buildDateField(
                                   controller: _birthdateController,
-                                  hintText: "Birthdate",
+                                  hintText: AppLocalizations.of(context)!.phone,
                                   obscureText: false,
                                   icon: Icons.date_range_outlined,
                                   inputFormatters: [DateInputFormatter()],
@@ -249,7 +249,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         style: TextStyle(color: Colors.black),
                                         children: [
                                           TextSpan(
-                                            text: 'I agree to the ',
+                                            text: AppLocalizations.of(context)!.i_agree,
                                             recognizer: TapGestureRecognizer()
                                               ..onTap = () {
                                                 setState(() {
@@ -258,7 +258,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                               },
                                           ),
                                           TextSpan(
-                                            text: 'terms and conditions',
+                                            text: AppLocalizations.of(context)!.terms,
                                             style: TextStyle(
                                               color: Colors.deepPurple,
                                               decoration: TextDecoration.underline,
@@ -289,7 +289,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                             const SizedBox(height: 20),
                             UIFunctions().buildRoundedButton(
-                              title: "Sign Up",
+                              title: AppLocalizations.of(context)!.sign_up,
                               onPressed: onPress,
                             ),
                             const SizedBox(height: 16),
@@ -302,7 +302,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text("Already have an account?", style: TextStyle(color: Colors.black87)),
+                          Text(AppLocalizations.of(context)!.have_account, style: TextStyle(color: Colors.black87)),
                           TextButton(
                             onPressed: () {
                               Navigator.push(
@@ -312,8 +312,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                 ),
                               );
                             },
-                            child: const Text(
-                              "Log in",
+                            child: Text(
+                              AppLocalizations.of(context)!.login,
                               style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
                             ),
                           ),
@@ -353,14 +353,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
     if (!_isAgreed) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You must agree to the terms and conditions.")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.must_agree)),
       );
       return;
     }
 
     if (_fnameError || _lnameError || _emailError || _passwordError || _birthError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields.")),
+        SnackBar(content: Text(AppLocalizations.of(context)!.fill_fields)),
       );
       return;
     }
@@ -547,7 +547,7 @@ class TermsAndConditionsPage extends StatelessWidget {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Terms and Conditions'),
+        title: Text(AppLocalizations.of(context)!.terms),
         centerTitle: true,
         elevation: 4,
       ),
@@ -557,7 +557,7 @@ class TermsAndConditionsPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Please read carefully',
+              AppLocalizations.of(context)!.read_carfully,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: Colors.deepPurple.shade700,
                 fontWeight: FontWeight.w600,
@@ -579,17 +579,7 @@ class TermsAndConditionsPage extends StatelessWidget {
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.only(right: 12),
                   child: Text(
-                    '''Welcome to our app’s Terms and Conditions.
-
-By using this app, you agree to the following terms:
-
-- You acknowledge that the information provided is for general purposes.
-- We are not liable for any damages arising from the use.
-- Please ensure you use the app responsibly and respect privacy policies.
-
-Thank you for taking the time to read this. If you have questions, please contact support.
-
-Happy using!''',
+                    AppLocalizations.of(context)!.terms_text,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       height: 1.4,
                       fontSize: 16,
@@ -611,8 +601,8 @@ Happy using!''',
                 shadowColor: Colors.deepPurpleAccent.withOpacity(0.6),
               ),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text(
-                'Agree',
+              child: Text(
+                AppLocalizations.of(context)!.agree,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 18,

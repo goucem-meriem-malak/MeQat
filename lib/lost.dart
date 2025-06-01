@@ -18,6 +18,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'UI.dart';
 
 class LostPage extends StatefulWidget {
@@ -31,7 +32,7 @@ class _LostPageState extends State<LostPage> {
   final picker = ImagePicker();
   final faceDetector = FaceDetector(options: FaceDetectorOptions());
   Interpreter? interpreter;
-  String text = "This will help us identify lost people if they're registered in our system. Please take a clear picture of their face";
+  String text = "";
   String? foundUserUID, currentUserId;
   double progress = 0;
   bool imgPicked = false, processed = false, found = false, processing = false;
@@ -49,6 +50,13 @@ class _LostPageState extends State<LostPage> {
     _loadModel();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    setState(() {
+      text = AppLocalizations.of(context)!.lost_1;
+    });
+  }
   Future<void> _getData() async {
     currentUserId = await SharedPref().getUID();
   }
@@ -99,13 +107,13 @@ class _LostPageState extends State<LostPage> {
     final pickedFile = await picker.pickImage(source: ImageSource.camera);
     setState(() {
       processing = true;
-      text = 'This process will take a moment. Please wait..';
+      text = AppLocalizations.of(context)!.lost_2;
     });
     if (pickedFile == null) {
       print('❌ pickAndMatchFace: No image picked');
       setState(() {
         processing = false;
-        text = 'No image picked. Please try again';
+        text = AppLocalizations.of(context)!.lost_3;
       });
       return;
     }
@@ -117,7 +125,7 @@ class _LostPageState extends State<LostPage> {
       print('❌ pickAndMatchFace: No face detected in photo');
       setState(() {
         processing = false;
-        text = 'No face detected in the photo. Please try again';
+        text = AppLocalizations.of(context)!.lost_4;
         progress = 100;
         imgPicked = false;
       });
@@ -291,20 +299,20 @@ class _LostPageState extends State<LostPage> {
         foundUser = await UpdateFirebase().getLostUser(uid);
         delegation = await UpdateFirebase().isDelegationInPreferences(uid);
         if(uid== currentUserId){
-          text = "The user in the picture you took belongs to you. "+foundUserInfo!["lastName"]+" "+foundUserInfo!["firstName"];
+          text = AppLocalizations.of(context)!.lost_5( foundUserInfo!["lastName"], foundUserInfo!["firstName"],);
         } else {
           if(delegation){
             leader = await UpdateFirebase().isLeaderInPreferences(uid);
             if(leader){
               membersInfo = await UpdateFirebase().getAllMemberInfoByLeaderUID(uid);
-              text = "This user is the leader of his delegation. He is "+foundUserInfo!["lastName"]+" "+foundUserInfo!["firstName"];
+              text = AppLocalizations.of(context)!.lost_6( foundUserInfo!["lastName"], foundUserInfo!["firstName"],);
             } else {
               leaderInfo = await UpdateFirebase().getLeaderLocationAndName(uid);
               print("leaderinfo: ${leaderInfo!.isEmpty}");
-              text = "User found! " + foundUserInfo!["lastName"]+" "+foundUserInfo!["firstName"] +". We'll help you get to his delegation, thank you for your help.";
+              text = AppLocalizations.of(context)!.lost_7( foundUserInfo!["lastName"], foundUserInfo!["firstName"],);
             }
           } else {
-            text = "User does not belong to any delegation. Please try again in better lighting or reach out to local authorities.";
+            text = AppLocalizations.of(context)!.lost_8;
           }
         }
 
@@ -321,7 +329,7 @@ class _LostPageState extends State<LostPage> {
     }
 
     setState(() {
-      text = "User not registered in our system. Please try again in better lighting or reach out to local authorities.";
+      text = AppLocalizations.of(context)!.lost_9;
       progress = 1;
       found = false;
       processing = false;
@@ -376,7 +384,7 @@ class _LostPageState extends State<LostPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Face Verification'), centerTitle: true,),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.face_verification), centerTitle: true,),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -400,16 +408,15 @@ class _LostPageState extends State<LostPage> {
                 if (!found && !processing) ...[
                   const SizedBox(height: 20),
                   UIFunctions().buildRoundedButton(
-                    title: 'Take Photo and Verify',
+                    title: AppLocalizations.of(context)!.take_pic_verify,
                     onPressed: pickAndMatchFace,
                   )
                 ],
                 if (found && currentUserId!=foundUserUID) ...[
                   const SizedBox(height: 20),
                   UIFunctions().buildRoundedButton(
-                    title: 'Find his delegation',
+                    title: AppLocalizations.of(context)!.find_delegation,
                     onPressed: () async {
-                      print("${leader.toString()} leader | leaderInfo isEmpty: ${leaderInfo?.isEmpty} | membersInfo isEmpty: ${membersInfo?.isEmpty}");
                       if (!leader && leaderInfo != null) {
                         Navigator.push(
                           context,
@@ -424,12 +431,7 @@ class _LostPageState extends State<LostPage> {
                             builder: (context) => UserLocationMap(membersInfo: membersInfo),
                           ),
                         );
-                      } /*else {
-                        // Handle case where neither leader nor membersInfo is valid
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("No members in the delegation.")),
-                        );
-                      }*/
+                      }
                     },
                   ),
                 ],
@@ -523,7 +525,7 @@ class _UserLocationMapState extends State<UserLocationMap> {
   Future<void> _getCurrentLocation() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      _showSnackbar('Location services are disabled. Please enable them.');
+      _showSnackbar(AppLocalizations.of(context)!.location_services_disabled);
       return;
     }
 
@@ -531,13 +533,13 @@ class _UserLocationMapState extends State<UserLocationMap> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        _showSnackbar('Location permissions are denied.');
+        _showSnackbar(AppLocalizations.of(context)!.location_permissions_denied);
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      _showSnackbar('Location permissions are permanently denied.');
+      _showSnackbar(AppLocalizations.of(context)!.location_permissions_permanently_denied);
       return;
     }
 

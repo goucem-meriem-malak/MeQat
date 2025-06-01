@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'package:meqat/firebase.dart';
 import 'package:meqat/ihram.dart';
@@ -18,9 +19,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
   bool showPolygons = false;
-  bool alarmPlaying = false;
   bool showMiqatMarkers = false;
   bool isWindowNotificationShowing = false;
   bool userIn=false, userWasIn=false, ihram=false, approach=false, wait=false, exited=false, warned=false;
@@ -28,7 +27,6 @@ class _HomePageState extends State<HomePage> {
   int currentMiqatIndex = 0, lastPosition = -1, currentPosition = -1;
   int? lastMiqatIndex;
   bool nearLaststate = false;
-  bool wasInsideZoneSaying2 = false;
 
   Marker? selectedMarker;
 
@@ -38,7 +36,6 @@ class _HomePageState extends State<HomePage> {
   Set<Polygon> annulus = {};
   Set<Polygon> polygons = {};
   Set<Polyline> miqatLines = {};
-  Set<Polyline> Lines = {};
 
   Timer? _locationTimer;
 
@@ -49,11 +46,22 @@ class _HomePageState extends State<HomePage> {
   final AudioPlayer _audioPlayer = AudioPlayer();
   LatLng userLocation = LatLng(26.667018, 39.654531);
   bool nearCurrentState = false;
-  bool firstTime=false;
+  bool firstTime=true;
   bool auto = true;
 
-  final List<Map<String, dynamic>> miqatData = Other.miqatData;
-  List<String> _sayingDescriptions = Other.sayingDescriptions;
+  late List<Map<String, dynamic>> miqatData;
+  late List<String> _sayingDescriptions;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    miqatData = Other.miqatData(context);
+    _sayingDescriptions = Other.sayingDescriptions(context);
+    Future.delayed(Duration.zero, () {
+      _getCurrentLocation();
+      startLocationMonitoring();
+    });
+  }
 
   @override
   void initState() {
@@ -69,6 +77,8 @@ class _HomePageState extends State<HomePage> {
             _getCurrentLocation();
             startLocationMonitoring();
           } else startLocationMonitoring();
+        } else {
+
         }
       });
       _selectedSayingIndex = 2;
@@ -80,21 +90,13 @@ class _HomePageState extends State<HomePage> {
   Future<void> getData() async {
     ihram = await SharedPref().getIhramStatus();
   }
+
   @override
   void dispose() {
     _stopAlarm();
     _audioPlayer.dispose();
     _locationTimer?.cancel();
     super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    Future.delayed(Duration.zero, () {
-      //_getCurrentLocation();
-      startLocationMonitoring();
-    });
   }
 
   void resetMap() {
@@ -120,6 +122,43 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> showLocationDialog(BuildContext context, bool auto) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(AppLocalizations.of(context)!.allow_allocation_access),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                auto ? Icons.gps_fixed : Icons.pan_tool_alt,
+                size: 48,
+                color: Theme.of(context).primaryColor,
+              ),
+              SizedBox(height: 16),
+              Text(
+                auto
+                    ? AppLocalizations.of(context)!.we_will_use_gps
+                    : AppLocalizations.of(context)!.tap_on_map_to_get_location,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(AppLocalizations.of(context)!.ok),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (firstTime) {
@@ -131,9 +170,9 @@ class _HomePageState extends State<HomePage> {
           context: context,
           barrierDismissible: false, // force user to choose
           builder: (context) => AlertDialog(
-            title: Text('Allow Location Access?'),
+            title: Text(AppLocalizations.of(context)!.allow_allocation_access),
             content: Text(
-              'To provide better guidance, would you like to select your location manually by tapping on the map? Or use GPS',
+              AppLocalizations.of(context)!.allow_allocation_access_text,
             ),
             actions: [
               TextButton(
@@ -146,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                   _getCurrentLocation();
                   startLocationMonitoring();
                 },
-                child: Text('Auto Detect'),
+                child: Text(AppLocalizations.of(context)!.auto_detect),
               ),
               TextButton(
                 onPressed: () async {
@@ -155,7 +194,7 @@ class _HomePageState extends State<HomePage> {
                   await SharedPref().saveAuto(auto);
                   startLocationMonitoring();
                 },
-                child: Text('Select Manually'),
+                child: Text(AppLocalizations.of(context)!.select_manually),
               ),
             ],
           ),
@@ -165,30 +204,6 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned(
-            top: 40,   // adjust for status bar height
-            right: 16,
-            child: FloatingActionButton(
-              backgroundColor: Colors.deepPurple.withOpacity(0.6),
-              child: Icon(
-                auto ? Icons.gps_fixed : Icons.pan_tool,
-                color: Colors.white,
-              ),
-              onPressed: () async {
-                setState(() {
-                  auto = !auto;
-                  if (auto) {
-                    _getCurrentLocation();
-                    startLocationMonitoring();
-                  } else {
-                    startLocationMonitoring();
-                    selectedMarker = null;
-                  }
-                });
-                await SharedPref().saveAuto(auto);  // save current state
-              },
-            ),
-          ),
           GoogleMap(
             initialCameraPosition: CameraPosition(
               target: makkahLocation,
@@ -212,15 +227,15 @@ class _HomePageState extends State<HomePage> {
             markers: {
               if (selectedMarker != null) selectedMarker!,
               Marker(
-                markerId: MarkerId("makkah"),
+                markerId: MarkerId(AppLocalizations.of(context)!.makkah),
                 position: makkahLocation,
-                infoWindow: InfoWindow(title: "Makkah"),
+                infoWindow: InfoWindow(title: AppLocalizations.of(context)!.makkah),
                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueViolet),
               ),
               Marker(
-                markerId: MarkerId("userLocation"),
+                markerId: MarkerId(AppLocalizations.of(context)!.your_location),
                 position: userLocation,
-                infoWindow: InfoWindow(title: "Your Location"),
+                infoWindow: InfoWindow(title: AppLocalizations.of(context)!.your_location),
                 icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
               ),
               ...selectedMarkers,
@@ -245,8 +260,14 @@ class _HomePageState extends State<HomePage> {
                 color: Colors.white,
               ),
               onPressed: () async {
+                bool newAuto = !auto; // toggled state
+
+                print("✅✅✅✅✅✅✅✅✅✅✅✅✅✅before");
+                await showLocationDialog(context, newAuto);
+
+                print("✅✅✅✅✅✅✅✅✅✅✅✅✅✅after");
                 setState(() {
-                  auto = !auto;
+                  auto = newAuto;
                   if (auto) {
                     _getCurrentLocation();
                     startLocationMonitoring();
@@ -305,7 +326,7 @@ class _HomePageState extends State<HomePage> {
                                   showSaying(index);
                                 },
                                 child: Text(
-                                  'Saying ${index + 1}',
+                                  AppLocalizations.of(context)!.saying_number((index + 1)),
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ),
@@ -334,7 +355,7 @@ class _HomePageState extends State<HomePage> {
                               onTap: () {
                               },
                               child: Text(
-                                'Learn more >>',
+                                AppLocalizations.of(context)!.learn_more,
                                 style: TextStyle(
                                   color: Colors.deepPurple,
                                   fontSize: 14,
@@ -373,8 +394,18 @@ class _HomePageState extends State<HomePage> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location services are disabled. Please enable them.')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.location_services_disabled),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.open_settings,
+            onPressed: () async {
+              await Geolocator.openLocationSettings();
+            },
+          ),
+        ),
       );
+      // Optionally auto-open settings directly without waiting for user tap:
+      await Geolocator.openLocationSettings();
       return;
     }
 
@@ -383,7 +414,9 @@ class _HomePageState extends State<HomePage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location permissions are denied.')),
+          SnackBar(content: Text(
+            AppLocalizations.of(context)!.location_permissions_denied,
+          )),
         );
         return;
       }
@@ -391,18 +424,25 @@ class _HomePageState extends State<HomePage> {
 
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location permissions are permanently denied.')),
+        SnackBar(content: Text(
+          AppLocalizations.of(context)!.location_permissions_permanently_denied,
+        )),
       );
       return;
     }
 
+    // Now location services are on and permission is granted
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high,
+    );
 
+    setState(() {
+      userLocation = LatLng(position.latitude, position.longitude);
+    });
 
     await UpdateFirebase().updateUserLocation(userLocation);
-    setState(() {userLocation = LatLng(position.latitude, position.longitude);});
   }
+
 
   void _onSayingPressed(int index) {
     setState(() {
@@ -466,8 +506,12 @@ class _HomePageState extends State<HomePage> {
         List<LatLng> outerCircle = createCircle(makkahLocation, outerRadius, 72);
         List<LatLng> innerCircle = createCircle(makkahLocation, innerRadius, 72);
 
+
         annulus.add(Polygon(
-          polygonId: PolygonId("${miqat["name"]}_annulus"),
+          polygonId: PolygonId(
+            AppLocalizations.of(context)!.polygon_annulus_id(miqat["name"]),
+          ),
+
           points: outerCircle,
           holes: [innerCircle],
           fillColor: Colors.blue.withOpacity(0.3),
@@ -578,7 +622,7 @@ class _HomePageState extends State<HomePage> {
         ));
 
         annulus.add(Polygon(
-          polygonId: PolygonId("${miqat["name"]}_sector"),
+          polygonId: PolygonId(miqat["name"]),
           points: [...outerSector, ...innerSector.reversed],
           fillColor: Colors.blue.withOpacity(0.3),
           strokeColor: Colors.blue,
@@ -633,7 +677,7 @@ class _HomePageState extends State<HomePage> {
       );
 
       newPolygons.add(Polygon(
-        polygonId: PolygonId("miqat_$miqatName"),
+        polygonId: PolygonId(miqatName),
         points: [p1, p2, p3, p4],
         fillColor: Colors.blue.withOpacity(0.3),
         strokeColor: Colors.blue,
@@ -650,60 +694,6 @@ class _HomePageState extends State<HomePage> {
       CameraUpdate.newLatLngZoom(makkahLocation, 6),
     );
   }
-  /*
-  void showSaying5() {
-    resetMap();
-    Set<Polyline> newLines = {
-      Polyline(
-        polylineId: PolylineId("direct_line"),
-        color: Colors.red,
-        width: 3,
-        points: [userLocation, makkahLocation],
-      ),
-    };
-
-    for (var miqat in miqatData) {
-      LatLng miqatCenter = miqat["center"];
-      double miqatDistance = _calculateDistance(miqatCenter, makkahLocation);
-      double lineThickness = (miqatDistance / 1000).clamp(3, 10).toDouble();
-
-      double dx = makkahLocation.latitude - miqatCenter.latitude;
-      double dy = makkahLocation.longitude - miqatCenter.longitude;
-      double length = sqrt(dx * dx + dy * dy);
-
-      double normX = dx / length;
-      double normY = dy / length;
-
-      double perpX = -normY;
-      double perpY = normX;
-
-      double miqatLineLength = (miqatDistance / 200000);
-
-      LatLng miqatLineStart = LatLng(
-        miqatCenter.latitude + perpX * miqatLineLength,
-        miqatCenter.longitude + perpY * miqatLineLength,
-      );
-      LatLng miqatLineEnd = LatLng(
-        miqatCenter.latitude - perpX * miqatLineLength,
-        miqatCenter.longitude - perpY * miqatLineLength,
-      );
-
-      newLines.add(Polyline(
-        polylineId: PolylineId("miqatline_${miqat["name"]}"),
-        color: Colors.blue,
-        width: lineThickness.toInt(),
-        points: [miqatLineStart, miqatLineEnd],
-      ));
-    }
-
-    setState(() {
-      miqatLines = newLines;
-    });
-
-    mapController.animateCamera(
-      CameraUpdate.newLatLngZoom(makkahLocation, 6),
-    );
-  }*/
 
   void checkUserPosition(int index){
     switch (index) {
@@ -1032,7 +1022,6 @@ class _HomePageState extends State<HomePage> {
       double dirX = dx / length;
       double dirY = dy / length;
 
-      // Perpendicular vector (عمودي)
       double perpX = -dirY;
       double perpY = dirX;
 
@@ -1105,7 +1094,6 @@ class _HomePageState extends State<HomePage> {
     double distanceToInner = distanceToPolygonEdge(userLocation, innerPoints);
 
     if ((currentPosition == -1 || currentPosition == 1) && (distanceToOuter <= 2000 || distanceToInner <= 2000)) {
-      print("📢 Approaching Miqat from ${(currentPosition == -1) ? "outside" : "inside"} (within 1km)");
       return true;
     }
 
@@ -1411,11 +1399,11 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("Approaching Miqat"),
-          content: Text("You are 5 minutes away from the Miqat. Get ready to enter Ihram."),
+          title: Text(AppLocalizations.of(context)!.approach_notif_title,),
+          content: Text(AppLocalizations.of(context)!.approach_notif,),
           actions: [
             TextButton(
-              child: Text("OK"),
+              child: Text(AppLocalizations.of(context)!.ok,),
               onPressed: () {
                 _stopAlarm();
                 Navigator.of(context).pop();
@@ -1441,11 +1429,11 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("Inside Miqat"),
-          content: Text("You are inside the Miqat."),
+          title: Text(AppLocalizations.of(context)!.inside_notif_title,),
+          content: Text(AppLocalizations.of(context)!.inside_notif,),
           actions: [
             TextButton(
-              child: Text("Okay"),
+              child: Text(AppLocalizations.of(context)!.ok),
               onPressed: () {
                 _stopAlarm();
                 Navigator.of(context).pop();
@@ -1473,11 +1461,11 @@ class _HomePageState extends State<HomePage> {
         builder: (BuildContext context) {
           return AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            title: Text("Inside Miqat"),
-            content: Text("You are inside the Miqat. Do you want to start Ihram?"),
+            title: Text(AppLocalizations.of(context)!.inside_notif_title),
+            content: Text(AppLocalizations.of(context)!.ihram_notif),
             actions: [
               TextButton(
-                child: Text("Yes"),
+                child: Text(AppLocalizations.of(context)!.yes),
                 onPressed: () {
                   _stopAlarm();
                   setState(() {
@@ -1492,7 +1480,7 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
               TextButton(
-                child: Text("Later"),
+                child: Text(AppLocalizations.of(context)!.later),
                 onPressed: () {
                   _stopAlarm();
                   Navigator.of(context).pop();
@@ -1516,11 +1504,11 @@ class _HomePageState extends State<HomePage> {
           builder: (BuildContext context) {
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              title: Text("Inside Miqat"),
-              content: Text("You are inside the Miqat. Do you want to start Ihram?"),
+              title: Text(AppLocalizations.of(context)!.inside_notif_title),
+              content: Text(AppLocalizations.of(context)!.ihram_notif),
               actions: [
                 TextButton(
-                  child: Text("Yes"),
+                  child: Text(AppLocalizations.of(context)!.yes),
                   onPressed: () {
                     _stopAlarm();
                     setState(() {
@@ -1538,7 +1526,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 if (!isLastMiqat())
                   TextButton(
-                    child: Text("Wait Next Miqat"),
+                    child: Text(AppLocalizations.of(context)!.wait),
                     onPressed: () {
                       _stopAlarm();
                       setState(() {
@@ -1549,7 +1537,7 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                 TextButton(
-                  child: Text("Later"),
+                  child: Text(AppLocalizations.of(context)!.later),
                   onPressed: () {
                     _stopAlarm();
                     setState(() {
@@ -1574,11 +1562,11 @@ class _HomePageState extends State<HomePage> {
           builder: (BuildContext context) {
             return AlertDialog(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              title: Text("Back inside Miqat"),
-              content: Text("You are inside the Miqat again. You can start Ihram now."),
+              title: Text(AppLocalizations.of(context)!.back_inside_title,),
+              content: Text(AppLocalizations.of(context)!.back_inside),
               actions: [
                 TextButton(
-                  child: Text("Okay"),
+                  child: Text(AppLocalizations.of(context)!.ok,),
                   onPressed: () {
                     _stopAlarm();
                     setState(() {
@@ -1614,11 +1602,11 @@ class _HomePageState extends State<HomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("Exiting Miqat"),
-          content: Text("You are Exiting the Miqat."),
+          title: Text(AppLocalizations.of(context)!.exiting_title,),
+          content: Text(AppLocalizations.of(context)!.exiting,),
           actions: [
             TextButton(
-              child: Text("Okay"),
+              child: Text(AppLocalizations.of(context)!.ok,),
               onPressed: () {
                 _stopAlarm();
                 Navigator.of(context).pop();
@@ -1645,8 +1633,8 @@ class _HomePageState extends State<HomePage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Ihram Warning"),
-          content: Text("You exited Miqat without starting Ihram. This is not permissible. You have to go back in now."),
+          title: Text(AppLocalizations.of(context)!.warning_title,),
+          content: Text(AppLocalizations.of(context)!.warning,),
           actions: [
             TextButton(
               onPressed: () {
@@ -1654,7 +1642,7 @@ class _HomePageState extends State<HomePage> {
                 Navigator.of(context).pop();
                 isWindowNotificationShowing = false;
               },
-              child: Text("OK"),
+              child: Text(AppLocalizations.of(context)!.ok,),
             ),
           ],
         );

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 
 import 'package:geolocator/geolocator.dart';
@@ -28,15 +29,10 @@ class DelegationPage extends StatefulWidget {
 class _DelegationPageState extends State<DelegationPage> {
   StreamSubscription<Position>? _positionStreamSubscription;
   final LatLng makkahLatLng = LatLng(21.4225, 39.8262);
-  List<Map<String, dynamic>> membersList = [];
-  bool? delegation;
-  bool showMembers = false;
   bool showCheckmark = false;
-  String? leaderName, firstNAme, lastName;
-  Map<String, DateTime> lastAlarmTime = {}; // ✅ Track when last alarm triggered per user
-  Map<String, bool> userAlarmCleared = {};  // ✅ Track if user pressed OK (alarm cleared)
+  String? leaderName, firstName, lastName;
+  Map<String, DateTime> lastAlarmTime = {};
   bool isAlarmDialogShowing = false;
-  int markerCounter = 0;
   late GoogleMapController _mapController ;
   final Set<Marker> _markers = {};
   LatLng? lostUser;
@@ -64,7 +60,7 @@ class _DelegationPageState extends State<DelegationPage> {
         ),
         infoWindow: InfoWindow(
           title: '${member['firstName']} ${member['lastName']}',
-          snippet: 'Group Member',
+          snippet: AppLocalizations.of(context)!.group_member,
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
       );
@@ -90,7 +86,7 @@ class _DelegationPageState extends State<DelegationPage> {
         position: position,
         infoWindow: InfoWindow(
           title: '${leaderInfo['firstName']} ${leaderInfo['lastName']}',
-          snippet: 'Group Leader',
+          snippet: AppLocalizations.of(context)!.group_leader,
         ),
         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
       );
@@ -98,12 +94,10 @@ class _DelegationPageState extends State<DelegationPage> {
       newMarkers.add(leaderMarker);
     }
 
-    print("❌❌❌❌❌❌"+_markers.length.toString());
     setState(() {
       _markers.clear();
       _markers.addAll(newMarkers);
     });
-    print("❌❌❌❌❌❌"+_markers.length.toString());
   }
 
   @override
@@ -115,7 +109,7 @@ class _DelegationPageState extends State<DelegationPage> {
     uid = await SharedPref().getUID();
     qr = await SharedPref().getQRCode();
     leader = await SharedPref().getLeader();
-    firstNAme = await SharedPref().getFirstName();
+    firstName = await SharedPref().getFirstName();
     lastName = await SharedPref().getLastName();
 
     // Load members if qr exists
@@ -164,7 +158,7 @@ class _DelegationPageState extends State<DelegationPage> {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location services are disabled. Please enable them.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.location_services_disabled)),
       );
       return;
     }
@@ -174,7 +168,7 @@ class _DelegationPageState extends State<DelegationPage> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Location permissions are denied.')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.location_permissions_denied)),
         );
         return;
       }
@@ -182,7 +176,7 @@ class _DelegationPageState extends State<DelegationPage> {
 
     if (permission == LocationPermission.deniedForever) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location permissions are permanently denied.')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.location_permissions_permanently_denied)),
       );
       return;
     }
@@ -323,12 +317,15 @@ class _DelegationPageState extends State<DelegationPage> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: Text("⚠️ You're Straying"),
-          content: Text("Hey $firstNAme $lastName, you’re too far from your group. Please go back."),
+          title: Text(AppLocalizations.of(context)!.user_straying),
+
+          content: Text(
+            AppLocalizations.of(context)!.too_far_from_group(firstName!, lastName!,),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
+              child: Text(AppLocalizations.of(context)!.ok),
             ),
           ],
         ),
@@ -389,16 +386,19 @@ class _DelegationPageState extends State<DelegationPage> {
         });
 
         // Show full name alert to the leader
-        String fullName = "${member['firstName']} ${member['lastName']}";
+        String fullName = AppLocalizations.of(context)!.member_full_name_warning(member["firstName"], member["lastName"],
+        );
         showDialog(
           context: context,
           builder: (_) => AlertDialog(
-            title: Text("⚠️ Member Straying"),
-            content: Text("$fullName is straying from the group. Please locate them."),
+            title: Text(AppLocalizations.of(context)!.member_straying),
+            content: Text(
+              AppLocalizations.of(context)!.leader_warning(fullName),
+            ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("OK"),
+                child: Text(AppLocalizations.of(context)!.ok),
               ),
             ],
           ),
@@ -421,19 +421,19 @@ class _DelegationPageState extends State<DelegationPage> {
     });
 
     String message = _isStrayingCheckActive
-        ? "Straying detection activated. We'll now start monitoring your delegation's location."
-        : "Straying detection deactivated. Monitoring stopped.";
+        ? AppLocalizations.of(context)!.straying_service_on
+        : AppLocalizations.of(context)!.straying_service_off;
 
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(_isStrayingCheckActive ? "Detection Started" : "Detection Stopped"),
+          title: Text(_isStrayingCheckActive ? AppLocalizations.of(context)!.detection_on : AppLocalizations.of(context)!.detection_off),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("OK"),
+              child: Text(AppLocalizations.of(context)!.ok),
             ),
           ],
         );
@@ -463,15 +463,15 @@ class _DelegationPageState extends State<DelegationPage> {
       context: context,
       barrierDismissible: false, // User MUST press OK
       builder: (context) => AlertDialog(
-        title: const Text('Warning!'),
-        content: const Text('You are getting too far from your group. Please come back.'),
+        title: Text(AppLocalizations.of(context)!.warning_title),
+        content: Text(AppLocalizations.of(context)!.you_straying),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.pop(context);
               isAlarmDialogShowing = false; // 🔥 Dialog closed
             },
-            child: const Text('OK'),
+            child: Text(AppLocalizations.of(context)!.ok),
           ),
         ],
       ),
@@ -563,7 +563,7 @@ class _DelegationPageState extends State<DelegationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Delegation Page'),
+        title: Text(AppLocalizations.of(context)!.delegation),
         centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
@@ -623,7 +623,7 @@ class _DelegationPageState extends State<DelegationPage> {
                 onTap: _scanQRCode, // You'll define this below
                 child: Column(
                   children: [
-                    Text("Scan QRCode", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.scan_qr_code, style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Icon(Icons.qr_code, color: Colors.deepPurple.withOpacity(0.6) ,size: 48),
                   ],
@@ -636,7 +636,7 @@ class _DelegationPageState extends State<DelegationPage> {
                     Expanded(child: Divider()),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Text("OR", style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(AppLocalizations.of(context)!.or, style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                     Expanded(child: Divider()),
                   ],
@@ -646,7 +646,7 @@ class _DelegationPageState extends State<DelegationPage> {
                 onTap: _pickFromGallery,
                 child: Column(
                   children: [
-                    Text("Upload from Gallery", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(AppLocalizations.of(context)!.upload_from_gallery, style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8),
                     Icon(Icons.image, color: Colors.deepPurple.withOpacity(0.6),size: 48),
                   ],
@@ -719,7 +719,7 @@ class _DelegationPageState extends State<DelegationPage> {
 
                       // Delegation members text
                       Text(
-                        "Delegation members",
+                        AppLocalizations.of(context)!.delegation_members,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -751,13 +751,13 @@ class _DelegationPageState extends State<DelegationPage> {
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
                                     child: Text(
-                                      "Leader $leaderName",
+                                      AppLocalizations.of(context)!.leader_name(leaderName!),
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                       textAlign: TextAlign.center,
                                     ),
                                   ),
                                 if (members.isEmpty)
-                                  Text("No members yet.", style: TextStyle(color: Colors.grey)),
+                                  Text(AppLocalizations.of(context)!.no_members_yet, style: TextStyle(color: Colors.grey)),
                                 if (members.isNotEmpty)
                                   SizedBox(
                                     height: 200,
@@ -772,7 +772,7 @@ class _DelegationPageState extends State<DelegationPage> {
                                             padding: const EdgeInsets.symmetric(vertical: 4.0),
                                             child: Center(
                                               child: Text(
-                                                fullName.isNotEmpty ? fullName : 'Unnamed Member',
+                                                fullName.isNotEmpty ? fullName : AppLocalizations.of(context)!.unnamed_member,
                                                 textAlign: TextAlign.center,
                                               ),
                                             ),
@@ -818,7 +818,7 @@ class _QRScanPageState extends State<QRScanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Scan QR Code"), centerTitle: true,),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.scan_qr_code), centerTitle: true,),
       body: QRView(
         key: qrKey,
         onQRViewCreated: _onQRViewCreated,

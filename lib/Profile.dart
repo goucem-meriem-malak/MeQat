@@ -1,9 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meqat/firebase.dart';
 
+import 'main.dart';
 import 'premium.dart';
 import 'login.dart';
 import 'sharedPref.dart';
@@ -95,6 +96,10 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> languages = Other.languages(context);
+    final List<String> madhhabs = Other.madhhabs(context);
+    final List<String> countries = Other.countries(context);
+    final List<String> transportations = Other.transportationMethods(context);
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! > 50) {
@@ -106,7 +111,7 @@ class _ProfilePageState extends State<ProfilePage> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Profile'),
+          title: Text(AppLocalizations.of(context)!.profile),
           centerTitle: true,
           actions: [
             IconButton(
@@ -129,7 +134,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     _showImagePickerOptions();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Click Edit Profile Info")),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.edit_info)),
                     );
                   }
                 },
@@ -151,13 +156,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     setState(() {});
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Click Edit Profile Info")),
+                      SnackBar(content: Text(AppLocalizations.of(context)!.edit_info)),
                     );
                     }
                 },
                 child: Text(
                   ((firstName?.isEmpty ?? true) && (lastName?.isEmpty ?? true))
-                      ? 'Enter your full name'
+                      ? AppLocalizations.of(context)!.enter_name
                       : '${firstName ?? ''} ${lastName ?? ''}',
                   style: TextStyle(
                     fontSize: 18,
@@ -178,7 +183,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     });
                   },
                   child: Text(
-                    "Edit profile Info",
+                    AppLocalizations.of(context)!.edit_info,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.purple.withOpacity(0.6),
@@ -209,8 +214,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Expanded(
-                                child: Text("Hajj", textAlign: TextAlign.end),
+                              Expanded(
+                                child: Text(AppLocalizations.of(context)!.hajj, textAlign: TextAlign.end),
                               ),
                               Switch(
                                 value: goal ?? false,
@@ -222,8 +227,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 }
                                     : null,
                               ),
-                              const Expanded(
-                                child: Text("Umrah", textAlign: TextAlign.start),
+                              Expanded(
+                                child: Text(AppLocalizations.of(context)!.umrah, textAlign: TextAlign.start),
                               ),
                             ],
                           ),
@@ -232,8 +237,8 @@ class _ProfilePageState extends State<ProfilePage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Expanded(
-                                child: Text("Individual", textAlign: TextAlign.end),
+                              Expanded(
+                                child: Text(AppLocalizations.of(context)!.individual, textAlign: TextAlign.end),
                               ),
                               Switch(
                                 value: delegation ?? false,
@@ -247,8 +252,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                 }
                                     : null,
                               ),
-                              const Expanded(
-                                child: Text("Delegation", textAlign: TextAlign.start),
+                              Expanded(
+                                child: Text(AppLocalizations.of(context)!.delegation, textAlign: TextAlign.start),
                               ),
                             ],
                           ),
@@ -258,8 +263,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Expanded(
-                                  child: Text("Member", textAlign: TextAlign.end),
+                                Expanded(
+                                  child: Text(AppLocalizations.of(context)!.member, textAlign: TextAlign.end),
                                 ),
                                 Switch(
                                   value: leader ?? false,
@@ -272,8 +277,8 @@ class _ProfilePageState extends State<ProfilePage> {
                                   }
                                       : null,
                                 ),
-                                const Expanded(
-                                  child: Text("Leader", textAlign: TextAlign.start),
+                                Expanded(
+                                  child: Text(AppLocalizations.of(context)!.leader, textAlign: TextAlign.start),
                                 ),
                               ],
                             ),
@@ -281,10 +286,10 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const Divider(height: 1),
-                    _buildSettingItem('Language', language),
-                    _buildSettingItem('Madhhab', madhhab),
-                    _buildSettingItem('Country', country),
-                    _buildSettingItem('Transportation', transportation),
+                    _buildSettingItem(AppLocalizations.of(context)!.language, language, languages),
+                    _buildSettingItem(AppLocalizations.of(context)!.madhhab, madhhab, madhhabs),
+                    _buildSettingItem(AppLocalizations.of(context)!.country, country, countries),
+                    _buildSettingItem(AppLocalizations.of(context)!.transportation, transportation, transportations),
                   ],
                 ),
               ),
@@ -302,7 +307,7 @@ class _ProfilePageState extends State<ProfilePage> {
               isEditing = false;
             });
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Settings saved successfully!')),
+              SnackBar(content: Text(AppLocalizations.of(context)!.saved)),
             );
           },
           child: Icon(Icons.check),
@@ -314,7 +319,7 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildSettingItem(String label, String? value) {
+  Widget _buildSettingItem(String label, String? value, List<String> list) {
     IconData? defaultIcon;
 
     switch (label) {
@@ -343,7 +348,7 @@ class _ProfilePageState extends State<ProfilePage> {
     return ListTile(
       title: Text(label, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
       subtitle: Text(
-        (value == null || value.isEmpty) ? 'Not Set' : value,
+        (value == null || value.isEmpty) ? AppLocalizations.of(context)!. not_set : value,
         style: TextStyle(color: Colors.grey),
       ),
       trailing: iconToShow != null
@@ -355,7 +360,8 @@ class _ProfilePageState extends State<ProfilePage> {
             _currentlyEditingLabel = label;
           });
 
-          await _showEditDialog(label);
+          await _showEditDialog(label, list);
+
 
           setState(() {
             _currentlyEditingLabel = null;
@@ -365,29 +371,19 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Future<void> _showEditDialog(String label) async {
-    List<String> options = [];
-
-    switch (label) {
-      case 'Language':
-        options = Other.languages;
-        break;
-      case 'Madhhab':
-        options = Other.madhhabs;
-        break;
-      case 'Country':
-        options = Other.countries;
-        break;
-      case 'Transportation':
-        options = Other.transportationMethods;
-        break;
-    }
-
+  Future<void> _showEditDialog(String label, List<String> list) async {
     String? selected = await showDialog<String>(
       context: context,
       builder: (BuildContext context) {
+        // ✅ Now context is properly localized!
+        List<String> options = [];
+
+        options = list;
+
         return SimpleDialog(
-          title: Text('Select $label'),
+          title: Text(
+            AppLocalizations.of(context)!.select_label(label),
+          ),
           children: options.map((option) {
             return SimpleDialogOption(
               onPressed: () {
@@ -401,10 +397,13 @@ class _ProfilePageState extends State<ProfilePage> {
     );
 
     if (selected != null) {
-      setState(() {
+      setState(() async {
         switch (label) {
           case 'Language':
             language = selected;
+            final langCode = selected == 'Arabic' ? 'ar' : 'en';
+            await SharedPref().saveLanguage(langCode);
+            MyApp.setLocale(context, Locale(langCode));
             break;
           case 'Madhhab':
             madhhab = selected;
@@ -428,17 +427,17 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text('Enter your full name'),
+          title: Text(AppLocalizations.of(context)!.enter_name),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: InputDecoration(labelText: 'First Name'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.fname),
                 onChanged: (val) => newFirstName = val,
                 controller: TextEditingController(text: firstName),
               ),
               TextField(
-                decoration: InputDecoration(labelText: 'Last Name'),
+                decoration: InputDecoration(labelText: AppLocalizations.of(context)!.lname),
                 onChanged: (val) => newLastName = val,
                 controller: TextEditingController(text: lastName),
               ),
@@ -447,7 +446,7 @@ class _ProfilePageState extends State<ProfilePage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancel'),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               onPressed: () {
@@ -457,7 +456,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 });
                 Navigator.pop(context);
               },
-              child: Text('Save'),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );
@@ -473,7 +472,7 @@ class _ProfilePageState extends State<ProfilePage> {
           children: [
             ListTile(
               leading: Icon(Icons.camera_alt),
-              title: Text('Take a photo'),
+              title: Text(AppLocalizations.of(context)!.take_pic),
               onTap: () {
                 Navigator.of(context).pop();
                 _pickImage(ImageSource.camera);
@@ -481,7 +480,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             ListTile(
               leading: Icon(Icons.photo),
-              title: Text('Choose from gallery'),
+              title: Text(AppLocalizations.of(context)!.pick_gallery),
               onTap: () {
                 Navigator.of(context).pop();
                 _pickImage(ImageSource.gallery);

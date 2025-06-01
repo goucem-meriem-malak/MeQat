@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class Alarm {
   final String id;
@@ -153,170 +155,192 @@ class myUser {
 }
 
 class Other {
-  static final List<Map<String, String>> premiumItems = const [
+  static List<Map<String, String>> premiumItems(BuildContext context) => [
     {
-      "image": "assets/img/hotel.png",
-      "title": "Fine Hotels That can be 60% to 75% cheaper",
+      "image": "assets/img/hotel.webp",
+      "title": AppLocalizations.of(context)!.premium_hotel_title,
     },
     {
-      "image": "assets/img/food.png",
-      "title":
-      "Find more affordable meals 50% to 70% cheaper and more delicious",
+      "image": "assets/img/food.webp",
+      "title": AppLocalizations.of(context)!.premium_food_title,
     },
     {
-      "image": "assets/img/shop.png",
-      "title":
-      "Shops 85% cheaper and items that can cost you 10-20 SAR instead",
+      "image": "assets/img/shops.webp",
+      "title": AppLocalizations.of(context)!.premium_shop_title,
     },
   ];
-  List<Map<String, dynamic>> menuItems = [
-    {'title': 'Delegation', 'icon': Icons.people},
-    {'title': 'Ihram', 'icon': Icons.map},
-    {'title': 'Hajj', 'icon': Icons.mosque},
-    {'title': 'Umrah', 'icon': Icons.people},
-    {'title': 'Lost', 'icon': Icons.location_off},
-    {'title': 'Medicine', 'icon': Icons.alarm},
+  List<Map<String, dynamic>> menuItems(BuildContext context) => [
+    {'title': AppLocalizations.of(context)!.ihram, "image": "assets/img/ihram.webp",},
+    {'title': AppLocalizations.of(context)!.hajj, "image": "assets/img/kabah.webp",},
+    {'title': AppLocalizations.of(context)!.umrah, "image": "assets/img/umrah.webp",},
+    {'title': AppLocalizations.of(context)!.delegation, "image": "assets/img/delegation.webp",},
+    {'title': AppLocalizations.of(context)!.menu_lost, "image": "assets/img/lost.webp",},
+    {'title': AppLocalizations.of(context)!.medicine, "image": "assets/img/meds.webp",},
   ];
-  static List<String> languages = ["English", "Arabic"];
-  static List<String> goal = ["Hajj", "Umrah"];
-  static List<String> madhhabs = ["Shafii", "Hanafi", "Hanbali", "Maliki"];
-  static List<String> countries = ["Saudi Arabia", "Egypt", "Pakistan", "Malaysia", "Turkey"];
-  static List<String> transportationMethods = ["By Air", "By Sea", "By Vehicle", "By foot"];
-  static List<String> sayingDescriptions = [
-    "❌ Not approved by maddhab Maliki\n❌ Not approved by maddhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",  // Saying 1
-    "❌ Not approved by maddhab Maliki\n❌ Not approved by maddhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",  // Saying 2
-    "✅ Approved by maddhab Maliki\n✅ Approved by maddhab Hanbali\n✅ Approved by maddhab Hanafi\n✅ Approved by maddhab Sahfii",  // Saying 3
-    "Description for Saying 4",  // Saying 4
-    "❌ Not approved by maddhab Maliki\n✅ Approved by madhhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",  // Saying 5
+  static List<String> languages (context)=> [AppLocalizations.of(context)!.language_english, AppLocalizations.of(context)!.language_arabic];
+  static List<String> goal (context) => [AppLocalizations.of(context)!.hajj, AppLocalizations.of(context)!.umrah];
+  static List<String> madhhabs (context) => [AppLocalizations.of(context)!.madhhab_shafii, AppLocalizations.of(context)!.madhhab_hanafi, AppLocalizations.of(context)!.madhhab_hanbali, AppLocalizations.of(context)!.madhhab_maliki];
+  static List<String> countries(context) => [AppLocalizations.of(context)!.country_saudi_arabia, AppLocalizations.of(context)!.country_egypt, AppLocalizations.of(context)!.country_pakistan, AppLocalizations.of(context)!.country_malaysia, AppLocalizations.of(context)!.country_turkey, AppLocalizations.of(context)!.country_algeria];
+  static List<String> transportationMethods (context) => [AppLocalizations.of(context)!.transport_air, AppLocalizations.of(context)!.transport_sea, AppLocalizations.of(context)!.transport_vehicle, AppLocalizations.of(context)!.transport_foot];
+  static List<String> sayingDescriptions (context)=> [
+    AppLocalizations.of(context)!.saying_1_description,  // Saying 1
+    AppLocalizations.of(context)!.saying_2_description,  // Saying 2
+    AppLocalizations.of(context)!.saying_3_description,  // Saying 3
+    AppLocalizations.of(context)!.saying_4_description,  // Saying 4
+    AppLocalizations.of(context)!.saying_5_description,  // Saying 5
   ];
-  static final List<Map<String, dynamic>> miqatData = [
+  static List<Map<String, dynamic>> miqatData (context)=> [
     {
-      "name": "Dhul Hulaifa",
+      "name": AppLocalizations.of(context)!.miqat_dhul_Hulaifa,
       "center": LatLng(24.413942807343183, 39.54297293708976),
       "closest": LatLng(24.390, 39.535),
       "farthest": LatLng(24.430, 39.550),
     },
     {
-      "name": "Juhfa",
+      "name": AppLocalizations.of(context)!.miqat_juhfa,
       "center": LatLng(22.71515249938801, 39.14514729649877),
       "closest": LatLng(22.700, 39.140),
       "farthest": LatLng(22.730, 39.160),
     },
     {
-      "name": "Yalamlam",
+      "name": AppLocalizations.of(context)!.miqat_yalmlm,
       "center": LatLng(20.518564356141052, 39.870803989418974),
       "closest": LatLng(20.500, 39.850),
       "farthest": LatLng(20.540, 39.890),
     },
     {
-      "name": "Dhat Irq",
+      "name": AppLocalizations.of(context)!.miqat_dhat_irq,
       "center": LatLng(21.930072877611384, 40.42552892351149),
       "closest": LatLng(21.910, 40.400),
       "farthest": LatLng(21.950, 40.450),
     },
     {
-      "name": "Qarn al-Manazil",
+      "name": AppLocalizations.of(context)!.miqat_qarn_manazil,
       "center": LatLng(21.63320606975049, 40.42677866397942),
       "closest": LatLng(21.610, 40.410),
       "farthest": LatLng(21.650, 40.440),
     },
   ];
-  static final List<Map<String, String>> hajjSteps = [
+  static List<Map<String, String>> hajjSteps(BuildContext context) => [
     {
-      'title': 'Step 1: Ihram',
-      'description': 'Make intention and enter Ihram from Miqat with Talbiyah.'
+      'title': AppLocalizations.of(context)!.hajj_step_1_title,
+      'description': AppLocalizations.of(context)!.hajj_step_1_description,
+      "image": "assets/img/hajj.webp"
     },
     {
-      'title': 'Step 2: Tawaf al-Qudum',
-      'description': 'Perform the arrival Tawaf (circumambulation of the Kaaba).'
+      'title': AppLocalizations.of(context)!.hajj_step_2_title,
+      'description': AppLocalizations.of(context)!.hajj_step_2_description,
+      "image": "assets/img/tawaf.webp"
     },
     {
-      'title': 'Step 3: Sa’i between Safa and Marwah',
-      'description': 'Walk 7 times between the hills of Safa and Marwah.'
+      'title': AppLocalizations.of(context)!.hajj_step_3_title,
+      'description': AppLocalizations.of(context)!.hajj_step_3_description,
+      "image": "assets/img/saae.webp"
     },
     {
-      'title': 'Step 4: Stay at Mina',
-      'description': 'On 8th Dhul Hijjah, stay in Mina and pray shortened prayers.'
+      'title': AppLocalizations.of(context)!.hajj_step_4_title,
+      'description': AppLocalizations.of(context)!.hajj_step_4_description,
+      "image": "assets/img/sleep.webp"
     },
     {
-      'title': 'Step 5: Day of Arafah',
-      'description': 'On 9th Dhul Hijjah, stand in prayer and supplication at Arafah.'
+      'title': AppLocalizations.of(context)!.hajj_step_5_title,
+      'description': AppLocalizations.of(context)!.hajj_step_5_description,
+      "image": "assets/img/arafah.webp"
     },
     {
-      'title': 'Step 6: Muzdalifah',
-      'description': 'Collect pebbles and spend the night under the sky in Muzdalifah.'
+      'title': AppLocalizations.of(context)!.hajj_step_6_title,
+      'description': AppLocalizations.of(context)!.hajj_step_6_description,
+      "image": "assets/img/rock.webp"
     },
     {
-      'title': 'Step 7: Rami at Jamarat',
-      'description': 'On 10th Dhul Hijjah, throw 7 pebbles at the Jamrah al-Aqabah.'
+      'title': AppLocalizations.of(context)!.hajj_step_7_title,
+      'description': AppLocalizations.of(context)!.hajj_step_7_description,
+      "image": "assets/img/throw.webp"
     },
     {
-      'title': 'Step 8: Qurbani',
-      'description': 'Offer animal sacrifice (or arrange it through a service).'
+      'title': AppLocalizations.of(context)!.hajj_step_8_title,
+      'description': AppLocalizations.of(context)!.hajj_step_8_description,
+      "image": "assets/img/sheep.webp"
     },
     {
-      'title': 'Step 9: Hair Cut/Shave',
-      'description': 'Men shave or trim hair; women cut a small portion.'
+      'title': AppLocalizations.of(context)!.hajj_step_9_title,
+      'description': AppLocalizations.of(context)!.hajj_step_9_description,
+      "image": "assets/img/cut_hair.webp"
     },
     {
-      'title': 'Step 10: Tawaf al-Ifadah',
-      'description': 'Mandatory Tawaf done after sacrifice and hair cutting.'
+      'title': AppLocalizations.of(context)!.hajj_step_10_title,
+      'description': AppLocalizations.of(context)!.hajj_step_10_description,
+      "image": "assets/img/tawaf.webp"
     },
     {
-      'title': 'Step 11: Days of Tashreeq',
-      'description': 'Stay in Mina and perform Rami for the next 2–3 days.'
+      'title': AppLocalizations.of(context)!.hajj_step_11_title,
+      'description': AppLocalizations.of(context)!.hajj_step_11_description,
+      "image": "assets/img/throw.webp"
     },
     {
-      'title': 'Step 12: Tawaf al-Wida',
-      'description': 'Farewell Tawaf before leaving Makkah (mandatory for non-locals).'
-    },
-  ];
-  static final List<Map<String, String>> ihramSteps = [
-    {
-      'title': 'Step 1: Intention (Niyyah)',
-      'description': 'Make your intention for Hajj or Umrah before entering the Miqat.'
-    },
-    {
-      'title': 'Step 2: Ghusl and Cleanliness',
-      'description': 'Perform full-body purification (ghusl), trim nails, and wear Ihram clothes.'
-    },
-    {
-      'title': 'Step 3: Wearing Ihram',
-      'description': 'Men wear 2 white sheets. Women wear modest Islamic dress.'
-    },
-    {
-      'title': 'Step 4: Talbiyah',
-      'description': 'Recite "Labbayk Allahumma Labbayk..." after entering Ihram.'
-    },
-    {
-      'title': 'Step 5: Avoid Prohibited Acts',
-      'description': 'Avoid cutting hair, perfume, arguing, or intimate relations while in Ihram.'
+      'title': AppLocalizations.of(context)!.hajj_step_12_title,
+      'description': AppLocalizations.of(context)!.hajj_step_12_description,
+      "image": "assets/img/tawaf.webp"
     },
   ];
-  static final List<Map<String, String>> umrahSteps = [
+  static List<Map<String, String>> ihramSteps(BuildContext context) => [
     {
-      'title': 'Step 1: Ihram',
-      'description': 'Enter the state of Ihram from the Miqat with intention and Talbiyah.'
+      'title': AppLocalizations.of(context)!.ihram_step_1_title,
+      'description': AppLocalizations.of(context)!.ihram_step_1_description,
+      "image": "assets/img/niya.webp"
     },
     {
-      'title': 'Step 2: Tawaf',
-      'description': 'Perform 7 rounds of Tawaf around the Kaaba in a counter-clockwise direction.'
+      'title': AppLocalizations.of(context)!.ihram_step_2_title,
+      'description': AppLocalizations.of(context)!.ihram_step_2_description,
+      "image": "assets/img/clean.webp"
     },
     {
-      'title': 'Step 3: Prayer at Maqam Ibrahim',
-      'description': 'Pray two Rak’ahs behind Maqam Ibrahim after completing Tawaf.'
+      'title': AppLocalizations.of(context)!.ihram_step_3_title,
+      'description': AppLocalizations.of(context)!.ihram_step_3_description,
+      "image": "assets/img/hajj.webp"
     },
     {
-      'title': 'Step 4: Sa’i',
-      'description': 'Walk 7 times between Safa and Marwah, starting at Safa and ending at Marwah.'
+      'title': AppLocalizations.of(context)!.ihram_step_4_title,
+      'description': AppLocalizations.of(context)!.ihram_step_4_description,
+      "image": "assets/img/talbiya.webp"
     },
     {
-      'title': 'Step 5: Hair Cut or Shave',
-      'description': 'Men shave or trim hair; women cut a small portion of their hair.'
-    },
-    {
-      'title': 'Step 6: Exit Ihram',
-      'description': 'After the haircut, you are out of Ihram and the Umrah is complete.'
+      'title': AppLocalizations.of(context)!.ihram_step_5_title,
+      'description': AppLocalizations.of(context)!.ihram_step_5_description,
+      "image": "assets/img/dont.webp"
     },
   ];
+  static List<Map<String, String>> umrahSteps(BuildContext context) => [
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_1_title,
+      'description': AppLocalizations.of(context)!.umrah_step_1_description,
+      "image": "assets/img/ihram.webp"
+    },
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_2_title,
+      'description': AppLocalizations.of(context)!.umrah_step_2_description,
+      "image": "assets/img/tawaf.webp"
+    },
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_3_title,
+      'description': AppLocalizations.of(context)!.umrah_step_3_description,
+      "image": "assets/img/makam_ibrahim.webp"
+    },
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_4_title,
+      'description': AppLocalizations.of(context)!.umrah_step_4_description,
+      "image": "assets/img/saae.webp"
+    },
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_5_title,
+      'description': AppLocalizations.of(context)!.umrah_step_5_description,
+      "image": "assets/img/cut_hair.webp"
+    },
+    {
+      'title': AppLocalizations.of(context)!.umrah_step_6_title,
+      'description': AppLocalizations.of(context)!.umrah_step_6_description,
+      "image": "assets/img/done.webp"
+    },
+  ];
+
 }

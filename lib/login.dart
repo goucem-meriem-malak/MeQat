@@ -1,39 +1,9 @@
 import 'package:flutter/material.dart';
-
 import 'package:local_auth/local_auth.dart';
-
 import 'package:meqat/UI.dart';
-import 'package:meqat/firebase.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:meqat/home.dart';
 import 'package:meqat/signup.dart';
-
-class Myapp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: MyApp(),
-    );
-  }
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.light(
-          primary: Colors.black,
-          surface: Colors.white,
-        ),
-      ),
-      home: const LoginPage(),
-    );
-  }
-}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -45,39 +15,11 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FocusNode _focusNodeUsername = FocusNode();
-  final FocusNode _focusNodePassword = FocusNode();
   final LocalAuthentication auth = LocalAuthentication();
-  bool _isKeyboardOpen = false;
 
   @override
   void initState() {
     super.initState();
-    _focusNodeUsername.addListener(_handleKeyboardVisibility);
-    _focusNodePassword.addListener(_handleKeyboardVisibility);
-  }
-
-  void _handleKeyboardVisibility() {
-    setState(() {
-      _isKeyboardOpen = _focusNodeUsername.hasFocus || _focusNodePassword.hasFocus;
-    });
-  }
-
-  Future<void> _authenticate() async {
-    bool authenticated = await auth.authenticate(
-      localizedReason: 'Use Face or Fingerprint to Log in',
-      options: const AuthenticationOptions(
-        biometricOnly: true,
-        useErrorDialogs: true,
-        stickyAuth: true,
-      ),
-    );
-
-    if (authenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Authenticated successfully!")),
-      );
-    }
   }
 
   @override
@@ -96,12 +38,11 @@ class _LoginPageState extends State<LoginPage> {
         child: IntrinsicHeight(
           child: Column(
             children: [
-
               const Spacer(flex: 2),
 
               Center(
                 child: Text(
-                      'Welcome Back!',
+                  AppLocalizations.of(context)!.welcome_back,
                       style: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
@@ -121,7 +62,7 @@ class _LoginPageState extends State<LoginPage> {
 
               Center(
                 child: Text(
-                  'Sign in to continue',
+                  AppLocalizations.of(context)!.signin_continue,
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.grey[600],
@@ -136,39 +77,28 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     _buildTextField(
                       controller: _usernameController,
-                      hintText: "Username, email, mobile number",
+                      hintText: AppLocalizations.of(context)!.login_methods,
                       obscureText: false,
                       icon: Icons.person_2_outlined,
                     ),
                     _buildTextField(
                       controller: _passwordController,
-                      hintText: "Password",
+                      hintText: AppLocalizations.of(context)!.pass,
                       obscureText: true,
                       icon: Icons.key,
                     ),
                     const SizedBox(height: 24),
 
-                    UIFunctions().buildRoundedButton(title: "Log In", onPressed: onPress),
-                    /*
-                    const SizedBox(height: 16),
+                    UIFunctions().buildRoundedButton(title: AppLocalizations.of(context)!.login, onPressed: onPress),
 
-                    TextButton.icon(
-                      onPressed: _authenticate,
-                      icon: const Icon(Icons.fingerprint, size: 24, color: Colors.black),
-                      label: const Text(
-                        "Use Face or Fingerprint",
-                        style: TextStyle(color: Colors.black, fontSize: 14),
-                      ),
-                    ),
-
-
-                     */
                     const SizedBox(height: 16),
 
                     GestureDetector(
-                      onTap: () {},
-                      child: const Text(
-                        "Forgot password?",
+                      onTap: () {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.forgot_password,
                         style: TextStyle(
                           color: Colors.deepPurpleAccent,
                           fontSize: 14,
@@ -188,9 +118,10 @@ class _LoginPageState extends State<LoginPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text("Don't have an account?", style: TextStyle(color: Colors.black87)),
+                        Text(AppLocalizations.of(context)!.dontHaveAccount, style: TextStyle(color: Colors.black87)),
                         TextButton(
                           onPressed: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -198,8 +129,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             );
                           },
-                          child: const Text(
-                            "Create new account",
+                          child: Text(
+                            AppLocalizations.of(context)!.create_account,
                             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurpleAccent),
                           ),
                         ),
@@ -222,35 +153,21 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
             ],
-            ),
-            ),
-            ),
-            ),
-    ),
+          ),
+        ),
+      ),
+      ),
+      ),
     );
   }
 
   Future<void> onPress() async {
-    final email = _usernameController.text.trim();
-    final password = _passwordController.text;
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => HomePage(),
       ),
     );
-/*
-    final user = await UpdateFirebase().loginWithEmail(email, password);
-    if (user != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(),
-        ),
-      );
-    }
-
- */
   }
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meqat/Data.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HajjTutorialPage extends StatefulWidget {
   @override
@@ -10,10 +11,10 @@ class HajjTutorialPage extends StatefulWidget {
 class _HajjTutorialPageState extends State<HajjTutorialPage> {
   final PageController _controller = PageController();
   bool onLastPage = false;
-  final List<Map<String, String>> hajjSteps = Other.hajjSteps;
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> hajjSteps = Other.hajjSteps(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -34,6 +35,13 @@ class _HajjTutorialPageState extends State<HajjTutorialPage> {
                       hajjSteps[index]['title']!,
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 30),
+                    Image.asset(
+                      hajjSteps[index]['image']!,
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.contain,
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -65,7 +73,7 @@ class _HajjTutorialPageState extends State<HajjTutorialPage> {
                     onPressed: () {
                       Navigator.pop(context); // or move to another page
                     },
-                    child: Text('Done'),
+                    child: Text(AppLocalizations.of(context)!.done),
                   ),
               ],
             ),

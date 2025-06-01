@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:meqat/sharedPref.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'UI.dart';
 import 'home.dart';
 import 'menu.dart';
@@ -87,7 +87,7 @@ class _SearchPageState extends State<SearchPage> {
 
   void _processSpeech() async {
     if (_text.isEmpty) {
-      setState(() => _response = 'We didn\'t detect anything.');
+      setState(() => _response = AppLocalizations.of(context)!.no_speech_detected);
       await _tts.speak(_response);
       return;
     }
@@ -102,7 +102,7 @@ class _SearchPageState extends State<SearchPage> {
       }
     }
 
-    setState(() => _response = 'Sorry, I\'m not sure about that.');
+    setState(() => _response = AppLocalizations.of(context)!.unknown_query);
     await _tts.speak(_response);
   }
 
@@ -117,7 +117,7 @@ class _SearchPageState extends State<SearchPage> {
         }
       },
       child: Scaffold(
-        appBar: UIFunctions().buildAppBar('Search'),
+        appBar: UIFunctions().buildAppBar(AppLocalizations.of(context)!.search),
         body: SafeArea(
           child: Column(
             children: [
@@ -140,7 +140,7 @@ class _SearchPageState extends State<SearchPage> {
                           ),
                         ),
                         child: Text(
-                          'Ask something like "What is ihram?", "ihram prohibitions", and we will answer you.. :)',
+                          AppLocalizations.of(context)!.search_text,
                           style: TextStyle(fontSize: 16, color: Colors.black87),
                         ),
                       ),

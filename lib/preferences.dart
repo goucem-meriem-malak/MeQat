@@ -7,7 +7,7 @@ import 'login.dart';
 import 'QRPage.dart';
 import 'UI.dart';
 import 'sharedPref.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 final other = Other();
 
 class PreferencesPage extends StatefulWidget {
@@ -31,12 +31,6 @@ class _PreferencesPageState extends State<PreferencesPage> {
   bool hasTransportError = false;
 
 
-  final List<String> languages = Other.languages;
-  final List<String> goal = Other.goal;
-  final List<String> madhhabs = Other.madhhabs;
-  final List<String> countries = Other.countries;
-  final List<String> transportationMethods = Other.transportationMethods;
-
   @override
   void initState(){
     super.initState();
@@ -45,6 +39,11 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> languages = Other.languages(context);
+    final List<String> goal = Other.goal(context);
+    final List<String> madhhabs = Other.madhhabs(context);
+    final List<String> countries = Other.countries(context);
+    final List<String> transportationMethods = Other.transportationMethods(context);
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -55,7 +54,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
 
             Center(
               child: Text(
-                'Preferences',
+                AppLocalizations.of(context)!.preference,
                 style: TextStyle(
                   fontSize: 35,
                   fontWeight: FontWeight.w600,
@@ -90,7 +89,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerRight,
-                          child: Text("Hajj"),
+                          child: Text(AppLocalizations.of(context)!.hajj),
                         ),
                       ),
                       Switch(
@@ -106,7 +105,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text("Umrah"),
+                          child: Text(AppLocalizations.of(context)!.umrah),
                         ),
                       ),
                     ],
@@ -120,7 +119,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerRight,
-                          child: Text("Individual"),
+                          child: Text(AppLocalizations.of(context)!.individual),
                         ),
                       ),
                       Switch(
@@ -136,7 +135,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       Expanded(
                         child: Align(
                           alignment: Alignment.centerLeft,
-                          child: Text("Delegation"),
+                          child: Text(AppLocalizations.of(context)!.delegation),
                         ),
                       ),
                     ],
@@ -152,7 +151,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                         Expanded(
                           child: Align(
                             alignment: Alignment.centerRight,
-                            child: Text("Member"),
+                            child: Text(AppLocalizations.of(context)!.member),
                           ),
                         ),
                         Switch(
@@ -170,7 +169,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
                         Expanded(
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: Text("Leader"),
+                            child: Text(AppLocalizations.of(context)!.leader),
                           ),
                         ),
                       ],
@@ -183,25 +182,25 @@ class _PreferencesPageState extends State<PreferencesPage> {
             const SizedBox(height: 10),
 
             _buildDropdown(
-              "Select Madhab",
+              AppLocalizations.of(context)!.select_madhhab,
               Icons.account_balance,
-              ["Hanafi", "Shafi'i"],
+              madhhabs,
                   (value) => setState(() => selectedMadhhab = value),
               hasMadhabError,
             ),
 
             _buildDropdown(
-              "Select Country",
+              AppLocalizations.of(context)!.select_country,
               Icons.public,
-              ["Saudi Arabia", "Egypt", "USA"],
+              countries,
                   (value) => setState(() => selectedCountry = value),
               hasCountryError,
             ),
 
             _buildDropdown(
-              "Select Transportation",
+              AppLocalizations.of(context)!.select_transportation,
               Icons.directions_car,
-              ["Bus", "Taxi", "Train"],
+              transportationMethods,
                   (value) => setState(() => selectedTransportation = value),
               hasTransportError,
             ),
@@ -213,7 +212,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6),
               child: UIFunctions().buildRoundedButton(
-                title: "Next",
+                title: AppLocalizations.of(context)!.next,
                 onPressed: () {
                   setState(() {
                     hasMadhabError = selectedMadhhab == null || selectedMadhhab!.isEmpty;
@@ -232,7 +231,7 @@ class _PreferencesPageState extends State<PreferencesPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("Already have an account?", style: TextStyle(color: Colors.black87)),
+                Text(AppLocalizations.of(context)!.have_account, style: TextStyle(color: Colors.black87)),
                 TextButton(
                   onPressed: () {
                     Navigator.push(
@@ -242,8 +241,8 @@ class _PreferencesPageState extends State<PreferencesPage> {
                       ),
                     );
                   },
-                  child: const Text(
-                    "Log in",
+                  child: Text(
+                    AppLocalizations.of(context)!.login,
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
                   ),
                 ),
@@ -369,6 +368,6 @@ class _PreferencesPageState extends State<PreferencesPage> {
   uid = await SharedPref().getUID();
   selectedLanguage = await SharedPref().getPreference("language");
 
-  setState(() {}); // Refresh UI after values are loaded
+  setState(() {});
   }
 }

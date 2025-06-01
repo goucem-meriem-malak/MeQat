@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:meqat/Data.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class IhramTutorialPage extends StatefulWidget {
   @override
@@ -11,10 +12,11 @@ class _IhramTutorialPageState extends State<IhramTutorialPage> {
   final PageController _controller = PageController();
   bool onLastPage = false;
 
-  final List<Map<String, String>> ihramSteps = Other.ihramSteps;
+
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, String>> ihramSteps = Other.ihramSteps(context);
     return Scaffold(
       body: Stack(
         children: [
@@ -35,6 +37,15 @@ class _IhramTutorialPageState extends State<IhramTutorialPage> {
                       ihramSteps[index]['title']!,
                       style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+
+                    // 🔽 Image between title and description
+                    Image.asset(
+                      ihramSteps[index]['image']!,
+                      height: 100,
+                      width: 100,
+                      fit: BoxFit.contain,
                     ),
                     SizedBox(height: 30),
                     Text(
@@ -66,7 +77,7 @@ class _IhramTutorialPageState extends State<IhramTutorialPage> {
                     onPressed: () {
                       Navigator.pop(context); // Or go to next screen
                     },
-                    child: Text('Done'),
+                    child: Text(AppLocalizations.of(context)!.done),
                   )
               ],
             ),

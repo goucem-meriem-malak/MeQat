@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:meqat/UI.dart';
 import 'package:meqat/sharedPref.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'home.dart';
+import 'main.dart';
 import 'signup.dart';
 
-final Color primaryColor = Color(0xFF2D2D2D);
-final Color accentColor = Color(0xFF4A4A4A);
+final Color primaryColor = Color(0xFF494949);
+final Color accentColor = Color(0xFF777777);
 final Color background = Color(0xFFF8F5F0);
 final Color buttonColor = Color(0xFFE5C99F);
 final Color fontColor = Color(0xC52E2E2E);
@@ -17,54 +18,56 @@ class AnimationScreen extends StatefulWidget {
 }
 
 class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProviderStateMixin {
-
+  Locale? _locale;
   List<bool> _showLetters = [];
   Color _backgroundColor = primaryColor;
-  String _selectedLanguage = "English";
+  String _selectedLanguage = 'English';
   bool _hasUID = false;
   bool show=false;
   late AnimationController _controller;
   late Animation<int> _visibleLettersCount;
-
 
   @override
   void initState() {
     super.initState();
     getuid();
 
-    // Initialize _showLetters with 'MeQat' letters
-    _showLetters = List<bool>.filled('MeQat'.length, false);
-
     _controller = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 1200),
     );
-
-    _visibleLettersCount = StepTween(begin: 0, end: _showLetters.length).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-
-    // Start the animation always, regardless of UID presence
-    _controller.forward().whenComplete(() async {
-      await Future.delayed(Duration(milliseconds: 500));
-      setState(() {
-        _backgroundColor = background;
-      });
-
-      await Future.delayed(Duration(milliseconds: 800));
-
-      if (_hasUID) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
-      } else {
-        setState(() {
-          show = true;
-        });
-      }
-    });
   }
 
+// Move this code from initState to here 👇
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
+    if (_showLetters == null || _showLetters.isEmpty) {
+      _showLetters = List<bool>.filled("MeQat".length, false);
 
+      _visibleLettersCount = StepTween(begin: 0, end: _showLetters.length).animate(
+        CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+      );
+
+      _controller.forward().whenComplete(() async {
+        await Future.delayed(Duration(milliseconds: 500));
+        setState(() {
+          _backgroundColor = background;
+        });
+
+        await Future.delayed(Duration(milliseconds: 800));
+
+        if (_hasUID) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
+        } else {
+          setState(() {
+            show = true;
+          });
+        }
+      });
+    }
+  }
 
   Future<void> getuid() async {
     String? uid = await SharedPref().getUID();
@@ -85,23 +88,26 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
       animation: _visibleLettersCount,
       builder: (context, child) {
         int count = _visibleLettersCount.value;
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(_showLetters.length, (index) {
-            return AnimatedOpacity(
-              duration: Duration(milliseconds: 300),
-              opacity: index < count ? 1.0 : 0.0,
-              child: Text(
-                "MeQat"[index],
-                style: TextStyle(
-                  fontFamily: 'Scheherazade',
-                  color: textColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+        return Directionality(              // <-- Add this
+          textDirection: TextDirection.ltr, // Force LTR direction
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(_showLetters.length, (index) {
+              return AnimatedOpacity(
+                duration: Duration(milliseconds: 300),
+                opacity: index < count ? 1.0 : 0.0,
+                child: Text(
+                  "MeQat"[index],
+                  style: TextStyle(
+                    fontFamily: 'Scheherazade',
+                    color: textColor,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+          ),
         );
       },
     );
@@ -144,9 +150,10 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                   children: [
                     ScaleTransition(
                       scale: _controller,
-                      child: Image.asset('assets/icon/img5.png', width: 80, height: 80),
+                      child: Image.asset('assets/icon/img5.webp', width: 80, height: 80),
                     ),
                     const SizedBox(height: 15),
+
                     _buildAnimatedLetters(textColor),
                   ],
                 ),
@@ -161,7 +168,7 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
                 child: IgnorePointer(
                   ignoring: !show,
                   child: UIFunctions().buildRoundedButton(
-                    title: "Continue",
+                    title: AppLocalizations.of(context)!.continue_btn,
                     onPressed: _saveLanguageAndProceed,
                   ),
                 ),
@@ -188,8 +195,15 @@ class _AnimationScreenState extends State<AnimationScreen> with SingleTickerProv
         dropdownColor: background,
         borderRadius: BorderRadius.circular(12),
         onChanged: (String? newValue) {
-          setState(() {
+          setState(() async {
             _selectedLanguage = newValue!;
+            final langCode = _selectedLanguage == 'Arabic' ? 'ar' : 'en';
+
+            // Save the selected language to shared preferences
+            await SharedPref().saveLanguage(langCode);
+
+            // Dynamically update the app’s locale
+            MyApp.setLocale(context, Locale(langCode));
           });
         },
         items: ["English", "Arabic"].map((String value) {

@@ -6,18 +6,18 @@ import 'package:meqat/ihram.dart';
 import 'package:meqat/lost.dart';
 import 'package:meqat/medicine.dart';
 import 'package:meqat/search.dart';
-import 'package:meqat/sharedPref.dart';
 import 'package:meqat/umrah.dart';
 import 'UI.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 final other = Other();
 
 class MenuPage extends StatelessWidget {
-  final List<Map<String, dynamic>> menuItems = other.menuItems;
 
   @override
   Widget build(BuildContext context) {
+    final List<Map<String, dynamic>> menuItems = other.menuItems(context);
     return Scaffold(
-      appBar: UIFunctions().buildAppBar('Menu'),
+      appBar: UIFunctions().buildAppBar(AppLocalizations.of(context)!.menu),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
           if (details.primaryVelocity! < 0) {
@@ -46,16 +46,17 @@ class MenuPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                   onTap: () async {
                     if (index == 0) {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => DelegationPage()));
-                    }
-                    if (index == 1) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => IhramTutorialPage()));
                     }
-                    if (index == 2) {
+                    if (index == 1) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => HajjTutorialPage()));
                     }
-                    if (index == 3) {
+                    if (index == 2) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => UmrahTutorialPage()));
+                    }
+                    if (index == 3) {
+
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => DelegationPage()));
                     }
                     if (index == 4) {
                       Navigator.push(context, MaterialPageRoute(builder: (context) => LostPage()));
@@ -82,7 +83,12 @@ class MenuPage extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(menuItems[index]['icon'], size: 36, color: Colors.deepPurple),
+                        Image.asset(
+                          menuItems[index]['image'],
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.contain,
+                        ),
                         const SizedBox(height: 6),
                         Text(
                           menuItems[index]['title'],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'premium.dart';
 import 'search.dart';
 import 'Profile.dart';
@@ -47,27 +47,27 @@ class UIFunctions {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Expanded(
-              child: buildNavItem(Icons.menu, "Menu", () {
+              child: buildNavItem(Icons.menu, AppLocalizations.of(context)!.menu, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => MenuPage()));
               }, selectedIndex == 0),
             ),
             Expanded(
-              child: buildNavItem(Icons.search, "Search", () {
+              child: buildNavItem(Icons.search, AppLocalizations.of(context)!.search, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => SearchPage()));
               }, selectedIndex == 1),
             ),
             Expanded(
-              child: buildNavItem(Icons.home, "Home", () {
+              child: buildNavItem(Icons.home, AppLocalizations.of(context)!.home, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => HomePage()));
               }, selectedIndex == 2),
             ),
             Expanded(
-              child: buildNavItem(Icons.star, "Premium", () {
+              child: buildNavItem(Icons.star, AppLocalizations.of(context)!.premium, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => PremiumPage()));
               }, selectedIndex == 3),
             ),
             Expanded(
-              child: buildNavItem(Icons.settings, "Profile", () {
+              child: buildNavItem(Icons.settings, AppLocalizations.of(context)!.profile, () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfilePage()));
               }, selectedIndex == 4),
             ),
