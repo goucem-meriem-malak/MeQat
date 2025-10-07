@@ -1,0 +1,492 @@
+{
+  "@@locale": "en",
+  "welcomeBack": "Welcome Back!",
+  "signInToContinue": "Sign in to continue",
+  "usernameHint": "Username, email, mobile number",
+  "passwordHint": "Password",
+  "loginButton": "Log In",
+  "forgotPassword": "Forgot password?",
+  "createAccount": "Create new account",
+  "dontHaveAccount": "Don't have an account?",
+  "app_name": "MeQat",
+  "hello": "Hello",
+  "welcome": "Welcome to our app",
+  "delegation_page_title": "Delegation Page",
+  "location_services_disabled": "Location services are disabled. Please enable them.",
+  "location_permissions_denied": "Location permissions are denied.",
+  "location_permissions_permanently_denied": "Location permissions are permanently denied.",
+  "you_are_straying": "⚠️ You're Straying",
+  "straying_message": "Hey {firstName} {lastName}, you’re too far from your group. Please go back.",
+  "ok": "Okay",
+  "straying_member_title": "⚠️ Member Straying",
+  "straying_member_message": "{fullName} is straying from the group. Please locate them.",
+  "straying_detection_activated": "Straying detection activated. We'll now start monitoring your delegation's location.",
+  "straying_detection_deactivated": "Straying detection deactivated. Monitoring stopped.",
+  "detection_started": "Detection Started",
+  "detection_stopped": "Detection Stopped",
+  "done": "Done",
+  "too_far_from_group": "You are getting too far from your group. Please come back.",
+  "scan_qrcode": "Scan QRCode",
+  "or": "OR",
+  "upload_from_gallery": "Upload from Gallery",
+  "target_location": "Target Location",
+  "delegation_members": "Delegation members",
+  "leader_name": "Leader {leaderName}",
+  "no_members_yet": "No members yet.",
+  "unnamed_member": "Unnamed Member",
+  "scan_qr_code": "Scan QR Code",
+  "user_Selected": "user Selected",
+  "makkah": "Makkah",
+  "your_location" : "Your Location",
+  "learn_more":"Learn more >>",
+  "approach_notif":"You are 5 minutes away from the Miqat. Get ready to enter Ihram.",
+  "approach_notif_title":"Approaching Miqat",
+  "inside_notif_title" : "Inside Miqat",
+  "inside_notif": "You are inside the Miqat.",
+  "ihram_notif":"You are inside the Miqat. Do you want to start Ihram?",
+  "yes":"Yes",
+  "later":"Later",
+  "wait":"Wait Next Miqat",
+  "back_inside_title" : "Back inside Miqat",
+  "back_inside": "You are inside the Miqat again. You can start Ihram now.",
+  "exiting_title":"Exiting Miqat",
+  "exiting": "You are Exiting the Miqat.",
+  "warning_title":"Ihram Warning",
+  "warning":"You exited Miqat without starting Ihram. This is not permissible. You have to go back in now.",
+
+
+  "menu": "Menu",
+  "search": "Search",
+  "home": "Home",
+  "premium": "Premium",
+  "profile": "Profile",
+  "menuPageTitle": "Menu",
+  "searchPageTitle": "Search",
+  "homePageTitle": "Home",
+  "premiumPageTitle": "Premium",
+  "profilePageTitle": "Profile",
+  "preference":"Preferences",
+  "roundedButtonDefault": "Click",
+  "appBarTitleDefault": "Title",
+  "appBarTitleSub": "Subtitle",
+  "appBarTitlePremium": "Premium",
+  "sign_up":"Sign Up",
+
+  "english":"English",
+  "continue_btn":"Continue",
+  "i_agree": "I agree to the ",
+  "terms":"Terms and conditions",
+  "have_account": "Already have an account?",
+  "fname": "First Name",
+  "lname":"Last Name",
+  "email": "Email",
+  "pass":"Password",
+  "phone": "BirthYear",
+  "lname":"Last Name",
+  "login":"Log in",
+  "must_agree":"You must agree to the terms and conditions.",
+  "fill_fields":"Please fill in all fields.",
+  "read_carfully":"Please read carefully",
+  "terms_text": "Welcome to our app’s Terms and Conditions.\n\nBy using this app, you agree to the following terms:\n\n- You acknowledge that the information provided is for general purposes.\n- We are not liable for any damages arising from the use.\n- Please ensure you use the app responsibly and respect privacy policies.\n\nThank you for taking the time to read this. If you have questions, please contact support.\n\nHappy using!",
+  "agree":"Agree",
+  "ihram_def":"Ihram is a sacred state Muslims enter for Hajj or Umrah.",
+  "tawaf_def":"Tawaf is the act of circumambulating the Kaaba seven times.",
+  "saaee_def":"Sa'ee is the act of walking between Safa and Marwah seven times.",
+  "detect_nothing":"We didn't detect anything.",
+  "sorry":"Sorry, I'm not sure about that.",
+  "ask_something":"Coming Soon: Ask something like 'What is ihram?', 'ihram prohibitions', and we will answer you.. :)",
+  "scan":"Scan QR code",
+  "pick_gallery":"Pick from Gallery",
+  "members_must_scan":"All members must scan this!",
+  "new_members":"New members:",
+  "done":"Done",
+  "no_members":"No members yet",
+  "edit_info":"Click Edit Profile Info",
+  "enter_name":"Enter your full name",
+  "hajj":"Hajj",
+  "umrah":"Umrah",
+  "individual":"Individual",
+  "delegation":"Delegation",
+  "member":"Member",
+  "leader":"Leader",
+  "language":"Language",
+  "madhhab":"Madhhab",
+  "country":"Country",
+  "transportation":"Transportation",
+  "saved":"Settings saved successfully!",
+  "not_set":"Not Set",
+  "cancel":"Cancel",
+  "save":"Save",
+  "take_pic":"Take a picture",
+  "subscribe":"Subscribe Now",
+  "premium_sub":"Premium Subscription",
+  "hotel_text":"Up to 75% off fine hotels",
+  "restaurant_text":"Affordable and delicious meals",
+  "shops_text":"Cheaper shopping (85% off)",
+  "support_text":"Priority support & recommendations",
+  "start_payement":"Proceed to Payment",
+  "payement_info":"Payment Information",
+  "card_nbr_title":"Enter a valid 16-digit card number",
+  "card_nbr":"Card Number",
+  "card_hint":"1234 5678 9012 3456",
+  "expery_title":"Use MM/YY",
+  "expery":"Expiry",
+  "expity_hint":"MM/YY",
+
+  "enter_ccv":"Enter valid CVV",
+  "ccv":"CCV",
+  "ccv_hint":"123",
+
+  "payement_method":"Payment Method",
+  "edhahabia":"Edahabia",
+  "mastercard":"MasterCard",
+  "visa":"Visa",
+  "pay":"Pay Now",
+  "payement_successful":"Payment Successful!",
+
+  "member":"Member",
+  "leader":"Leader",
+  "select_madhhab":"Select Madhab",
+  "select_country":"Select Country",
+  "select_transportation":"Select Transportation",
+  "next":"Next",
+
+  "delete_alarms":"Delete Alarms",
+  "no_time_set":"No time set",
+  "no_med_name":"No medicine name",
+  "delete_selected":"Delete Selected",
+  "medicine":"Medicine",
+  "repeat":"Repeat",
+  "importance":"Importance",
+  "dosage":"Dosage",
+  "when":"When to take",
+  "purpose":"Purpose",
+  "notes":"Notes",
+  "doctor":"Prescribed by",
+  "other_times":"Other Times",
+  "custom":"Custom",
+  "once":"Once",
+  "dosage_hint":"Dosage (e.g. 1 tablet, 5ml)",
+  "when_hint":"When to take?",
+  "purpose_hint":"Purpose (e.g. For blood pressure)",
+  "notes_hint":"Notes (e.g. Carry in a cold pouch)",
+  "doctor_hint":"Prescriber (Doctor's Name or Contact)",
+  "times_per_day":"Times per Day",
+  "btn_advanced":"Advanced >",
+  "med_name":"Medicine Name",
+  "face_fingerprint":"Use Face or Fingerprint to Log in",
+  "authenticated":"Authenticated successfully!",
+  "welcome_back":"Welcome Back!",
+  "signin_continue":"Sign in to continue",
+  "login_methods":"Username, email, mobile number",
+  "forgot_password":"Forgot password?",
+  "create_account":"Create new account",
+  "group_member":"Group Member",
+  "group_leader":"Group Leader",
+  "user_straying":"⚠️ You're Straying",
+  "member_straying":"⚠️ Member Straying",
+  "straying_service_on":"Straying detection activated. We'll now start monitoring your delegation's location.",
+  "straying_service_off":"Straying detection deactivated. Monitoring stopped.",
+  "detection_on":"Detection Started",
+  "detection_off":"Detection Stopped",
+  "you_straying":"You are getting too far from your group. Please come back.",
+  "delegation_members":"Delegation members",
+
+  "premium_hotel_title": "Fine Hotels That can be 60% to 75% cheaper",
+  "premium_food_title": "Find more affordable meals 50% to 70% cheaper and more delicious",
+  "premium_shop_title": "Shops 85% cheaper and items that can cost you 10-20 SAR instead",
+
+  "menu_delegation": "Delegation",
+  "menu_ihram": "Ihram",
+  "menu_hajj": "Hajj",
+  "menu_umrah": "Umrah",
+  "menu_lost": "Lost",
+  "menu_medicine": "Medicine",
+
+  "language_english": "English",
+  "language_arabic": "Arabic",
+
+  "goal_hajj": "Hajj",
+  "goal_umrah": "Umrah",
+
+  "madhhab_shafii": "Shafii",
+  "madhhab_hanafi": "Hanafi",
+  "madhhab_hanbali": "Hanbali",
+  "madhhab_maliki": "Maliki",
+
+  "country_saudi_arabia": "Saudi Arabia",
+  "country_egypt": "Egypt",
+  "country_pakistan": "Pakistan",
+  "country_malaysia": "Malaysia",
+  "country_turkey": "Turkey",
+
+  "transport_air": "By Air",
+  "transport_sea": "By Sea",
+  "transport_vehicle": "By Vehicle",
+  "transport_foot": "By foot",
+
+  "saying_1_description": "❌ Not approved by maddhab Maliki\n❌ Not approved by maddhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",
+  "saying_2_description": "❌ Not approved by maddhab Maliki\n❌ Not approved by maddhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",
+  "saying_3_description": "✅ Approved by maddhab Maliki\n✅ Approved by maddhab Hanbali\n✅ Approved by maddhab Hanafi\n✅ Approved by maddhab Sahfii",
+  "saying_4_description": "❌ Not approved by maddhab Maliki\n❌ Not approved by maddhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",
+  "saying_5_description": "❌ Not approved by maddhab Maliki\n✅ Approved by madhhab Hanbali\n❌ Not approved by maddhab Hanafi\n❌ Not approved by maddhab Sahfii",
+  "ihram":"Ihram",
+  "country_algeria":"Algeria",
+  "miqat_dhul_Hulaifa":"Dhul Hulaifa",
+  "miqat_juhfa":"Juhfa",
+  "miqat_yalmlm":"Yalamlam",
+  "miqat_dhat_irq":"Dhat Irq",
+  "miqat_qarn_manazil":"Qarn al-Manazil",
+  "hajj_step_1_title": "Step 1: Ihram",
+  "hajj_step_1_description": "Make intention and enter Ihram from Miqat with Talbiyah.",
+  "hajj_step_2_title": "Step 2: Tawaf al-Qudum",
+  "hajj_step_2_description": "Perform the arrival Tawaf (circumambulation of the Kaaba).",
+  "hajj_step_3_title": "Step 3: Sa’i between Safa and Marwah",
+  "hajj_step_3_description": "Walk 7 times between the hills of Safa and Marwah.",
+  "hajj_step_4_title": "Step 4: Stay at Mina",
+  "hajj_step_4_description": "On 8th Dhul Hijjah, stay in Mina and pray shortened prayers.",
+  "hajj_step_5_title": "Step 5: Day of Arafah",
+  "hajj_step_5_description": "On 9th Dhul Hijjah, stand in prayer and supplication at Arafah.",
+  "hajj_step_6_title": "Step 6: Muzdalifah",
+  "hajj_step_6_description": "Collect pebbles and spend the night under the sky in Muzdalifah.",
+  "hajj_step_7_title": "Step 7: Rami at Jamarat",
+  "hajj_step_7_description": "On 10th Dhul Hijjah, throw 7 pebbles at the Jamrah al-Aqabah.",
+  "hajj_step_8_title": "Step 8: Qurbani",
+  "hajj_step_8_description": "Offer animal sacrifice (or arrange it through a service).",
+  "hajj_step_9_title": "Step 9: Hair Cut/Shave",
+  "hajj_step_9_description": "Men shave or trim hair; women cut a small portion.",
+  "hajj_step_10_title": "Step 10: Tawaf al-Ifadah",
+  "hajj_step_10_description": "Mandatory Tawaf done after sacrifice and hair cutting.",
+  "hajj_step_11_title": "Step 11: Days of Tashreeq",
+  "hajj_step_11_description": "Stay in Mina and perform Rami for the next 2–3 days.",
+  "hajj_step_12_title": "Step 12: Tawaf al-Wida",
+  "hajj_step_12_description": "Farewell Tawaf before leaving Makkah (mandatory for non-locals).",
+
+  "ihram_step_1_title": "Step 1: Intention (Niyyah)",
+  "ihram_step_1_description": "Make your intention for Hajj or Umrah before entering the Miqat.",
+  "ihram_step_2_title": "Step 2: Ghusl and Cleanliness",
+  "ihram_step_2_description": "Perform full-body purification (ghusl), trim nails, and wear Ihram clothes.",
+  "ihram_step_3_title": "Step 3: Wearing Ihram",
+  "ihram_step_3_description": "Men wear 2 white sheets. Women wear modest Islamic dress.",
+  "ihram_step_4_title": "Step 4: Talbiyah",
+  "ihram_step_4_description": "Recite \"Labbayk Allahumma Labbayk...\" after entering Ihram.",
+  "ihram_step_5_title": "Step 5: Avoid Prohibited Acts",
+  "ihram_step_5_description": "Avoid cutting hair, perfume, arguing, or intimate relations while in Ihram.",
+
+  "umrah_step_1_title": "Step 1: Ihram",
+  "umrah_step_1_description": "Enter the state of Ihram from the Miqat with intention and Talbiyah.",
+  "umrah_step_2_title": "Step 2: Tawaf",
+  "umrah_step_2_description": "Perform 7 rounds of Tawaf around the Kaaba in a counter-clockwise direction.",
+  "umrah_step_3_title": "Step 3: Prayer at Maqam Ibrahim",
+  "umrah_step_3_description": "Pray two Rak’ahs behind Maqam Ibrahim after completing Tawaf.",
+  "umrah_step_4_title": "Step 4: Sa’i",
+  "umrah_step_4_description": "Walk 7 times between Safa and Marwah, starting at Safa and ending at Marwah.",
+  "umrah_step_5_title": "Step 5: Hair Cut or Shave",
+  "umrah_step_5_description": "Men shave or trim hair; women cut a small portion of their hair.",
+  "umrah_step_6_title": "Step 6: Exit Ihram",
+  "umrah_step_6_description": "After the haircut, you are out of Ihram and the Umrah is complete.",
+
+  "allow_allocation_access":"Allow Location Access?",
+  "allow_allocation_access_text":"To provide better guidance, would you like to select your location manually by tapping on the map? Or use GPS",
+  "auto_detect":"Auto Detect",
+  "select_manually":"Select Manually",
+  "saying_number": "Saying {number}",
+    "@saying_number": {
+      "description": "Label for the saying with its number",
+      "placeholders": {
+        "number": {
+          "type": "int",
+          "example": "1"
+        }
+      }
+    },
+  "too_far_from_group": "Hey {firstName} {lastName}, you’re too far from your group. Please go back.",
+  "@too_far_from_group": {
+    "description": "Warning when a user is too far from the group",
+    "placeholders": {
+      "firstName": {
+        "type": "String"
+      },
+      "lastName": {
+        "type": "String"
+      }
+    }
+  },
+  "member_full_name_warning": "Hey {firstName} {lastName}, you’re too far from your group. Please go back.",
+  "@member_full_name_warning": {
+    "description": "Warning for member by name",
+    "placeholders": {
+      "firstName": {
+        "type": "String"
+      },
+      "lastName": {
+        "type": "String"
+      }
+    }
+  },
+  "leader_warning":"{fullName} is straying from the group. Please locate them.",
+  "@leader_warning": {
+  "description": "Warning for leader",
+      "placeholders": {
+        "fullName": {
+          "type": "String"
+        }
+      }
+    },
+  "leader_warning":"Leader {leaderName}",
+    "@leader_warning": {
+    "description": "Warning for leader",
+        "placeholders": {
+          "leaderName": {
+            "type": "String"
+          }
+        }
+      },
+  "polygon_annulus_id": "polygon_{name}_annulus",
+    "@polygon_annulus_id": {
+      "description": "Polygon ID for the annulus with the miqat name",
+      "placeholders": {
+        "name": {
+          "type": "String",
+          "example": "Mina"
+        }
+      }
+    },
+    "lost_1":"This will help us identify lost people if they're registered in our system. Please take a clear picture of their face",
+    "lost_2":"This process will take a moment. Please wait..",
+    "lost_3":"No image picked. Please try again",
+    "lost_4":"No face detected in the photo. Please try again",
+  "lost_5": "The user in the picture you took belongs to you. {lastName} {firstName}",
+  "@lost_5": {
+    "description": "Message when the user in the picture belongs to the current user",
+    "placeholders": {
+      "lastName": {
+        "type": "String",
+        "example": "Khan"
+      },
+      "firstName": {
+        "type": "String",
+        "example": "Ali"
+      }
+    }
+  },
+
+  "lost_6": "This user is the leader of his delegation. He is {lastName} {firstName}",
+  "@lost_6": {
+    "description": "Message when the user is the leader of his delegation",
+    "placeholders": {
+      "lastName": {
+        "type": "String",
+        "example": "Khan"
+      },
+      "firstName": {
+        "type": "String",
+        "example": "Ali"
+      }
+    }
+  },
+
+  "lost_7": "User found! {lastName} {firstName}. We'll help you get to his delegation, thank you for your help.",
+  "@lost_7": {
+    "description": "Message when user is found and help to get to delegation is offered",
+    "placeholders": {
+      "lastName": {
+        "type": "String",
+        "example": "Khan"
+      },
+      "firstName": {
+        "type": "String",
+        "example": "Ali"
+      }
+    }
+  },
+
+  "lost_8": "User does not belong to any delegation. Please try again in better lighting or reach out to local authorities.",
+  "@lost_8": {
+    "description": "Message when user is not found in any delegation"
+  },
+  "lost_9":"User not registered in our system. Please try again in better lighting or reach out to local authorities.",
+  "face_verification":"Face Verification",
+  "take_pic_verify":"Take Photo and Verify",
+  "find_delegation":"Find his delegation",
+  "in_hours_and_minutes": "{hours, plural, =0{{minutes, plural, =0{now} =1{in 1 minute} other{in {minutes} minutes}}} =1{in 1 hour{minutes, plural, =0{} =1{ 1 minute} other{ {minutes} minutes}}} other{in {hours} hours{minutes, plural, =0{} =1{ 1 minute} other{ {minutes} minutes}}}}",
+  "@in_hours_and_minutes": {
+    "description": "Time string describing the time left, like 'in 2 hours 3 minutes'",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      },
+      "minutes": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "in_minutes": "in {minutes} min{minutes, plural, =1{} other{s}}",
+  "@in_minutes": {
+    "description": "Time string for minutes only, like 'in 1 min' or 'in 5 mins'",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "day_mon": "Mon",
+  "day_tue": "Tue",
+  "day_wed": "Wed",
+  "day_thu": "Thu",
+  "day_fri": "Fri",
+  "day_sat": "Sat",
+  "day_sun": "Sun",
+  "alarm_remaining": "Alarm {timeRemaining}",
+  "@alarm_remaining": {
+    "description": "Alarm label with the remaining time until it triggers.",
+    "placeholders": {
+      "timeRemaining": {
+        "type": "String",
+        "example": "in 2 hours 5 mins"
+      }
+    }
+  },
+  "repeat_once": "Once",
+  "repeat_daily": "Daily",
+  "repeat_custom": "Custom",
+  "select_time": "Select Time {number}",
+    "@select_time": {
+      "description": "Label for selecting a time option with its index number",
+      "placeholders": {
+        "number": {
+          "type": "int",
+          "example": "1"
+        }
+      }
+    },
+  "optional": "Optional",
+  "important": "Important",
+  "must_not_miss": "Must Not Miss",
+  "before_food": "Before Food",
+  "after_food": "After Food",
+  "with_food": "With Food",
+  "empty_stomach": "Empty Stomach",
+  "select_label": "Select {label}",
+  "@select_label": {
+    "description": "Title for select with dynamic label",
+    "placeholders": {
+      "label": {}
+    }
+  },
+  "intent_ihram_answer": "Ihram is a sacred state Muslims enter for Hajj or Umrah.",
+  "intent_tawaf_answer": "Tawaf is the act of circumambulating the Kaaba seven times.",
+  "intent_saee_answer": "Sa'ee is the act of walking between Safa and Marwah seven times.",
+  "search_text":"This service is coming soon: Ask something like 'What is ihram?', 'ihram prohibitions', and we will answer you.. :)",
+  "no_speech_detected": "We didn't detect anything.",
+    "unknown_query": "Sorry, I'm not sure about that.",
+    "birth_selector_title":"Select Year of Birth",
+    "allow_allocation_access": "Location Access",
+      "we_will_use_gps": "We will use GPS to track your position.",
+      "tap_on_map_to_get_location": "Tap on the map to get your location.",
+       "open_settings": "Open location settings"
+}
+
