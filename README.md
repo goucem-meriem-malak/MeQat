@@ -158,7 +158,7 @@ Includes comparative fiqh across all four madhhabs.
 
 # 🎥 Demo
 
-▶ [YouTube Demo Link Here]
+▶ [[YouTube Demo Link Here](https://youtu.be/_lfL5pdKrwA?si=75G-z0fPZZa66BRu)]
 
 ---
 
