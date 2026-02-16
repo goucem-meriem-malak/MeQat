@@ -22,13 +22,14 @@ It transforms traditional fiqh theory into real-time digital execution.
 ## 🌍 Why MeQat?
 
 ✔ No comprehensive Algerian Hajj assistant  
-✔ Supports **Hanafi • Maliki • Shafi’i • Hanbali**  
+✔ Supports **Hanafi • Maliki • Shafi’i • Hanbali**   
 ✔ Smartwatch support for elderly pilgrims  
 ✔ Real Miqat alignment detection (GPS + Earth math)  
 ✔ AI Face Recognition (98.65% verified accuracy)  
 ✔ Health anomaly detection  
 ✔ Transparent hotels & restaurant pricing  
 ✔ Voice AI assistant
+✔ Adhan and Salat reminder
 
 ---
 
