@@ -164,6 +164,7 @@ Includes comparative fiqh across all four madhhabs.
 
 # 📸 Screenshots
 
+(assets/screenshoot/home.jpg)
 Add screenshots here:
 
 ```markdown
