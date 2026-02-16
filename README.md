@@ -160,16 +160,13 @@ Includes comparative fiqh across all four madhhabs.
 
 ▶ [[YouTube Demo Link Here](https://youtu.be/_lfL5pdKrwA?si=75G-z0fPZZa66BRu)]
 
-https://github.com/goucem-meriem-malak/MeQat/blob/final3/assets/screenshoot/home.jpg?raw=true
 ---
 
 # 📸 Screenshots
 
-(assets/screenshoot/home.jpg)
 Add screenshots here:
 
-```markdown
-https://github.com/goucem-meriem-malak/MeQat/blob/final3/assets/screenshoot/home.jpg?raw=true
 ![Home](assets/screenshoot/home.jpg)
 ![Medicine](assets/screenshoot/medicine.jpg)
 ![Menu](assets/screenshoot/menu_more_services.jpg)
+
