@@ -166,7 +166,7 @@ Includes comparative fiqh across all four madhhabs.
 
 Add screenshots here:
 
-![Home](assets/screenshoot/home.jpg)
-![Medicine](assets/screenshoot/medicine.jpg)
-![Menu](assets/screenshoot/menu_more_services.jpg)
+<img src="assets/screenshoot/home.jpg" width="300">
+<img src="assets/screenshoot/medicine.jpg" width="300">
+<img src="assets/screenshoot/menu_more_services.jpg" width="300">
 
