@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -104,23 +103,4 @@ class _MyAppState extends State<MyApp> {
       },
     );
   }
-
-=======
-import 'package:flutter/material.dart';
-import 'splash_screen.dart';
-
-void main() {
-  WidgetsFlutterBinding.ensureInitialized(); // Ensures everything is set before starting
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AnimationScreen(), // Start with LaunchScreen
-    );
-  }
->>>>>>> 6abd21ff920c9967230cbd1a72bdd7fb0c130af5
 }
