@@ -1,0 +1,487 @@
+{
+  "@@locale": "ar",
+  "welcomeBack": "مرحبًا بعودتك!",
+  "signInToContinue": "سجّل الدخول للمتابعة",
+  "usernameHint": "اسم المستخدم، البريد الإلكتروني، رقم الهاتف",
+  "passwordHint": "كلمة المرور",
+  "loginButton": "تسجيل الدخول",
+  "forgotPassword": "هل نسيت كلمة المرور؟",
+  "createAccount": "إنشاء حساب جديد",
+  "dontHaveAccount": "ليس لديك حساب؟",
+  "app_name": "مِقَات",
+  "hello": "مرحبًا",
+  "welcome": "مرحبًا بك في تطبيقنا",
+  "delegation_page_title": "صفحة الوفد",
+  "location_services_disabled": "خدمات الموقع معطلة. يرجى تفعيلها.",
+  "location_permissions_denied": "تم رفض أذونات الموقع.",
+  "location_permissions_permanently_denied": "تم رفض أذونات الموقع بشكل دائم.",
+  "you_are_straying": "⚠️ أنت تبتعد",
+  "straying_message": "مرحبًا {firstName} {lastName}، أنت بعيد جدًا عن مجموعتك. يرجى العودة.",
+  "ok": "حسنًا",
+  "straying_member_title": "⚠️ عضو يبتعد",
+  "straying_member_message": "{fullName} يبتعد عن المجموعة. يرجى تحديد موقعه.",
+  "straying_detection_activated": "تم تفعيل اكتشاف الابتعاد. سنبدأ الآن في مراقبة موقع وفدك.",
+  "straying_detection_deactivated": "تم إيقاف اكتشاف الابتعاد. تم إيقاف المراقبة.",
+  "detection_started": "تم بدء الاكتشاف",
+  "detection_stopped": "تم إيقاف الاكتشاف",
+  "done": "تم",
+  "too_far_from_group": "أنت تبتعد كثيرًا عن مجموعتك. يرجى العودة.",
+  "scan_qrcode": "مسح رمز الاستجابة السريعة",
+  "or": "أو",
+  "upload_from_gallery": "تحميل من المعرض",
+  "target_location": "الموقع المستهدف",
+  "delegation_members": "أعضاء الوفد",
+  "leader_name": "القائد {leaderName}",
+  "no_members_yet": "لا يوجد أعضاء بعد.",
+  "unnamed_member": "عضو بدون اسم",
+  "scan_qr_code": "مسح رمز الاستجابة السريعة",
+  "user_Selected": "المستخدم المحدد",
+  "makkah": "مكة",
+  "your_location": "موقعك",
+  "learn_more": "اعرف المزيد >>",
+  "approach_notif": "أنت على بعد 5 دقائق من الميقات. استعد للدخول في الإحرام.",
+  "approach_notif_title": "الاقتراب من الميقات",
+  "inside_notif_title": "داخل الميقات",
+  "inside_notif": "أنت داخل الميقات.",
+  "ihram_notif": "أنت داخل الميقات. هل ترغب في بدء الإحرام؟",
+  "yes": "نعم",
+  "later": "لاحقًا",
+  "wait": "انتظر الميقات التالي",
+  "back_inside_title": "العودة داخل الميقات",
+  "back_inside": "أنت داخل الميقات مرة أخرى. يمكنك بدء الإحرام الآن.",
+  "exiting_title": "الخروج من الميقات",
+  "exiting": "أنت تخرج من الميقات.",
+  "warning_title": "تحذير الإحرام",
+  "warning": "لقد خرجت من الميقات دون بدء الإحرام. هذا غير مسموح. يجب عليك العودة الآن.",
+  "menu": "القائمة",
+  "search": "بحث",
+  "home": "الرئيسية",
+  "premium": "مميز",
+  "profile": "الحساب",
+  "menuPageTitle": "القائمة",
+  "searchPageTitle": "بحث",
+  "homePageTitle": "الرئيسية",
+  "premiumPageTitle": "مميز",
+  "profilePageTitle": "الحساب",
+  "preference": "التفضيلات",
+  "roundedButtonDefault": "انقر",
+  "appBarTitleDefault": "العنوان",
+  "appBarTitleSub": "العنوان الفرعي",
+  "appBarTitlePremium": "مميز",
+  "sign_up": "إنشاء حساب",
+  "english": "الإنجليزية",
+  "continue_btn": "متابعة",
+  "i_agree": "أوافق على  ",
+  "terms": "الشروط والأحكام",
+  "have_account": "هل لديك حساب بالفعل؟",
+  "fname": "الاسم الأول",
+  "lname": "اسم العائلة",
+  "email": "البريد الإلكتروني",
+  "pass": "كلمة المرور",
+  "phone": "سنة الميلاد",
+  "login": "تسجيل الدخول",
+  "must_agree": "يجب أن توافق على الشروط والأحكام.",
+  "fill_fields": "يرجى ملء جميع الحقول.",
+  "read_carfully": "يرجى القراءة بعناية",
+  "terms_text": "مرحبًا بك في شروط وأحكام تطبيقنا.\n\nباستخدام هذا التطبيق، فإنك توافق على الشروط التالية:\n\n- أنت تقر بأن المعلومات المقدمة هي لأغراض عامة.\n- نحن غير مسؤولين عن أي أضرار ناتجة عن الاستخدام.\n- يرجى التأكد من استخدام التطبيق بمسؤولية واحترام سياسات الخصوصية.\n\nشكرًا لك على تخصيص الوقت لقراءة هذا. إذا كانت لديك أسئلة، يرجى الاتصال بالدعم.\n\nاستخدام سعيد!",
+  "agree": "أوافق",
+  "ihram_def": "الإحرام هو حالة مقدسة يدخلها المسلمون لأداء الحج أو العمرة.",
+  "tawaf_def": "الطواف هو الدوران حول الكعبة سبع مرات.",
+  "saaee_def": "السعي هو المشي بين الصفا والمروة سبع مرات.",
+  "detect_nothing": "لم نكتشف أي شيء.",
+  "sorry": "عذرًا، لست متأكدًا من ذلك.",
+  "ask_something": "قريبًا: اسأل شيئًا مثل 'ما هو الإحرام؟'، 'محظورات الإحرام'، وسنجيب عليك.. :)",
+  "scan": "مسح رمز الاستجابة السريعة",
+  "pick_gallery": "اختيار من المعرض",
+  "members_must_scan": "يجب على جميع الأعضاء مسح هذا!",
+  "new_members": "أعضاء جدد:",
+  "no_members": "لا يوجد أعضاء بعد",
+  "edit_info": "انقر لتعديل معلومات الملف الشخصي",
+  "enter_name": "أدخل اسمك الكامل",
+  "hajj": "الحج",
+  "umrah": "العمرة",
+  "individual": "فردي",
+  "delegation": "البعثة",
+  "member": "عضو",
+  "leader": "قائد",
+  "language": "اللغة",
+  "madhhab": "المذهب",
+  "country": "البلد",
+  "transportation": "وسيلة النقل",
+  "saved": "تم حفظ الإعدادات بنجاح!",
+  "not_set": "غير محدد",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+  "take_pic": "التقاط صورة",
+  "subscribe": "اشترك الآن",
+  "premium_sub": "اشتراك مميز",
+  "hotel_text": "خصومات تصل إلى 75% على الفنادق الفاخرة",
+  "restaurant_text": "وجبات لذيذة وبأسعار معقولة",
+  "shops_text": "تسوق أرخص (خصم 85%)",
+  "support_text": "دعم أولوية وتوصيات",
+  "start_payement": "المتابعة إلى الدفع",
+  "payement_info": "معلومات الدفع",
+  "card_nbr_title": "أدخل رقم بطاقة صالح مكون من 16 رقمًا",
+  "card_nbr": "رقم البطاقة",
+  "card_hint": "1234 5678 9012 3456",
+  "expery_title": "استخدم MM/YY",
+  "expery": "تاريخ الانتهاء",
+  "expity_hint": "MM/YY",
+  "enter_ccv": "أدخل رمز CVV صالح",
+  "ccv": "رمز CVV",
+  "ccv_hint": "123",
+  "payement_method": "طريقة الدفع",
+  "edhahabia": "الذهبية",
+  "mastercard": "ماستركارد",
+  "visa": "فيزا",
+  "pay": "ادفع الآن",
+  "payement_successful": "تم الدفع بنجاح!",
+  "select_madhhab": "اختر المذهب",
+  "select_country": "اختر البلد",
+  "select_transportation": "اختر وسيلة النقل",
+  "next": "التالي",
+  "delete_alarms": "حذف التنبيهات",
+  "no_time_set": "لم يتم تعيين وقت",
+  "no_med_name": "لا يوجد اسم للدواء",
+  "delete_selected": "حذف المحدد",
+  "medicine": "الدواء",
+  "repeat": "تكرار",
+  "importance": "الأهمية",
+  "dosage": "الجرعة",
+  "when": "متى تأخذ",
+  "purpose": "الغرض",
+  "notes": "ملاحظات",
+  "doctor": "وصفه الطبيب",
+  "other_times": "أوقات أخرى",
+  "custom": "مخصص",
+  "once": "مرة واحدة",
+  "dosage_hint": "الجرعة (مثال: 1 قرص، 5 مل)",
+  "when_hint": "متى تأخذ؟",
+  "purpose_hint": "الغرض (مثال: لضغط الدم)",
+  "notes_hint": "ملاحظات (مثال: احملها في حقيبة باردة)",
+  "doctor_hint": "الواصف (اسم الطبيب أو الاتصال)",
+  "times_per_day": "مرات في اليوم",
+  "btn_advanced": "متقدم >",
+  "med_name": "اسم الدواء",
+  "face_fingerprint": "استخدم الوجه أو البصمة لتسجيل الدخول",
+  "authenticated": "تم التحقق بنجاح!",
+  "welcome_back": "مرحبًا بعودتك!",
+  "signin_continue": "سجل الدخول للمتابعة",
+  "login_methods": "اسم المستخدم، البريد الإلكتروني، رقم الجوال",
+  "forgot_password": "هل نسيت كلمة المرور؟",
+  "create_account": "إنشاء حساب جديد",
+  "group_member": "عضو في المجموعة",
+  "group_leader": "قائد المجموعة",
+  "user_straying": "⚠️ أنت تبتعد",
+  "member_straying": "⚠️ عضو يبتعد",
+  "straying_service_on": "تم تفعيل خدمة اكتشاف الابتعاد. سنبدأ الآن في مراقبة موقع وفدك.",
+  "straying_service_off": "تم إيقاف خدمة اكتشاف الابتعاد. تم إيقاف المراقبة.",
+  "detection_on": "تم بدء الاكتشاف",
+  "detection_off": "تم إيقاف الاكتشاف",
+  "you_straying": "أنت تبتعد كثيرًا عن مجموعتك. يرجى العودة.",
+  "delegation_members": "أعضاء الوفد",
+
+
+  "premium_hotel_title": "فنادق فاخرة أرخص بنسبة 60٪ إلى 75٪",
+  "premium_food_title": "وجبات شهية أرخص بنسبة 50٪ إلى 70٪",
+  "premium_shop_title": "متاجر أرخص بنسبة 85٪ وأسعار بين 10-20 ريال",
+
+  "menu_delegation": "البعثة",
+  "menu_ihram": "الإحرام",
+  "menu_hajj": "الحج",
+  "menu_umrah": "العمرة",
+  "menu_lost": "ضائع",
+  "menu_medicine": "دواء",
+
+  "language_english": "الإنجليزية",
+  "language_arabic": "العربية",
+
+  "goal_hajj": "الحج",
+  "goal_umrah": "العمرة",
+
+  "madhhab_shafii": "شافعي",
+  "madhhab_hanafi": "حنفي",
+  "madhhab_hanbali": "حنبلي",
+  "madhhab_maliki": "مالكي",
+
+  "country_saudi_arabia": "المملكة العربية السعودية",
+  "country_egypt": "مصر",
+  "country_pakistan": "باكستان",
+  "country_malaysia": "ماليزيا",
+  "country_turkey": "تركيا",
+
+  "transport_air": "جواً",
+  "transport_sea": "بحراً",
+  "transport_vehicle": "بالمركبة",
+  "transport_foot": "مشياً على الأقدام",
+
+  "saying_1_description": "❌ غير معتمد من المذهب المالكي\n❌ غير معتمد من المذهب الحنبلي\n❌ غير معتمد من المذهب الحنفي\n❌ غير معتمد من المذهب الشافعي",
+  "saying_2_description": "❌ غير معتمد من المذهب المالكي\n❌ غير معتمد من المذهب الحنبلي\n❌ غير معتمد من المذهب الحنفي\n❌ غير معتمد من المذهب الشافعي",
+  "saying_3_description": "✅ معتمد من المذهب المالكي\n✅ معتمد من المذهب الحنبلي\n✅ معتمد من المذهب الحنفي\n✅ معتمد من المذهب الشافعي",
+  "saying_4_description": "❌ غير معتمد من المذهب المالكي\n❌ غير معتمد من المذهب الحنبلي\n❌ غير معتمد من المذهب الحنفي\n❌ غير معتمد من المذهب الشافعي",
+  "saying_5_description": "❌ غير معتمد من المذهب المالكي\n✅ معتمد من المذهب الحنبلي\n❌ غير معتمد من المذهب الحنفي\n❌ غير معتمد من المذهب الشافعي",
+
+  "ihram":"إحرام",
+  "country_algeria":"الجزائر",
+  "miqat_dhul_Hulaifa":"ذو الحليفة",
+  "miqat_juhfa":"الجحفة",
+  "miqat_yalmlm":"يلملم",
+  "miqat_dhat_irq":"ذات عرق",
+  "miqat_qarn_manazil":"قرن المنازل",
+  "hajj_step_1_title": "الخطوة 1: الإحرام",
+    "hajj_step_1_description": "انوي وادخل في الإحرام من الميقات مع التلبية.",
+    "hajj_step_2_title": "الخطوة 2: طواف القدوم",
+    "hajj_step_2_description": "أدِّ طواف القدوم (الطواف حول الكعبة).",
+    "hajj_step_3_title": "الخطوة 3: السعي بين الصفا والمروة",
+    "hajj_step_3_description": "امشِ سبع مرات بين الصفا والمروة.",
+    "hajj_step_4_title": "الخطوة 4: المبيت بمنى",
+    "hajj_step_4_description": "في 8 ذو الحجة، امكث في منى وصلِّ الصلوات قصراً.",
+    "hajj_step_5_title": "الخطوة 5: يوم عرفة",
+    "hajj_step_5_description": "في 9 ذو الحجة، قف للدعاء والابتهال في عرفة.",
+    "hajj_step_6_title": "الخطوة 6: مزدلفة",
+    "hajj_step_6_description": "اجمع الحصى وبت في مزدلفة تحت السماء.",
+    "hajj_step_7_title": "الخطوة 7: رمي الجمرات",
+    "hajj_step_7_description": "في 10 ذو الحجة، ارجم جمرة العقبة بسبع حصيات.",
+    "hajj_step_8_title": "الخطوة 8: الهدي",
+    "hajj_step_8_description": "قدِّم الأضحية (أو نسِّقها عن طريق خدمة).",
+    "hajj_step_9_title": "الخطوة 9: الحلق أو التقصير",
+    "hajj_step_9_description": "الرجال يحلقون أو يقصرون الشعر؛ النساء يقصصن جزءًا بسيطًا.",
+    "hajj_step_10_title": "الخطوة 10: طواف الإفاضة",
+    "hajj_step_10_description": "الطواف الواجب بعد الأضحية والحلق.",
+    "hajj_step_11_title": "الخطوة 11: أيام التشريق",
+    "hajj_step_11_description": "المبيت في منى ورمي الجمرات لمدة يومين أو ثلاثة.",
+    "hajj_step_12_title": "الخطوة 12: طواف الوداع",
+    "hajj_step_12_description": "طواف الوداع قبل مغادرة مكة (واجب لغير المقيمين).",
+
+    "ihram_step_1_title": "الخطوة 1: النية",
+    "ihram_step_1_description": "انوي للحج أو العمرة قبل دخول الميقات.",
+    "ihram_step_2_title": "الخطوة 2: الغُسل والنظافة",
+    "ihram_step_2_description": "اغتسل غُسلًا كاملاً، وقص أظافرك، وارتدِ لباس الإحرام.",
+    "ihram_step_3_title": "الخطوة 3: ارتداء الإحرام",
+    "ihram_step_3_description": "يرتدي الرجال إزارًا ورداءً أبيضين. ترتدي النساء لباسًا إسلاميًا محتشمًا.",
+    "ihram_step_4_title": "الخطوة 4: التلبية",
+    "ihram_step_4_description": "ردد \"لبيك اللهم لبيك...\" بعد الدخول في الإحرام.",
+    "ihram_step_5_title": "الخطوة 5: تجنب المحظورات",
+    "ihram_step_5_description": "تجنب قص الشعر، والعطور، والجدال، والعلاقات الزوجية أثناء الإحرام.",
+
+    "umrah_step_1_title": "الخطوة 1: الإحرام",
+    "umrah_step_1_description": "ادخل في حالة الإحرام من الميقات مع النية والتلبية.",
+    "umrah_step_2_title": "الخطوة 2: الطواف",
+    "umrah_step_2_description": "قم بأداء سبعة أشواط حول الكعبة بعكس اتجاه عقارب الساعة.",
+    "umrah_step_3_title": "الخطوة 3: الصلاة عند مقام إبراهيم",
+    "umrah_step_3_description": "صلِّ ركعتين خلف مقام إبراهيم بعد إتمام الطواف.",
+    "umrah_step_4_title": "الخطوة 4: السعي",
+    "umrah_step_4_description": "امشِ سبع مرات بين الصفا والمروة، بدءًا من الصفا وانتهاءً بالمروة.",
+    "umrah_step_5_title": "الخطوة 5: الحلق أو التقصير",
+    "umrah_step_5_description": "الرجال يحلقون أو يقصرون الشعر؛ النساء يقصصن جزءًا بسيطًا من شعرهن.",
+    "umrah_step_6_title": "الخطوة 6: التحلل من الإحرام",
+    "umrah_step_6_description": "بعد قص الشعر، تتحلل من الإحرام وتنتهي العمرة.",
+    "too_far_from_group": "Hey {firstName} {lastName}, you’re too far from your group. Please go back.",
+    "member_full_name_warning": "Hey {firstName} {lastName}, you’re too far from your group. Please go back.",
+
+    "allow_allocation_access": "السماح بالوصول إلى الموقع؟",
+      "allow_allocation_access_text": "لتوفير إرشادات أفضل، هل ترغب في تحديد موقعك يدويًا بالنقر على الخريطة؟ أم استخدام نظام تحديد المواقع GPS؟",
+      "auto_detect": "الكشف التلقائي",
+      "select_manually": "التحديد يدويًا",
+      "saying_number": "القول رقم {number}",
+      "@saying_number": {
+        "description": "Label for the saying with its number",
+        "placeholders": {
+          "number": {
+            "type": "int",
+            "example": "1"
+          }
+        }
+      },
+      "too_far_from_group": "مرحبًا {firstName} {lastName}، أنت بعيد جدًا عن مجموعتك. يرجى العودة.",
+      "@too_far_from_group": {
+        "description": "Warning when a user is too far from the group",
+        "placeholders": {
+          "firstName": {
+            "type": "String"
+          },
+          "lastName": {
+            "type": "String"
+          }
+        }
+      },
+      "member_full_name_warning": "مرحبًا {firstName} {lastName}، أنت بعيد جدًا عن مجموعتك. يرجى العودة.",
+      "@member_full_name_warning": {
+        "description": "Warning for member by name",
+        "placeholders": {
+          "firstName": {
+            "type": "String"
+          },
+          "lastName": {
+            "type": "String"
+          }
+        }
+      },
+      "leader_warning": "{fullName} يبتعد عن المجموعة. يرجى تحديد موقعه.",
+      "@leader_warning": {
+        "description": "Warning for leader",
+        "placeholders": {
+          "fullName": {
+            "type": "String"
+          }
+        }
+      },
+      "leader_warning": "القائد {leaderName}",
+      "@leader_warning": {
+        "description": "Warning for leader",
+        "placeholders": {
+          "leaderName": {
+            "type": "String"
+          }
+        }
+      },
+
+        "polygon_annulus_id": "المضلّع_{name}_الحلقة",
+        "@polygon_annulus_id": {
+          "description": "معرّف المضلع للحلقة مع اسم الميقات",
+          "placeholders": {
+            "name": {
+              "type": "String",
+              "example": "منى"
+            }
+          }
+        },
+        "lost_1": "سيساعدنا هذا في التعرف على الأشخاص المفقودين إذا كانوا مسجلين في نظامنا. يرجى التقاط صورة واضحة لوجههم",
+        "lost_2": "ستستغرق هذه العملية لحظة. يرجى الانتظار..",
+        "lost_3": "لم يتم اختيار صورة. يرجى المحاولة مرة أخرى",
+        "lost_4": "لم يتم اكتشاف وجه في الصورة. يرجى المحاولة مرة أخرى",
+        "lost_5": "المستخدم في الصورة التي التقطتها هو أنت. {lastName} {firstName}",
+        "@lost_5": {
+          "description": "رسالة عندما يكون المستخدم في الصورة هو المستخدم الحالي",
+          "placeholders": {
+            "lastName": {
+              "type": "String",
+              "example": "خان"
+            },
+            "firstName": {
+              "type": "String",
+              "example": "علي"
+            }
+          }
+        },
+        "lost_6": "هذا المستخدم هو قائد وفده. اسمه {lastName} {firstName}",
+        "@lost_6": {
+          "description": "رسالة عندما يكون المستخدم قائد وفده",
+          "placeholders": {
+            "lastName": {
+              "type": "String",
+              "example": "خان"
+            },
+            "firstName": {
+              "type": "String",
+              "example": "علي"
+            }
+          }
+        },
+        "lost_7": "تم العثور على المستخدم! {lastName} {firstName}. سنساعدك في الوصول إلى وفده، شكراً لمساعدتك.",
+        "@lost_7": {
+          "description": "رسالة عند العثور على المستخدم وتقديم المساعدة للوصول إلى الوفد",
+          "placeholders": {
+            "lastName": {
+              "type": "String",
+              "example": "خان"
+            },
+            "firstName": {
+              "type": "String",
+              "example": "علي"
+            }
+          }
+        },
+        "lost_8": "المستخدم لا ينتمي إلى أي وفد. يرجى المحاولة مرة أخرى في إضاءة أفضل أو التواصل مع السلطات المحلية.",
+        "@lost_8": {
+          "description": "رسالة عندما لا يتم العثور على المستخدم في أي وفد"
+        },
+        "lost_9": "المستخدم غير مسجل في نظامنا. يرجى المحاولة في إضاءة أفضل أو التواصل مع السلطات المحلية.",
+        "face_verification": "التحقق من الوجه",
+        "take_pic_verify": "التقاط صورة والتحقق",
+        "find_delegation": "ابحث عن وفده",
+        "in_hours_and_minutes": "{hours, plural, =0{{minutes, plural, =0{الآن} =1{بعد دقيقة واحدة} other{بعد {minutes} دقائق}}} =1{بعد ساعة واحدة {minutes, plural, =0{} =1{دقيقة واحدة} other{{minutes} دقائق}}} other{بعد {hours} ساعات {minutes, plural, =0{} =1{دقيقة واحدة} other{{minutes} دقائق}}}}",
+        "@in_hours_and_minutes": {
+          "description": "سلسلة زمنية تصف الوقت المتبقي، مثل 'بعد ساعتين و3 دقائق'",
+          "placeholders": {
+            "hours": {
+              "type": "int",
+              "example": "2"
+            },
+            "minutes": {
+              "type": "int",
+              "example": "3"
+            }
+          }
+        },
+        "in_minutes": "بعد {minutes} دقيقة{minutes, plural, =1{} other{ات}}",
+        "@in_minutes": {
+          "description": "سلسلة زمنية للدقائق فقط، مثل 'بعد دقيقة واحدة' أو 'بعد 5 دقائق'",
+          "placeholders": {
+            "minutes": {
+              "type": "int",
+              "example": "3"
+            }
+          }
+        },
+        "day_mon": "الاثنين",
+        "day_tue": "الثلاثاء",
+        "day_wed": "الأربعاء",
+        "day_thu": "الخميس",
+        "day_fri": "الجمعة",
+        "day_sat": "السبت",
+        "day_sun": "الأحد",
+        "alarm_remaining": "المنبه {timeRemaining}",
+        "@alarm_remaining": {
+          "description": "تسمية المنبه مع الوقت المتبقي حتى التفعيل.",
+          "placeholders": {
+            "timeRemaining": {
+              "type": "String",
+              "example": "بعد ساعتين و5 دقائق"
+            }
+          }
+        },
+        "repeat_once": "مرة واحدة",
+        "repeat_daily": "يوميًا",
+        "repeat_custom": "مخصص",
+        "select_time": "اختر الوقت {number}",
+        "@select_time": {
+          "description": "تسمية لاختيار خيار الوقت مع رقمه التسلسلي",
+          "placeholders": {
+            "number": {
+              "type": "int",
+              "example": "1"
+            }
+          }
+        },
+        "optional": "اختياري",
+        "important": "مهم",
+        "must_not_miss": "يجب عدم تفويته",
+        "before_food": "قبل الطعام",
+        "after_food": "بعد الطعام",
+        "with_food": "مع الطعام",
+        "empty_stomach": "على معدة فارغة",
+        "select_label": "اختر {label}",
+        "@select_label": {
+          "description": "عنوان للاختيار مع تسمية ديناميكية",
+          "placeholders": {
+            "label": {}
+          }
+        },
+        "intent_ihram_answer": "الإحرام هو حالة مقدسة يدخلها المسلمون لأداء الحج أو العمرة.",
+        "intent_tawaf_answer": "الطواف هو الدوران حول الكعبة سبع مرات.",
+        "intent_saee_answer": "السعي هو المشي بين الصفا والمروة سبع مرات.",
+"search_text": "الخدمة قيد التطوير: اطرح سؤالاً مثل 'ما هو الإحرام؟' أو 'ممنوعات الإحرام' وسنجيبك.. :)",
+        "no_speech_detected": "لم نتمكن من الكشف عن أي صوت.",
+        "unknown_query": "عذراً، لست متأكداً من ذلك.",
+        "birth_selector_title": "اختر سنة الميلاد",
+        "allow_allocation_access": "الوصول إلى الموقع",
+          "we_will_use_gps": "سنستخدم نظام تحديد المواقع لتتبع موقعك.",
+          "tap_on_map_to_get_location": "اضغط على الخريطة للحصول على موقعك.",
+           "open_settings": "افتح الإعدادات",
+       "leader_qr_scan_text":"Scan QR Code",
+       "member_qr_scan_text": "Scan QR Code"
+
+
+  }
+  

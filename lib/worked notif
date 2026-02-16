@@ -1,0 +1,139 @@
+import 'dart:async';
+import 'dart:isolate';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+// Local notifications plugin
+final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Init local notifications
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidSettings);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({super.key});
+
+  Future<void> startForegroundService() async {
+    await FlutterForegroundTask.startService(
+      notificationTitle: 'Running in background',
+      notificationText: 'Tap to return to app',
+      callback: startCallback,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillStartForegroundTask(
+      onWillStart: () async => true,
+
+      androidNotificationOptions: AndroidNotificationOptions(
+        channelId: 'foreground_channel_id',
+        channelName: 'Foreground Notification',
+        channelDescription: 'Keeps the service alive',
+        priority: NotificationPriority.LOW,
+        iconData: const NotificationIconData(
+          resType: ResourceType.mipmap,
+          resPrefix: ResourcePrefix.ic,
+          name: 'launcher',
+        ),
+      ),
+
+      iosNotificationOptions: const IOSNotificationOptions(
+        showNotification: true,
+        playSound: true,
+      ),
+
+      foregroundTaskOptions: const ForegroundTaskOptions(
+        interval: 10000,
+        isOnceEvent: false,
+        autoRunOnBoot: true,
+      ),
+
+      notificationTitle: '',
+      notificationText: '',
+      child: Scaffold(
+        appBar: AppBar(title: const Text("Foreground Task Example")),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () async {
+              await startForegroundService();
+            },
+            child: const Text('Start Background Task'),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// This function runs in background isolate
+void startCallback() {
+  FlutterForegroundTask.setTaskHandler(MyTaskHandler());
+}
+
+// Custom background task handler
+class MyTaskHandler extends TaskHandler {
+  Timer? _timer;
+
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {}
+
+  @override
+  Future<void> onEvent(DateTime timestamp, SendPort? sendPort) async {
+    // Initial event if isOnceEvent = true
+  }
+
+  @override
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+    // This is the repeated background event
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      'Background Running',
+      'Still working even if app is killed!',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'bg_channel',
+          'Background Channel',
+          channelDescription: 'Background notification',
+          importance: Importance.max,
+          priority: Priority.high,
+          playSound: true,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {
+    _timer?.cancel();
+  }
+
+  @override
+  void onButtonPressed(String id) {}
+
+  @override
+  void onNotificationPressed() {
+    FlutterForegroundTask.launchApp();
+  }
+}
+

@@ -1,0 +1,35 @@
+language = in-welcompage out-splashscreen
+
+uid = in-signup out-splashscreen out-preferences out-qrpage
+firstName = in_signup
+lastName = in_signup
+email = in_signup
+password = in_signup
+birthday = in_signup
+
+country = in_preferences
+madhhab = in_preferences out-splashscreen
+transportation = in_preferences out-splashscreen
+leader = in_preferences
+delegation = in_preferences
+goal = in-preferences
+
+qr = in-qrpage
+
+face_image = profile
+
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+AppLocalizations.of(context)!.
+
+
+AppLocalizations.of(context)!.too_far_from_group(
+            firstName: firstName,
+            lastName: lastName,
+          )
+
+Fluttertoast.showToast(
+              msg: http.get(Uri.parse("https://google.com")),
+              toastLength: Toast.LENGTH_LONG,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 3
+          );
