@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <p align="center">
   <img src="assets/icon/img5.webp" width="180"/>
 </p>
