@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <p align="center">
   <img src="assets/icon/img5.webp" width="180"/>
 </p>
@@ -168,28 +167,6 @@ Includes comparative fiqh across all four madhhabs.
 Add screenshots here:
 
 ```markdown
-![Home](screenshots/home.png)
-![Miqat Map](screenshots/miqat.png)
-![Face Recognition](screenshots/face.png)
-=======
-<<<<<<< HEAD
-# MeQat_Flutter_Firebase
-=======
-# meqattest
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
->>>>>>> a529e54 (Reinitialize repository)
->>>>>>> 6abd21ff920c9967230cbd1a72bdd7fb0c130af5
+![Home](assets/screenshoot/home.jpg)
+![Medicine](assets/screenshoot/medicine.jpg)
+![Menu](assets/screenshoot/menu_more_services.jpg)
