@@ -9,152 +9,144 @@
   Multi-Platform • Multi-Language • Madhhab-Inclusive • AI-Powered
 </p>
 
----
+MeQat – Hajj & Umrah Assistant App
 
-## 🚀 About MeQat
+MeQat is a multi-platform, multi-language mobile application designed to assist pilgrims performing Hajj and Umrah. It combines real-time guidance, health monitoring, delegation tracking, and smart assistance to simplify the pilgrimage experience for users of all ages and technical abilities.
 
-**MeQat** is a next-generation pilgrimage assistant designed to modernize Hajj & Umrah guidance through AI, geospatial computation, health monitoring, and delegation safety systems.
+🌟 Features
 
-It transforms traditional fiqh theory into real-time digital execution.
+Medication Reminders
 
----
+Automatically reminds users to take their medications based on schedules.
 
-## 🌍 Why MeQat?
+Real-Time GPS Tracking
 
-✔ No comprehensive Algerian Hajj assistant  
-✔ Supports **Hanafi • Maliki • Shafi’i • Hanbali**  
-✔ Smartwatch support for elderly pilgrims  
-✔ Real Miqat alignment detection (GPS + Earth math)  
-✔ AI Face Recognition (98.65% verified accuracy)  
-✔ Health anomaly detection  
-✔ Transparent hotels & restaurant pricing  
-✔ Voice AI assistant
+Tracks users and linked delegation members to prevent anyone from getting lost.
 
----
+Delegation leaders can see all members’ locations.
 
-# 🧠 Core Features
+Lost Member Assistance
 
-## 🩺 1. Smart Medication & Health Monitoring
+Uses face recognition to identify lost members and their delegation.
 
-- Scheduled medication reminders
-- Activity monitoring
-- Age & medical-aware risk detection
-- Emergency alert protocol
+Quickly reconnects them with the group.
 
----
+Health Monitoring
 
-## 📍 2. Delegation GPS Tracking
+Detects potential health issues based on user movement, medication history, and age.
 
-- Real-time location monitoring
-- Prevent lost pilgrims
-- Map visualization via Google Maps
+Sends alerts and contacts help if the user does not respond.
 
----
+Step-by-Step Ritual Guidance
 
-## 👤 3. AI Lost Person Re-Identification
+Guides pilgrims through all Hajj and Umrah rituals.
 
-If a pilgrim is lost:
+Notifies users if they can enter Ihram based on Miqat alignment, calculated via GPS and earth geometry.
 
-1. Capture face
-2. Detect face (ML Kit)
-3. Generate embedding (FaceNet)
-4. Compare embeddings
-5. Identify delegation
-6. Reconnect safely
+Accommodation & Dining Options
 
-### 🔬 AI Performance
+Displays hotels, restaurants, and price ranges.
 
-| Metric | Result |
-|--------|--------|
-| Dataset | LFW |
-| Model | InceptionResnetV1 |
-| Accuracy | **98.65%** |
-| Optimal Threshold | 0.4558 |
+Ensures pilgrims have choices and avoid overpaying.
 
----
+Smart Vocal Assistant
 
-## 🗺 4. Real Miqat Alignment System (Unique Feature)
+Users can interact via voice for hands-free guidance.
 
-Instead of forcing pilgrims to visit the physical mosque:
+🎯 Why MeQat?
 
-- GPS tracking
-- Geodesic calculations
-- Earth curvature math
-- Alignment detection
+Unique to Algeria: Unlike Saudi apps, MeQat serves users in Algeria and beyond.
 
-Users are notified when reaching Miqat alignment and may enter Ihram directly.
+Inclusive Fiqh Support: Supports all four Madhhabs and shows respective rulings instead of forcing one interpretation.
 
-Supports pilgrimage routes to:
-- Mecca
-- Medina
+Elder-Friendly: Optimized for smartwatches and simple notifications for users unfamiliar with technology.
 
----
+Choice-Oriented: Offers flexible options for Ihram, hotels, and restaurants.
 
-## 🕌 5. Step-by-Step Ritual Guidance
+Multi-Platform: Works on Android, iOS, tablets, and can be used internationally.
 
-- Ihram
-- Tawaf
-- Sa’i
-- Arafah
-- Jamarat
-- Qurbani
-- Completion
+Multi-Language Support: Designed for international pilgrims to feel at home.
 
-Includes comparative fiqh across all four madhhabs.
+🛠 Technology Stack
 
----
+Frontend: Flutter (Dart)
 
-## 🏨 6. Hotels & Restaurants Transparency
+IDE: Android Studio
 
-- Nearby hotels
-- Price ranges
-- Restaurant options
-- Prevent overcharging
+Backend / Cloud:
 
----
+Firebase: Data storage and authentication
 
-## 🎙 7. Smart Voice Assistant
+Supabase: Image storage and metadata after processing
 
-- Speech-to-Text
-- Text-to-Speech
-- Multilingual
-- Interactive ritual support
+AI / Face Recognition:
 
----
+Custom FaceNet (InceptionResNetV1) model implemented in Python (Kaggle, Torch, facenet-pytorch)
 
-# 🛠 Technology Stack
+Achieved 98.65% verification accuracy on LFW dataset
 
-### 📱 Frontend
-- Flutter (Dart)
-- Android Studio
-- JDK
+📂 Dependencies
 
-### ☁ Backend
-- Firebase Core
-- Cloud Firestore
-- Supabase
+flutter, google_maps_flutter, geolocator, firebase_core, cloud_firestore, firebase_auth
 
-### 🤖 AI / ML
-- Google ML Kit
-- TFLite
-- Custom FaceNet Model (PyTorch)
-- Kaggle training environment
+speech_to_text, flutter_tts
 
----
+tflite_flutter, google_mlkit_face_detection
 
-# 📦 Key Dependencies
+supabase_flutter, hive, hive_flutter
 
-- google_maps_flutter
-- geolocator
-- google_mlkit_face_detection
-- tflite_flutter
-- speech_to_text
-- flutter_tts
-- firebase_core
-- cloud_firestore
-- supabase_flutter
+local_auth, audioplayers, qr_flutter, mobile_scanner, image_picker
 
----
+intl, url_launcher, adhan, flutter_localizations, smooth_page_indicator
+
+(See full pubspec.yaml for complete list)
+
+📷 Screenshots
+
+You can add your screenshots here like this:
+
+
+
+
+
+
+🎥 Demo Video
+
+Watch the app in action on YouTube: Demo Link
+
+⚙️ Setup Instructions
+
+Clone the repository:
+
+git clone https://github.com/yourusername/MeQat.git
+cd MeQat
+
+
+Install Flutter dependencies:
+
+flutter pub get
+
+
+Connect Firebase and Supabase with your own credentials.
+
+Run the app:
+
+flutter run
+
+📝 Notes
+
+Designed for multi-platform usage: Android, iOS, and smartwatches.
+
+Supports multi-language (Arabic, English, and others).
+
+Ensures users do not have to walk extra miles to perform rituals, unless desired.
+
+Bridges technology with religious guidance, giving pilgrims freedom, safety, and convenience.
+
+📜 License
+
+This project is proprietary, currently under development.
+
 
 # 🎥 Demo
 
