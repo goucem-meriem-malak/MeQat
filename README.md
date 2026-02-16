@@ -167,9 +167,9 @@ Includes comparative fiqh across all four madhhabs.
 Add screenshots here:
 
 | SignUp | Preferences | Home |
-|------|---------|------|
+|------|-------|------|
 | ![SignUp](assets/screenshoot/signup.jpg) | ![Preferences](assets/screenshoot/preferences.jpg) | ![Home](assets/screenshoot/home.jpg) |
 
 | Medicine | Delegation | Menu |
-|------|---------|------|
+|------|-------|------|
 | ![Medicine](assets/screenshoot/medicine.jpg) | ![Delegation](assets/screenshoot/delegation.jpg) | ![Menu](assets/screenshoot/menu_more_services.jpg) |
